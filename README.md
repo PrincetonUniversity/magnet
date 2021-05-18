@@ -28,10 +28,10 @@ If you used MagNet, please cite us with the following BibTeX item.
 
 Princeton MagNet is currently maintained by the Power Electronics Research Lab as Princeton University. We also collaborate with Dartmouth College, and Plexim.
 
-<img src="magnetteam.jpg" width=300>
+<img src="magnetteam.jpg" width=600>
 
 ## Sponsors
 
 This work is sponsored by the ARPA-E DIFFERENTIATE Program.
 
-<img src="sponsor.jpg" width=300>
+<img src="sponsor.jpg" width=600>
