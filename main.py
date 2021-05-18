@@ -307,7 +307,7 @@ if function_select == "Core Loss Prediction":
     st.title("Core Loss: "+str(round(core_loss,3))+" kW/m^3")
     
 st.markdown("""---""")
-st.title("Research Team")
+st.title("Research Collaborators")
 st.image('magnetteam.jpg', width=1000)
 st.title("Sponsors")
 st.image('sponsor.jpg', width=1000)
