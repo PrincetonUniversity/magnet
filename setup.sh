@@ -1,16 +1,13 @@
 mkdir -p ~/.streamlit/
-
-echo "\
-[general]\n\
-email = \"minjie@ieee.org\"\n\
-" > ~/.streamlit/credentials.toml
-
-echo "[theme]
-primaryColor = ‘#ff8f00’
-secondaryBackgroundColor = ‘#c3cfe0’
-textColor= ‘#000000’
-[server]
-headless = true
-port = $PORT
-enableCORS = false
+echo "[theme]\n\
+primaryColor = ‘#84a3a7’\n\
+backgroundColor = ‘#EFEDE8’\n\
+secondaryBackgroundColor = ‘#fafafa’\n\
+textColor= ‘#424242’\n\
+font = ‘sans serif’\n\
+[server]\n\
+headless = true\n\
+port = $PORT\n\
+enableCORS = false\n\
+\n\
 " > ~/.streamlit/config.toml
