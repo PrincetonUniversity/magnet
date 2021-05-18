@@ -63,12 +63,14 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
+                st.write('color: flux density (mT)')
                 fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Flux_Density'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
                 st.plotly_chart(fig1, use_container_width=True)
             
             with col2:
+                st.write('color: frequency (Hz)')
                 fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Frequency'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
@@ -95,11 +97,13 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
+                st.write('color: duty ratio')
                 fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
                 st.plotly_chart(fig1, use_container_width=True)
             with col2:
+                st.write('color: duty ratio')
                 fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
@@ -147,12 +151,14 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
+                st.write('color: flux density (mT)')
                 fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Flux_Density'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
                 st.plotly_chart(fig3, use_container_width=True)
             
             with col2:
+                st.write('color: frequency (Hz)')
                 fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Frequency'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
@@ -178,11 +184,13 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
+                st.write('color: duty ratio')
                 fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
                 st.plotly_chart(fig3, use_container_width=True)
             with col2:
+                st.write('color: duty ratio')
                 fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
