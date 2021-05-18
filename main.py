@@ -45,7 +45,7 @@ if function_select == "Core Loss Database":
     ) 
     
     [FminA,FmaxA] = st.sidebar.slider('Frequency Range A (Hz)', 
-                                      10000, 300000, (10000,300000),step=1000)
+                                      10000, 500000, (10000,500000),step=1000)
     [BminA,BmaxA] = st.sidebar.slider('Flux Density Range A (mT)', 
                                       10, 300, (10,300),step=1)
     
@@ -132,7 +132,7 @@ if function_select == "Core Loss Database":
     ) 
     
     [FminB,FmaxB] = st.sidebar.slider('Frequency Range B (Hz)', 
-                                      10000, 300000, (10000,300000),step=1000)
+                                      10000, 500000, (10000,500000),step=1000)
     [BminB,BmaxB] = st.sidebar.slider('Flux Density Range B (mT)', 
                                       10, 300, (10,300),step=1)
     
@@ -231,7 +231,7 @@ if function_select == "Core Loss Prediction":
     
     
     if excitation_type == "Sinusoidal" or excitation_type == "Datasheet":
-        Freq = st.slider('Frequency (Hz)', 10000, 300000, step=1000)
+        Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
         Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, step=1)
         Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
         duty_list = np.linspace(0,1,101)
@@ -245,7 +245,7 @@ if function_select == "Core Loss Prediction":
                  +", \u0394B="+str(Flux)+" mT"+", Bias="+str(Bias)+" mT")
     
     if excitation_type == "Triangle":
-        Freq = st.slider('Frequency (Hz)', 10000, 300000, step=1000)
+        Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
         Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, step=10)
         Duty = st.slider('Duty Ratio', 0.0, 1.0, 0.5, step=0.01)
         Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
@@ -264,7 +264,7 @@ if function_select == "Core Loss Prediction":
                  +", \u0394B="+str(Flux)+" mT"+", D="+str(Duty)+", Bias="+str(Bias)+" mT")
             
     if excitation_type == "Trapezoidal":
-        Freq = st.slider('Frequency (Hz)', 10000, 300000, step=1000)
+        Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
         Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, step=10)
         Duty1 = st.slider('Duty Ratio 1', 0.0, 1.0, 0.25, step=0.01)
         Duty2 = st.slider('Duty Ratio 2', 0.0, 1.0, 0.5, step=0.01)
@@ -285,7 +285,7 @@ if function_select == "Core Loss Prediction":
                  +", \u0394B="+str(Flux)+" mT"+", D1="+str(Duty1)+", D2="+str(Duty2)+", D3="+str(Duty3)+", Bias="+str(Bias)+" mT")
     
     if excitation_type == "Arbitrary":
-        Freq = st.slider('Cycle Frequency (Hz)', 10000, 300000, step=1000)
+        Freq = st.slider('Cycle Frequency (Hz)', 10000, 500000, step=1000)
         duty_string = st.text_input('Waveform Pattern Duty in a Cycle (%)', [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
         flux_string = st.text_input('Waveform Pattern Relative Flux Density (mT)', [0, 10, 20, 10, 20, 30, -10, -30, 10, -10, 0])
         Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
