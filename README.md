@@ -1,4 +1,4 @@
-![MagNet Logo](images/magnetlogo.jpg)
+![MagNet Logo](magnetlogo.jpg)
 
 Princeton MagNet is a large-scale dataset designed to enable researchers modeling magnetic core loss using machine learning to accelerate the design process of power electronics. The dataset contains a large amount of voltage and current data of different magnetic components with different shapes of waveforms and different properties measured in the real world. Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss to derive static models.
 
