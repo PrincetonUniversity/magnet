@@ -3,7 +3,8 @@ import json
 import plotly.express as px
 import numpy as np
 import re
-from search import search
+from search import sinesearch
+from search import taglsearch
 
 # setup the user interface 
 st.set_page_config(layout="wide")
@@ -55,59 +56,53 @@ if function_select == "Core Loss Database":
         data_dirA="./Data/Data_" + material_typeA + "_" + excitation_typeA + "_light.json"
         # create a subset of data that meet the rules
         DataA = load_data(data_dirA)
-        SubsetA = search(DataA,FminA,FmaxA,BminA,BmaxA,0,1)
+        SubsetA = sinesearch(DataA,FminA,FmaxA,BminA,BmaxA)
         
         if not SubsetA['Frequency']:
             st.write("Warning: No Data in Range")
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],
+                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Flux_Density'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
-                fig1.update_traces(marker=dict(size=5,color='darkred'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig1, use_container_width=True)
             
             with col2:
-                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],
+                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Frequency'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
-                fig2.update_traces(marker=dict(size=5,color='darkred'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig2, use_container_width=True)
     
     if excitation_typeA == "Triangle":
-        [DminA,DmaxA] = st.sidebar.slider('Duty Ratio Range A', 
-                                      0.0, 1.0, (0.0,1.0),step=0.05)
-
+        
+        DutyA = st.sidebar.multiselect("Duty Ratios Margins for Material A:", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+                                            [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+        MarginA = st.sidebar.slider('Duty Ratio Margins for Material A', 0.0, 1.0, 0.01, step=0.01)
+        
         st.header(material_typeA+", "+excitation_typeA+", f=["+str(FminA)+"~"+str(FmaxA)+"] Hz"
-                 +", B=["+str(BminA)+"~"+str(BmaxA)+"] mT"+", D=["+str(DminA)+"~"+str(DmaxA)+"]")
+                 +", B=["+str(BminA)+"~"+str(BmaxA)+"] mT"+", D="+str(DutyA))
         
         # read the corresponding data
         data_dirA="./Data/Data_" + material_typeA + "_" + excitation_typeA + "_light.json"
         # create a subset of data that meet the rules
+        # read the corresponding data
         DataA = load_data(data_dirA)
-        SubsetA = search(DataA,FminA,FmaxA,BminA,BmaxA,DminA,DmaxA)
+        SubsetA = taglsearch(DataA,FminA,FmaxA,BminA,BmaxA,DutyA,MarginA)
         
         if not SubsetA['Frequency']:
             st.write("Warning: No Data in Range")
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],
+                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
-                fig1.update_traces(marker=dict(size=5,color='darkred'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig1, use_container_width=True)
-            
             with col2:
-                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],
+                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
-                fig2.update_traces(marker=dict(size=5,color='darkred'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig2, use_container_width=True)
     
     if excitation_typeA == "Trapezoidal":
@@ -145,59 +140,52 @@ if function_select == "Core Loss Database":
         data_dirB="./Data/Data_" + material_typeB + "_" + excitation_typeB + "_light.json"
         # create a subset of data that meet the rules
         DataB = load_data(data_dirB)
-        SubsetB = search(DataB,FminB,FmaxB,BminB,BmaxB,0,1)
+        SubsetB = sinesearch(DataB,FminB,FmaxB,BminB,BmaxB)
         
         if not SubsetB['Frequency']:
             st.write("Warning: No Data in Range")
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],
+                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Flux_Density'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
-                fig3.update_traces(marker=dict(size=5,color='darkblue'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig3, use_container_width=True)
             
             with col2:
-                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],
+                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Frequency'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
-                fig4.update_traces(marker=dict(size=5,color='darkblue'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig4, use_container_width=True)
     
     if excitation_typeB == "Triangle":
-        [DminB,DmaxB] = st.sidebar.slider('Duty Ratio Range B', 
-                                      0.0, 1.0, (0.0,1.0),step=0.05)
+        DutyB = st.sidebar.multiselect("Duty Ratios for Material B:", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+                                            [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+        MarginB = st.sidebar.slider('Duty Ratio Margins for Material B', 0.0, 1.0, 0.01, step=0.01)
         
         st.header(material_typeB+", "+excitation_typeB+", f=["+str(FminB)+"~"+str(FmaxB)+"] Hz"
-                 +", B=["+str(BminB)+"~"+str(BmaxB)+"] mT"+", D=["+str(DminB)+"~"+str(DmaxB)+"]")
+                 +", B=["+str(BminB)+"~"+str(BmaxB)+"] mT"+", D="+str(DutyB))
         
         # read the corresponding data
         data_dirB="./Data/Data_" + material_typeB + "_" + excitation_typeB + "_light.json"
         # create a subset of data that meet the rules
+        # read the corresponding data
         DataB = load_data(data_dirB)
+        SubsetB = taglsearch(DataB,FminB,FmaxB,BminB,BmaxB,DutyB,MarginB)
         
         if not SubsetB['Frequency']:
             st.write("Warning: No Data in Range")
         else:
-            SubsetB = search(DataB,FminB,FmaxB,BminB,BmaxB,DminB,DmaxB)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],
+                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
-                fig3.update_traces(marker=dict(size=5,color='darkblue'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig3, use_container_width=True)
-            
             with col2:
-                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],
+                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,
                                   labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
-                fig4.update_traces(marker=dict(size=5,color='darkblue'),
-                              selector=dict(mode='markers'))
                 st.plotly_chart(fig4, use_container_width=True)
 
     if excitation_typeB == "Trapezoidal":
