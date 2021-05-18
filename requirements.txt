@@ -2,4 +2,3 @@ streamlit==0.82.0
 json5==0.9.5
 plotly==4.14.3
 numpy==1.20.1
-regex==2011.4.4
