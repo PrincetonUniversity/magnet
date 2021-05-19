@@ -6,10 +6,9 @@ import numpy as np
 import re
 from search import sinesearch
 from search import taglsearch
-import pandas as pd
 
 # setup the user interface 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="PMagNet",layout="wide")
 st.image('pulogo.jpg', width=600)
 st.sidebar.image('magnetlogo.jpg', width=300)
 
