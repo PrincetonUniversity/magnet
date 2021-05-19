@@ -38,7 +38,7 @@ if function_select == "Core Loss Database":
         material_listA
     )
     
-    excitation_listA = ("Datasheet","Sinusoidal","Triangle","Trapezoidal")
+    excitation_listA = ("Datasheet","Sinusoidal","Triangle","Symmetric Trapezoidal","Asymmetric Trapezoidal")
     excitation_typeA = st.sidebar.selectbox(
         "Excitation A:",
         excitation_listA
@@ -106,7 +106,38 @@ if function_select == "Core Loss Database":
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
                 st.plotly_chart(fig2, use_container_width=True)
     
-    if excitation_typeA == "Trapezoidal":
+    if excitation_typeA == "Symmetric Trapezoidal":
+        DutyA = st.sidebar.multiselect("Duty Ratio A", [0.1, 0.2, 0.3, 0.4],
+                                            [0.1, 0.2, 0.3, 0.4])
+        MarginA = st.sidebar.slider('Duty Ratio Margin A', 0.0, 1.0, 0.01, step=0.01)
+        
+        st.header(material_typeA+", "+excitation_typeA+", f=["+str(FminA)+"~"+str(FmaxA)+"] Hz"
+                 +", B=["+str(BminA)+"~"+str(BmaxA)+"] mT"+", D="+str(DutyA))
+        
+        # read the corresponding data
+        data_dirA="./Data/Data_" + material_typeA + "_" + "SymmTrapez" + "_light.json"
+        # create a subset of data that meet the rules
+        # read the corresponding data
+        DataA = load_data(data_dirA)
+        SubsetA = taglsearch(DataA,FminA,FmaxA,BminA,BmaxA,DutyA,MarginA)
+        
+        if not SubsetA['Frequency']:
+            st.write("Warning: No Data in Range")
+        else:
+            col1, col2 = st.beta_columns(2)
+            with col1:
+                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
+                st.plotly_chart(fig1, use_container_width=True)
+            with col2:
+                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
+                st.plotly_chart(fig2, use_container_width=True)
+    
+    if excitation_typeA == "Asymmetric Trapezoidal":
+        
         DutyA1 = st.sidebar.slider('Duty Ratio A1', 
                                       0.0, 1.0, 0.25,step=0.05)
         DutyA2 = st.sidebar.slider('Duty Ratio A2', 
@@ -136,7 +167,7 @@ if function_select == "Core Loss Database":
         material_listB
     )
     
-    excitation_listB = ("Datasheet","Sinusoidal","Triangle","Trapezoidal")
+    excitation_listB = ("Datasheet","Sinusoidal","Triangle","Symmetric Trapezoidal","Asymmetric Trapezoidal")
     excitation_typeB = st.sidebar.selectbox(
         "Excitation B:",
         excitation_listB
@@ -204,7 +235,38 @@ if function_select == "Core Loss Database":
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig4, use_container_width=True)
 
-    if excitation_typeB == "Trapezoidal":
+
+    if excitation_typeB == "Symmetric Trapezoidal":
+        DutyB = st.sidebar.multiselect("Duty Ratio B", [0.1, 0.2, 0.3, 0.4],
+                                            [0.1, 0.2, 0.3, 0.4])
+        MarginB = st.sidebar.slider('Duty Ratio Margin B', 0.0, 1.0, 0.01, step=0.01)
+        
+        st.header(material_typeB+", "+excitation_typeB+", f=["+str(FminB)+"~"+str(FmaxB)+"] Hz"
+                 +", B=["+str(BminB)+"~"+str(BmaxB)+"] mT"+", D="+str(DutyB))
+        
+        # read the corresponding data
+        data_dirB="./Data/Data_" + material_typeB + "_" + "SymmTrapez" + "_light.json"
+        # create a subset of data that meet the rules
+        # read the corresponding data
+        DataB = load_data(data_dirB)
+        SubsetB = taglsearch(DataB,FminB,FmaxB,BminB,BmaxB,DutyB,MarginB)
+        
+        if not SubsetB['Frequency']:
+            st.write("Warning: No Data in Range")
+        else:
+            col1, col2 = st.beta_columns(2)
+            with col1:
+                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
+                st.plotly_chart(fig3, use_container_width=True)
+            with col2:
+                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
+                st.plotly_chart(fig4, use_container_width=True)
+
+    if excitation_typeB == "Asymmetric Trapezoidal":
         DutyB1 = st.sidebar.slider('Duty Ratio B1', 
                                       0.0, 1.0, 0.25,step=0.05)
         DutyB2 = st.sidebar.slider('Duty Ratio B2', 
