@@ -1,19 +1,19 @@
 import streamlit as st
 import json
 import plotly.express as px
+import plotly.graph_objects as go
 import numpy as np
 import re
 from search import sinesearch
 from search import taglsearch
+import pandas as pd
 
 # setup the user interface 
 st.set_page_config(layout="wide")
 st.image('pulogo.jpg', width=600)
-
-
 st.sidebar.image('magnetlogo.jpg', width=300)
 
-st.sidebar.header('Princeton MagNet v1.0 Beta')
+st.sidebar.header('PMagNet v1.0 Beta')
 function_list = ("Core Loss Database", "Core Loss Prediction")
 function_select = st.sidebar.radio("Select one of the two functions",
     function_list
@@ -30,6 +30,7 @@ if function_select == "Core Loss Database":
             Data = json.load(jsonfile)
         return Data
     
+    st.sidebar.header("Information for Material A")
     # read the necessary information for display
     material_listA = ("N27","N49","N87")  
     material_typeA = st.sidebar.selectbox(
@@ -37,8 +38,7 @@ if function_select == "Core Loss Database":
         material_listA
     )
     
-    excitation_listA = ("Datasheet","Sinusoidal","Triangle","Trapezoidal",
-        "Arbitrary")
+    excitation_listA = ("Datasheet","Sinusoidal","Triangle","Trapezoidal")
     excitation_typeA = st.sidebar.selectbox(
         "Excitation A:",
         excitation_listA
@@ -48,6 +48,7 @@ if function_select == "Core Loss Database":
                                       10000, 500000, (10000,500000),step=1000)
     [BminA,BmaxA] = st.sidebar.slider('Flux Density Range A (mT)', 
                                       10, 300, (10,300),step=1)
+    BiasA = st.sidebar.slider('DC Bias A (mT)', -300, 300, 0, step=1)
     
     if excitation_typeA == "Datasheet" or excitation_typeA == "Sinusoidal":
         st.header(material_typeA+", "+excitation_typeA+", f=["+str(FminA)+"~"+str(FmaxA)+"] Hz"
@@ -63,24 +64,22 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                st.write('color: flux density (mT)')
                 fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Flux_Density'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]', 'color':'Flux Density [mT]'})
                 st.plotly_chart(fig1, use_container_width=True)
             
             with col2:
-                st.write('color: frequency (Hz)')
                 fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Frequency'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Frequency [Hz]'})
                 st.plotly_chart(fig2, use_container_width=True)
     
     if excitation_typeA == "Triangle":
         
-        DutyA = st.sidebar.multiselect("Duty Ratios Margins for Material A:", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+        DutyA = st.sidebar.multiselect("Duty Ratio A", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
                                             [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-        MarginA = st.sidebar.slider('Duty Ratio Margins for Material A', 0.0, 1.0, 0.01, step=0.01)
+        MarginA = st.sidebar.slider('Duty Ratio Margin A', 0.0, 1.0, 0.01, step=0.01)
         
         st.header(material_typeA+", "+excitation_typeA+", f=["+str(FminA)+"~"+str(FmaxA)+"] Hz"
                  +", B=["+str(BminA)+"~"+str(BmaxA)+"] mT"+", D="+str(DutyA))
@@ -97,35 +96,47 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                st.write('color: duty ratio')
                 fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
                 st.plotly_chart(fig1, use_container_width=True)
             with col2:
-                st.write('color: duty ratio')
                 fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
                 st.plotly_chart(fig2, use_container_width=True)
     
     if excitation_typeA == "Trapezoidal":
-        [DminA1,DmaxA1] = st.sidebar.slider('Duty Ratio Range A1', 
-                                      0.0, 1.0, (0.0,1.0),step=0.05)
-        [DminA2,DmaxA2] = st.sidebar.slider('Duty Ratio Range A2', 
-                                      0.0, 1.0, (0.0,1.0),step=0.05)
-        st.write("Warning: Function Not Supported")
+        DutyA1 = st.sidebar.slider('Duty Ratio A1', 
+                                      0.0, 1.0, 0.25,step=0.05)
+        DutyA2 = st.sidebar.slider('Duty Ratio A2', 
+                                      0.0, 1.0, 0.5,step=0.05)
+        DutyA3 = st.sidebar.slider('Duty Ratio A3', 
+                                      0.0, 1.0, 0.75,step=0.05)
+        MarginA = st.sidebar.slider('Duty Ratio Margin A', 0.0, 1.0, 0.01, step=0.01)
+        
+        BavgA=BminA+BmaxA
+        duty_listA = [0, DutyA1, DutyA2, DutyA3, 1]
+        flux_listA = [0, 1, 1, 0, 0]
+        st.header("Trapezoidal Wave A looks Like:")
+        fig6 = go.Figure()
+        fig6.add_trace(go.Scatter(x=duty_listA,y=flux_listA,
+                         line=dict(color='firebrick', width=4)))
+        st.plotly_chart(fig6, use_container_width=True)
+        st.write("Warning: No Core Loss Data")
     
+    st.sidebar.markdown("""---""")
+    st.markdown("""---""")
     ################################################################
     # read the necessary information for display
+    st.sidebar.header("Information for Material B")
     material_listB = ("N27","N49","N87")  
     material_typeB = st.sidebar.selectbox(
         "Material B:",
         material_listB
     )
     
-    excitation_listB = ("Datasheet","Sinusoidal","Triangle","Trapezoidal",
-        "Arbitrary")
+    excitation_listB = ("Datasheet","Sinusoidal","Triangle","Trapezoidal")
     excitation_typeB = st.sidebar.selectbox(
         "Excitation B:",
         excitation_listB
@@ -135,6 +146,7 @@ if function_select == "Core Loss Database":
                                       10000, 500000, (10000,500000),step=1000)
     [BminB,BmaxB] = st.sidebar.slider('Flux Density Range B (mT)', 
                                       10, 300, (10,300),step=1)
+    BiasB = st.sidebar.slider('DC Bias B (mT)', -300, 300, 0,step=1)
     
     if excitation_typeB == "Datasheet" or excitation_typeB == "Sinusoidal":
         st.header(material_typeB+", "+excitation_typeB+", f=["+str(FminB)+"~"+str(FmaxB)+"] Hz"
@@ -151,23 +163,21 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                st.write('color: flux density (mT)')
                 fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Flux_Density'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]', 'color':'Flux Density [mT]'})
                 st.plotly_chart(fig3, use_container_width=True)
             
             with col2:
-                st.write('color: frequency (Hz)')
                 fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Frequency'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Frequency [Hz]'})
                 st.plotly_chart(fig4, use_container_width=True)
     
     if excitation_typeB == "Triangle":
-        DutyB = st.sidebar.multiselect("Duty Ratios for Material B:", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+        DutyB = st.sidebar.multiselect("Duty Ratio B", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
                                             [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-        MarginB = st.sidebar.slider('Duty Ratio Margins for Material B', 0.0, 1.0, 0.01, step=0.01)
+        MarginB = st.sidebar.slider('Duty Ratio Margin B', 0.0, 1.0, 0.01, step=0.01)
         
         st.header(material_typeB+", "+excitation_typeB+", f=["+str(FminB)+"~"+str(FmaxB)+"] Hz"
                  +", B=["+str(BminB)+"~"+str(BmaxB)+"] mT"+", D="+str(DutyB))
@@ -184,24 +194,33 @@ if function_select == "Core Loss Database":
         else:
             col1, col2 = st.beta_columns(2)
             with col1:
-                st.write('color: duty ratio')
                 fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig3, use_container_width=True)
             with col2:
-                st.write('color: duty ratio')
                 fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
-                                  log_x=True,log_y=True,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]'})
+                                  log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig4, use_container_width=True)
 
     if excitation_typeB == "Trapezoidal":
-        [DminA1,DmaxB1] = st.sidebar.slider('Duty Ratio Range B1', 
-                                      0.0, 1.0, (0.0,1.0),step=0.05)
-        [DminB2,DmaxB2] = st.sidebar.slider('Duty Ratio Range B2', 
-                                      0.0, 1.0, (0.0,1.0),step=0.05)
-        st.write("Warning: Function Not Supported")
+        DutyB1 = st.sidebar.slider('Duty Ratio B1', 
+                                      0.0, 1.0, 0.25,step=0.05)
+        DutyB2 = st.sidebar.slider('Duty Ratio B2', 
+                                      0.0, 1.0, 0.5,step=0.05)
+        DutyB3 = st.sidebar.slider('Duty Ratio B3', 
+                                      0.0, 1.0, 0.75,step=0.05)
+        MarginB = st.sidebar.slider('Duty Ratio Margin B', 0.0, 1.0, 0.01, step=0.01)
+        BavgB=BminB+BmaxB
+        duty_listB = [0, DutyB1, DutyB2, DutyB3, 1]
+        flux_listB = [0, 1, 1, 0, 0]
+        st.header("Trapezoidal Wave B looks Like:")
+        fig6 = go.Figure()
+        fig6.add_trace(go.Scatter(x=duty_listB,y=flux_listB,
+                         line=dict(color='firebrick', width=4)))
+        st.plotly_chart(fig6, use_container_width=True)
+        st.write("Warning: No Core Loss Data")
 
 if function_select == "Core Loss Prediction":
     
@@ -238,8 +257,12 @@ if function_select == "Core Loss Prediction":
         flux_read = np.multiply(np.sin(np.multiply(duty_list,np.pi*2)),Flux/2)
         flux_list = np.add(flux_read,Bias)
         st.header("Waveform Visualization")
-        fig5 = px.line(x=duty_list,y=flux_list,
-                      labels={'x':'Duty in a Cycle [%]', 'y':'Flux Density [mT]'})
+        fig5 = go.Figure()
+        fig5.add_trace(go.Scatter(x=duty_list,y=flux_list,
+                         line=dict(color='firebrick', width=4)))
+        fig5.update_layout(xaxis_title='Duty in a Cycle',
+                   yaxis_title='Flux Density [mT]')
+        
         st.plotly_chart(fig5, use_container_width=True)
         st.header(material_type+", "+excitation_type+", f="+str(Freq)+" Hz"
                  +", \u0394B="+str(Flux)+" mT"+", Bias="+str(Bias)+" mT")
@@ -256,8 +279,12 @@ if function_select == "Core Loss Prediction":
         flux_list = np.add(flux_read,flux_diff)
         
         st.header("Waveform Visualization")
-        fig5 = px.line(x=duty_list,y=flux_list,
-                      labels={'x':'Duty in A Cycle [%]', 'y':'Flux Density [mT]'})
+        fig5 = go.Figure()
+        fig5.add_trace(go.Scatter(x=duty_list,y=flux_list,
+                         line=dict(color='firebrick', width=4)))
+        fig5.update_layout(xaxis_title='Duty in a Cycle',
+                   yaxis_title='Flux Density [mT]')
+        
         st.plotly_chart(fig5, use_container_width=True)
         
         st.header(material_type+", "+excitation_type+", f="+str(Freq)+" Hz"
@@ -277,8 +304,12 @@ if function_select == "Core Loss Prediction":
         flux_list = np.add(flux_read,flux_diff)
         
         st.header("Waveform Visualization")
-        fig5 = px.line(x=duty_list,y=flux_list,
-                      labels={'x':'Duty in a Cycle [%]', 'y':'Flux Density [mT]'})
+        fig5 = go.Figure()
+        fig5.add_trace(go.Scatter(x=duty_list,y=flux_list,
+                         line=dict(color='firebrick', width=4)))
+        fig5.update_layout(xaxis_title='Duty in a Cycle',
+                   yaxis_title='Flux Density [mT]')
+
         st.plotly_chart(fig5, use_container_width=True)
         
         st.header(material_type+", "+excitation_type+", f="+str(Freq)+" Hz"
@@ -299,8 +330,11 @@ if function_select == "Core Loss Prediction":
         flux_diff = Bias-flux_mean
         flux_list = np.add(flux_read,flux_diff)
         st.header("Waveform Visualization")
-        fig5 = px.line(x=duty_list,y=flux_list,
-                      labels={'x':'Duty in A Cycle [%]', 'y':'Flux Density [mT]'})
+        fig5 = go.Figure()
+        fig5.add_trace(go.Scatter(x=duty_list,y=flux_list,
+                         line=dict(color='firebrick', width=4)))
+        fig5.update_layout(xaxis_title='Duty in a Cycle',
+                   yaxis_title='Flux Density [mT]')
         st.plotly_chart(fig5, use_container_width=True)
     
     core_loss=np.random.rand()
