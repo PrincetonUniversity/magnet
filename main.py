@@ -72,7 +72,7 @@ if function_select == "Core Loss Database":
             with col2:
                 fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Frequency'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Frequency [Hz]'})
+                                  labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Frequency [Hz]'})
                 st.plotly_chart(fig2, use_container_width=True)
     
     if excitation_typeA == "Triangle":
@@ -103,7 +103,7 @@ if function_select == "Core Loss Database":
             with col2:
                 fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
+                                  labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
                 st.plotly_chart(fig2, use_container_width=True)
     
     if excitation_typeA == "Trapezoidal":
@@ -171,7 +171,7 @@ if function_select == "Core Loss Database":
             with col2:
                 fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Frequency'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Frequency [Hz]'})
+                                  labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Frequency [Hz]'})
                 st.plotly_chart(fig4, use_container_width=True)
     
     if excitation_typeB == "Triangle":
@@ -201,7 +201,7 @@ if function_select == "Core Loss Database":
             with col2:
                 fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
-                                  labels={'x':'Flux_Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
+                                  labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig4, use_container_width=True)
 
     if excitation_typeB == "Trapezoidal":
