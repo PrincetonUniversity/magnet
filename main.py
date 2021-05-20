@@ -4,9 +4,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 import re
+import pandas as pd
 from search import sinesearch
 from search import taglsearch
-import pandas as pd
 
 # setup the user interface 
 st.set_page_config(layout="wide")
@@ -28,7 +28,12 @@ if function_select == "Core Loss Database":
     def load_data(data_dir):
         with open(data_dir) as jsonfile:
             Data = json.load(jsonfile)
-        return Data
+            NewData=dict()
+            NewData['Frequency']=Data['Frequency']
+            NewData['Power_Loss']=Data['Power_Loss']
+            NewData['Flux_Density']=Data['Flux_Density']
+            NewData['Duty_Ratio']=Data['Duty_Ratio']
+        return NewData
     
     st.sidebar.header("Information for Material A")
     # read the necessary information for display
@@ -58,19 +63,20 @@ if function_select == "Core Loss Database":
         # create a subset of data that meet the rules
         DataA = load_data(data_dirA)
         SubsetA = sinesearch(DataA,FminA,FmaxA,BminA,BmaxA)
+
         
         if not SubsetA['Frequency']:
             st.write("Warning: No Data in Range")
         else:
+            df=pd.DataFrame(SubsetA)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Flux_Density'],
+                fig1 = px.scatter(df,x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Flux_Density'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]', 'color':'Flux Density [mT]'})
                 st.plotly_chart(fig1, use_container_width=True)
-            
             with col2:
-                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Frequency'],
+                fig2 = px.scatter(df,x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Frequency'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Frequency [Hz]'})
                 st.plotly_chart(fig2, use_container_width=True)
@@ -94,15 +100,18 @@ if function_select == "Core Loss Database":
         if not SubsetA['Frequency']:
             st.write("Warning: No Data in Range")
         else:
+            df=pd.DataFrame(SubsetA)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
+                fig1 = px.scatter(df,x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Flux_Density'],
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
                 st.plotly_chart(fig1, use_container_width=True)
             with col2:
-                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
+                fig2 = px.scatter(df,x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Frequency'],
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Duty Ratio'})
                 st.plotly_chart(fig2, use_container_width=True)
     
@@ -124,15 +133,18 @@ if function_select == "Core Loss Database":
         if not SubsetA['Frequency']:
             st.write("Warning: No Data in Range")
         else:
+            df=pd.DataFrame(SubsetA)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig1 = px.scatter(x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
+                fig1 = px.scatter(df,x=SubsetA['Frequency'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Flux_Density'],
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig1, use_container_width=True)
             with col2:
-                fig2 = px.scatter(x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
+                fig2 = px.scatter(df,x=SubsetA['Flux_Density'],y=SubsetA['Power_Loss'],color=SubsetA['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Frequency'],
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig2, use_container_width=True)
     
@@ -192,15 +204,16 @@ if function_select == "Core Loss Database":
         if not SubsetB['Frequency']:
             st.write("Warning: No Data in Range")
         else:
+            df=pd.DataFrame(SubsetB)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Flux_Density'],
+                fig3 = px.scatter(df,x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Flux_Density'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]', 'color':'Flux Density [mT]'})
                 st.plotly_chart(fig3, use_container_width=True)
             
             with col2:
-                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Frequency'],
+                fig4 = px.scatter(df,x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Frequency'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]', 'color':'Frequency [Hz]'})
                 st.plotly_chart(fig4, use_container_width=True)
@@ -223,15 +236,18 @@ if function_select == "Core Loss Database":
         if not SubsetB['Frequency']:
             st.write("Warning: No Data in Range")
         else:
+            df=pd.DataFrame(SubsetB)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
+                fig3 = px.scatter(df,x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Flux_Density'],
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig3, use_container_width=True)
             with col2:
-                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
+                fig4 = px.scatter(df,x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Frequency'],
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig4, use_container_width=True)
 
@@ -254,15 +270,18 @@ if function_select == "Core Loss Database":
         if not SubsetB['Frequency']:
             st.write("Warning: No Data in Range")
         else:
+            df=pd.DataFrame(SubsetB)
             col1, col2 = st.beta_columns(2)
             with col1:
-                fig3 = px.scatter(x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
+                fig3 = px.scatter(df,x=SubsetB['Frequency'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Flux_Density'],
                                   labels={'x':'Frequency [Hz]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig3, use_container_width=True)
             with col2:
-                fig4 = px.scatter(x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
+                fig4 = px.scatter(df,x=SubsetB['Flux_Density'],y=SubsetB['Power_Loss'],color=SubsetB['Duty_Ratio'],
                                   log_x=True,log_y=True,color_continuous_scale=px.colors.sequential.Turbo,
+                                  hover_data=['Frequency'],
                                   labels={'x':'Flux Density [mT]', 'y':'Power Loss [kW/m^3]','color':'Duty Ratio'})
                 st.plotly_chart(fig4, use_container_width=True)
 

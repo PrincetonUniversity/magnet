@@ -1,18 +1,6 @@
 def sinesearch(DATA,Fmin,Fmax,Bmin,Bmax):
     NEWDATA = dict()
-    NEWDATA['Material'] = DATA['Material']
-    NEWDATA['Core_Shape'] = []
-    NEWDATA['Effective_Area']= []
-    NEWDATA['Effective_Volume'] = []
-    NEWDATA['Effective_Length'] = []
-    NEWDATA['Primary_Turns'] = []
-    NEWDATA['Secondary_Turns'] = []
-    NEWDATA['Excitation_Type'] = []
-    NEWDATA['Sampling_Time'] = []
     NEWDATA['Duty_Ratio'] = []
-    NEWDATA['Voltage'] = []
-    NEWDATA['Current'] = []
-    NEWDATA['Time'] = []
     NEWDATA['Frequency'] = []
     NEWDATA['Flux_Density'] = []
     NEWDATA['Power_Loss'] = []
@@ -33,19 +21,7 @@ def sinesearch(DATA,Fmin,Fmax,Bmin,Bmax):
 
 def taglsearch(DATA,Fmin,Fmax,Bmin,Bmax,Duty_Array,Duty_Margin):
     NEWDATA = dict()
-    NEWDATA['Material'] = DATA['Material']
-    NEWDATA['Core_Shape'] = []
-    NEWDATA['Effective_Area']= []
-    NEWDATA['Effective_Volume'] = []
-    NEWDATA['Effective_Length'] = []
-    NEWDATA['Primary_Turns'] = []
-    NEWDATA['Secondary_Turns'] = []
-    NEWDATA['Excitation_Type'] = []
-    NEWDATA['Sampling_Time'] = []
     NEWDATA['Duty_Ratio'] = []
-    NEWDATA['Voltage'] = []
-    NEWDATA['Current'] = []
-    NEWDATA['Time'] = []
     NEWDATA['Frequency'] = []
     NEWDATA['Flux_Density'] = []
     NEWDATA['Power_Loss'] = []
