@@ -24,7 +24,7 @@ if function_select == "Core Loss Database":
     st.title("Princeton MagNet - Core Loss Database")
     st.header("Princeton Power Electronics Research Lab, Princeton University")
     st.markdown("""---""")
-    @st.cache
+    @st.cache(allow_output_mutation=True)
     def load_data(data_dir):
         with open(data_dir) as jsonfile:
             Data = json.load(jsonfile)
