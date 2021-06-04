@@ -1,0 +1,393 @@
+Plecs {
+  Name          "Flyback_sch"
+  Version       "4.5"
+  CircuitModel  "ContStateSpace"
+  StartTime     "0.0"
+  TimeSpan      "1/fsw*3"
+  Timeout       ""
+  Solver        "auto"
+  MaxStep       "1e-3"
+  InitStep      "-1"
+  FixedStep     "1e-3"
+  Refine        "1"
+  ZCStepSize    "1e-9"
+  RelTol        "1e-3"
+  AbsTol        "-1"
+  TurnOnThreshold "0"
+  SyncFixedStepTasks "2"
+  UseSingleCommonBaseRate "2"
+  LossVariableLimitExceededMsg "3"
+  NegativeSwitchLossMsg "3"
+  DivisionByZeroMsg "3"
+  StiffnessDetectionMsg "2"
+  MaxConsecutiveZCs "1000"
+  AlgebraicLoopWithStateMachineMsg "3"
+  AssertionAction "1"
+  InitializationCommands "fsw = 10e3;\nduty = 0.5;\nVi = 400;\nL = 1e-3;\nC = "
+"1e-3;\nR = 10;\n\niGSE_ki = 8.41;\niGSE_alpha = 1.09;\niGSE_beta = 2.16;\n\nA"
+"c = 600e-6;\nlc = 100e-3;\nlg = 1e-3;\nmu_r = 6500;\nNp = 8;\nNs = 8;"
+  InitialState  "1"
+  SystemState   ""
+  TaskingMode   "1"
+  TaskConfigurations ""
+  CodeGenParameterInlining "2"
+  CodeGenFloatingPointFormat "2"
+  CodeGenAbsTimeUsageMsg "3"
+  CodeGenBaseName ""
+  CodeGenOutputDir ""
+  CodeGenExtraOpts ""
+  CodeGenTarget "Generic"
+  CodeGenTargetSettings ""
+  ExtendedMatrixPrecision "1"
+  MatrixSignificanceCheck "2"
+  EnableStateSpaceSplitting "2"
+  DisplayStateSpaceSplitting "1"
+  DiscretizationMethod "2"
+  ExternalModeSettings ""
+  AlgebraicLoopMethod "1"
+  AlgebraicLoopTolerance "1e-6"
+  ScriptsDialogGeometry ""
+  ScriptsDialogSplitterPos "0"
+  Schematic {
+    Location      [700, 407; 1270, 642]
+    ZoomFactor    1
+    SliderPosition [20, 0]
+    ShowBrowser   off
+    BrowserWidth  100
+    Component {
+      Type          DCVoltageSource
+      Name          "V_dc"
+      Show          off
+      Position      [80, 80]
+      Direction     down
+      Flipped       on
+      Parameter {
+        Variable      "V"
+        Value         "Vi"
+        Show          off
+      }
+    }
+    Component {
+      Type          MosfetWithDiode
+      Name          "FETD"
+      Show          off
+      Position      [170, 90]
+      Direction     up
+      Flipped       off
+      Parameter {
+        Variable      "Ron"
+        Value         "1e-3"
+        Show          off
+      }
+      Parameter {
+        Variable      "s_init"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "thermal"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "T_init"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Diode
+      Name          "D1"
+      Show          off
+      Position      [320, 40]
+      Direction     left
+      Flipped       off
+      Parameter {
+        Variable      "Vf"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Ron"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "thermal"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "T_init"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Capacitor
+      Name          "C1"
+      Show          off
+      Position      [340, 80]
+      Direction     down
+      Flipped       on
+      Parameter {
+        Variable      "C"
+        Value         "C"
+        Show          off
+      }
+      Parameter {
+        Variable      "v_init"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Resistor
+      Name          "R1"
+      Show          off
+      Position      [380, 80]
+      Direction     up
+      Flipped       off
+      Parameter {
+        Variable      "R"
+        Value         "R"
+        Show          off
+      }
+    }
+    Component {
+      Type          Reference
+      SrcComponent  "Components/Magnetic/P_lin"
+      Name          "Pc"
+      Show          off
+      Position      [260, 85]
+      Direction     right
+      Flipped       off
+      Frame         [-15, -8; 15, 8]
+      LabelPosition [0, 11]
+      LabelAlign    up
+      Parameter {
+        Variable      "A"
+        Value         "Ac"
+        Show          off
+      }
+      Parameter {
+        Variable      "l"
+        Value         "lc"
+        Show          off
+      }
+      Parameter {
+        Variable      "mu_r"
+        Value         "mu_r"
+        Show          off
+      }
+      Parameter {
+        Variable      "F_init"
+        Value         "0"
+        Show          off
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, -20]
+        Direction     up
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, 20]
+        Direction     down
+      }
+    }
+    Component {
+      Type          Reference
+      SrcComponent  "Components/Magnetic/P_air"
+      Name          "Pg"
+      Show          off
+      Position      [220, 85]
+      Direction     right
+      Flipped       off
+      Frame         [-10, -8; 10, 8]
+      LabelPosition [0, 11]
+      LabelAlign    up
+      Parameter {
+        Variable      "A"
+        Value         "Ac"
+        Show          off
+      }
+      Parameter {
+        Variable      "l"
+        Value         "lg"
+        Show          off
+      }
+      Parameter {
+        Variable      "F_init"
+        Value         "0"
+        Show          off
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, -15]
+        Direction     up
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, 15]
+        Direction     down
+      }
+    }
+    Component {
+      Type          MagneticInterface
+      Name          "MagInt"
+      Show          off
+      Position      [200, 55]
+      Direction     up
+      Flipped       off
+      Parameter {
+        Variable      "n"
+        Value         "Np"
+        Show          off
+      }
+      Parameter {
+        Variable      "Polarity"
+        Value         "1"
+        Show          off
+      }
+    }
+    Component {
+      Type          MagneticInterface
+      Name          "MagInt1"
+      Show          off
+      Position      [280, 55]
+      Direction     down
+      Flipped       off
+      Parameter {
+        Variable      "n"
+        Value         "Np"
+        Show          off
+      }
+      Parameter {
+        Variable      "Polarity"
+        Value         "1"
+        Show          off
+      }
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "C1"
+      SrcTerminal   1
+      Points        [340, 40]
+      Branch {
+        DstComponent  "D1"
+        DstTerminal   2
+      }
+      Branch {
+        Points        [380, 40]
+        DstComponent  "R1"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "MagInt"
+      SrcTerminal   4
+      Points        [200, 85]
+      DstComponent  "Pg"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "MagInt"
+      SrcTerminal   1
+      Points        [80, 40]
+      DstComponent  "V_dc"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "MagInt"
+      SrcTerminal   2
+      DstComponent  "FETD"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "V_dc"
+      SrcTerminal   2
+      Points        [80, 120; 170, 120]
+      DstComponent  "FETD"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "Pc"
+      SrcTerminal   2
+      DstComponent  "Pg"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "Pc"
+      SrcTerminal   1
+      DstComponent  "MagInt1"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "D1"
+      SrcTerminal   1
+      DstComponent  "MagInt1"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "MagInt1"
+      SrcTerminal   1
+      Points        [300, 70; 300, 120; 340, 120]
+      Branch {
+        DstComponent  "C1"
+        DstTerminal   2
+      }
+      Branch {
+        Points        [380, 120]
+        DstComponent  "R1"
+        DstTerminal   2
+      }
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "MagInt"
+      SrcTerminal   3
+      Points        [200, 25; 280, 25]
+      DstComponent  "MagInt1"
+      DstTerminal   4
+    }
+    Annotation {
+      Name          "Air"
+      Position      [220, 105]
+    } 
+    Annotation {
+      Name          "Gap"
+      Position      [220, 120]
+    } 
+    Annotation {
+      Name          "Ferrite"
+      Position      [260, 105]
+    } 
+    Annotation {
+      Name          "Core"
+      Position      [260, 120]
+    } 
+  }
+  Analysis {
+    Type          SteadyStateAnalysis
+    Name          "Steady-State Analysis"
+    OperatingPoint "1"
+    TimeSpan      "1/fsw*5"
+    StartTime     "0"
+    Tolerance     "1e-4"
+    MaxIter       "20"
+    JacobianPerturbation "1e-4"
+    JacobianCalculation "2"
+    InitCycles    "0"
+    ShowCycles    "1"
+  }
+}
+DemoSignature "ExCr0lck59rtzCZmF0dN3mQ7C17KdwAizVroJzTPKRI="

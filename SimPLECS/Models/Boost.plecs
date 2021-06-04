@@ -1,0 +1,1331 @@
+Plecs {
+  Name          "Boost"
+  Version       "4.5"
+  CircuitModel  "ContStateSpace"
+  StartTime     "0.0"
+  TimeSpan      "1/fsw*3"
+  Timeout       ""
+  Solver        "auto"
+  MaxStep       "1e-3"
+  InitStep      "-1"
+  FixedStep     "1e-3"
+  Refine        "1"
+  ZCStepSize    "1e-9"
+  RelTol        "1e-3"
+  AbsTol        "-1"
+  TurnOnThreshold "0"
+  SyncFixedStepTasks "2"
+  UseSingleCommonBaseRate "2"
+  LossVariableLimitExceededMsg "3"
+  NegativeSwitchLossMsg "3"
+  DivisionByZeroMsg "3"
+  StiffnessDetectionMsg "2"
+  MaxConsecutiveZCs "1000"
+  AlgebraicLoopWithStateMachineMsg "3"
+  AssertionAction "1"
+  InitializationCommands "fsw = 10e3;\nduty = 0.5;\nVi = 400;\nL = 1e-3;\nC = "
+"1e-3;\nR = 10;\n\niGSE_ki = 8.41;\niGSE_alpha = 1.09;\niGSE_beta = 2.16;\n\nA"
+"c = 600e-6;\nlc = 100e-3;\nlg = 1e-3;\nmu_r = 6500;\nNp = 8;"
+  InitialState  "1"
+  SystemState   ""
+  TaskingMode   "1"
+  TaskConfigurations ""
+  CodeGenParameterInlining "2"
+  CodeGenFloatingPointFormat "2"
+  CodeGenAbsTimeUsageMsg "3"
+  CodeGenBaseName ""
+  CodeGenOutputDir ""
+  CodeGenExtraOpts ""
+  CodeGenTarget "Generic"
+  CodeGenTargetSettings ""
+  ExtendedMatrixPrecision "1"
+  MatrixSignificanceCheck "2"
+  EnableStateSpaceSplitting "2"
+  DisplayStateSpaceSplitting "1"
+  DiscretizationMethod "2"
+  ExternalModeSettings ""
+  AlgebraicLoopMethod "1"
+  AlgebraicLoopTolerance "1e-6"
+  ScriptsDialogGeometry ""
+  ScriptsDialogSplitterPos "0"
+  Terminal {
+    Type          Output
+    Index         "1"
+  }
+  Schematic {
+    Location      [282, 58; 852, 340]
+    ZoomFactor    1
+    SliderPosition [20, 0]
+    ShowBrowser   off
+    BrowserWidth  100
+    Component {
+      Type          DCVoltageSource
+      Name          "V_dc"
+      Show          off
+      Position      [80, 120]
+      Direction     down
+      Flipped       on
+      Parameter {
+        Variable      "V"
+        Value         "Vi"
+        Show          off
+      }
+    }
+    Component {
+      Type          MosfetWithDiode
+      Name          "FETD"
+      Show          off
+      Position      [200, 120]
+      Direction     up
+      Flipped       off
+      Parameter {
+        Variable      "Ron"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "s_init"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "thermal"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "T_init"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Diode
+      Name          "D1"
+      Show          off
+      Position      [260, 80]
+      Direction     left
+      Flipped       off
+      Parameter {
+        Variable      "Vf"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Ron"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "thermal"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "T_init"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Capacitor
+      Name          "C1"
+      Show          off
+      Position      [320, 120]
+      Direction     down
+      Flipped       on
+      Parameter {
+        Variable      "C"
+        Value         "C"
+        Show          off
+      }
+      Parameter {
+        Variable      "v_init"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Resistor
+      Name          "R1"
+      Show          off
+      Position      [360, 120]
+      Direction     up
+      Flipped       off
+      Parameter {
+        Variable      "R"
+        Value         "R"
+        Show          off
+      }
+    }
+    Component {
+      Type          PulseGenerator
+      Name          "Pulse\nGenerator"
+      Show          off
+      Position      [145, 120]
+      Direction     right
+      Flipped       off
+      Parameter {
+        Variable      "Hi"
+        Value         "1"
+        Show          off
+      }
+      Parameter {
+        Variable      "Lo"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "f"
+        Value         "fsw"
+        Show          off
+      }
+      Parameter {
+        Variable      "DutyCycle"
+        Value         "duty"
+        Show          off
+      }
+      Parameter {
+        Variable      "Delay"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "DataType"
+        Value         "10"
+        Show          off
+      }
+    }
+    Component {
+      Type          PlecsProbe
+      Name          "Probe"
+      Show          off
+      Position      [260, 240]
+      Direction     right
+      Flipped       off
+    }
+    Component {
+      Type          Output
+      Name          "Out"
+      Show          on
+      Position      [345, 240]
+      Direction     right
+      Flipped       off
+      Parameter {
+        Variable      "Index"
+        Value         "1"
+        Show          on
+      }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
+      }
+    }
+    Component {
+      Type          Scope
+      Name          "Ploss"
+      Show          on
+      Position      [345, 200]
+      Direction     up
+      Flipped       off
+      Location      [659, 321; 1047, 549]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
+"G0AQQByAGUAYQAAAAAA/////wAAADQA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
+"///wAAAGYA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABmAP///wAAAAMAAAAAAAAAAPw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABCAP///wAAAYQAAADIAAAA"
+"BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
+"AAAAA=="
+      SavedViews    "AAAAAgAAAAA="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAA"
+"wAAAGQAAAACAAAAZAAAAAEAAABkAAAABwAAAGQAAAAGAAAAZAAAAAUAAABkAAAABAAAAGQAAAAJAA"
+"AAZAAAAAgAAABkAAAAegAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAABnAAA"
+"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
+"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
+"AATAAAAAQAAAAAAAAPoAAAAABM="
+      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      Axes          "1"
+      TimeRange     "0.0"
+      ScrollingMode "1"
+      SingleTimeAxis "1"
+      Open          "0"
+      Ts            "-1"
+      SampleLimit   "0"
+      XAxisLabel    ""
+      ShowLegend    "1"
+      Axis {
+        Name          ""
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        SignalTypes   [ ]
+        Untangle      0
+        KeepBaseline  off
+        BaselineValue 0
+      }
+      Fourier {
+        SingleXAxis       on
+        AxisLabel         "Frequency"
+        Scaling           0
+        PhaseDisplay      0
+        ShowFourierLegend off
+        Axis {
+          Name          ""
+          AutoScale     1
+          MinValue      0
+          MaxValue      1
+          Signals       {}
+          Untangle      0
+          KeepBaseline  off
+          BaselineValue 0
+        }
+      }
+    }
+    Component {
+      Type          Reference
+      SrcComponent  "Components/Magnetic/P_lin"
+      Name          "Pc"
+      Show          off
+      Position      [110, 50]
+      Direction     down
+      Flipped       off
+      Frame         [-8, -15; 8, 15]
+      LabelPosition [-11, 0]
+      LabelAlign    right
+      Parameter {
+        Variable      "A"
+        Value         "Ac"
+        Show          off
+      }
+      Parameter {
+        Variable      "l"
+        Value         "lc"
+        Show          off
+      }
+      Parameter {
+        Variable      "mu_r"
+        Value         "mu_r"
+        Show          off
+      }
+      Parameter {
+        Variable      "F_init"
+        Value         "0"
+        Show          off
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, -20]
+        Direction     up
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, 20]
+        Direction     down
+      }
+    }
+    Component {
+      Type          Reference
+      SrcComponent  "Components/Magnetic/P_air"
+      Name          "Pg"
+      Show          off
+      Position      [170, 50]
+      Direction     up
+      Flipped       off
+      Frame         [-8, -10; 8, 10]
+      LabelPosition [11, 0]
+      LabelAlign    left
+      Parameter {
+        Variable      "A"
+        Value         "Ac"
+        Show          off
+      }
+      Parameter {
+        Variable      "l"
+        Value         "lg"
+        Show          off
+      }
+      Parameter {
+        Variable      "F_init"
+        Value         "0"
+        Show          off
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, -15]
+        Direction     up
+      }
+      Terminal {
+        Type          MagneticPort
+        Position      [0, 15]
+        Direction     down
+      }
+    }
+    Component {
+      Type          MagneticInterface
+      Name          "MagInt"
+      Show          off
+      Position      [140, 70]
+      Direction     left
+      Flipped       off
+      Parameter {
+        Variable      "n"
+        Value         "Np"
+        Show          off
+      }
+      Parameter {
+        Variable      "Polarity"
+        Value         "1"
+        Show          off
+      }
+    }
+    Component {
+      Type          Subsystem
+      Name          "iGSE"
+      Show          on
+      Position      [245, 200]
+      Direction     up
+      Flipped       off
+      Frame         [-35, -20; 35, 20]
+      LabelPosition [0, 0]
+      SampleTime    "-1"
+      CodeGenDiscretizationMethod "2"
+      CodeGenTarget "Generic"
+      MaskIconFrame on
+      MaskIconOpaque off
+      MaskIconRotates on
+      Parameter {
+        Variable      "v_core"
+        Prompt        "Core volume"
+        Type          FreeText
+        Value         "Ac*lc"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "ki"
+        Prompt        "Coefficient ki"
+        Type          FreeText
+        Value         "iGSE_ki"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "alpha"
+        Prompt        base64 "Q29lZmZpY2llbnQgzrE="
+        Type          FreeText
+        Value         "iGSE_alpha"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "beta"
+        Prompt        base64 "Q29lZmZpY2llbnQgzrI="
+        Type          FreeText
+        Value         "iGSE_beta"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Parameter {
+        Variable      "T"
+        Prompt        "Excitation period"
+        Type          FreeText
+        Value         "1/fsw"
+        Show          off
+        Tunable       off
+        TabName       ""
+      }
+      Terminal {
+        Type          Input
+        Position      [-35, -10]
+        Direction     left
+      }
+      Terminal {
+        Type          Output
+        Position      [39, 0]
+        Direction     right
+      }
+      Terminal {
+        Type          Input
+        Position      [-35, 10]
+        Direction     left
+      }
+      Schematic {
+        Location      [515, 263; 1196, 579]
+        ZoomFactor    1
+        SliderPosition [-1, 0]
+        ShowBrowser   off
+        BrowserWidth  100
+        Component {
+          Type          Abs
+          Name          "Abs"
+          Show          off
+          Position      [185, 60]
+          Direction     right
+          Flipped       off
+        }
+        Component {
+          Type          Function
+          Name          "Fcn"
+          Show          off
+          Position      [270, 60]
+          Direction     right
+          Flipped       off
+          Frame         [-20, -10; 20, 10]
+          LabelPosition [0, 13]
+          LabelAlign    up
+          Parameter {
+            Variable      "f(u)"
+            Value         "u[1]^alpha"
+            Show          off
+          }
+        }
+        Component {
+          Type          Input
+          Name          "dBdt"
+          Show          on
+          Position      [60, 60]
+          Direction     right
+          Flipped       off
+          Parameter {
+            Variable      "Index"
+            Value         "1"
+            Show          on
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "-1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Output
+          Name          "P"
+          Show          on
+          Position      [625, 85]
+          Direction     right
+          Flipped       off
+          Parameter {
+            Variable      "Index"
+            Value         "2"
+            Show          on
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "-1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Input
+          Name          "B"
+          Show          on
+          Position      [60, 110]
+          Direction     right
+          Flipped       off
+          Parameter {
+            Variable      "Index"
+            Value         "3"
+            Show          on
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "-1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Function
+          Name          "Fcn1"
+          Show          off
+          Position      [270, 110]
+          Direction     right
+          Flipped       off
+          Frame         [-20, -10; 20, 10]
+          LabelPosition [0, 13]
+          LabelAlign    up
+          Parameter {
+            Variable      "f(u)"
+            Value         "u[1]^(beta-alpha)"
+            Show          off
+          }
+        }
+        Component {
+          Type          CScript
+          Name          "Peak-Peak"
+          Show          on
+          Position      [200, 110]
+          Direction     up
+          Flipped       off
+          Parameter {
+            Variable      "DialogGeometry"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "NumInputs"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumOutputs"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumContStates"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumDiscStates"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumZCSignals"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "DirectFeedthrough"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "Ts"
+            Value         "[T,0;0, 0]"
+            Show          off
+          }
+          Parameter {
+            Variable      "Parameters"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "LangStandard"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "GnuExtensions"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "RuntimeCheck"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Declarations"
+            Value         "#include <stdlib.h>\n"
+"#include <stdio.h>\n"
+"#include <math.h>\n"
+"\n"
+"static double max, min, delta;\n"
+            Show          off
+          }
+          Parameter {
+            Variable      "StartFcn"
+            Value         "max = 0;\n"
+"min = 0;"
+            Show          off
+          }
+          Parameter {
+            Variable      "OutputFcn"
+            Value         "if(IsMajorStep)\n"
+"{\t\n"
+"\tif(Input(0) > max)\n"
+"\t{\n"
+"\t\tmax = Input(0);\n"
+"\t}\n"
+"\tif(Input(0) < min)\n"
+"\t{\n"
+"\t\tmin = Input(0);\n"
+"\t}\n"
+"\t\n"
+"\tif(IsSampleHit(0))\n"
+"\t{\n"
+"\t\tdelta = max - min;\n"
+"\t\tOutput(0) = delta;\n"
+"\t\tmax = 0;\n"
+"\t\tmin = 0;  \n"
+"\t}\n"
+"}"
+            Show          off
+          }
+          Parameter {
+            Variable      "UpdateFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "DerivativeFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "TerminateFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "StoreCustomStateFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "RestoreCustomStateFcn"
+            Value         ""
+            Show          off
+          }
+        }
+        Component {
+          Type          Product
+          Name          "Product"
+          Show          off
+          Position      [340, 85]
+          Direction     up
+          Flipped       off
+          Parameter {
+            Variable      "Inputs"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataType"
+            Value         "11"
+            Show          off
+          }
+        }
+        Component {
+          Type          Gain
+          Name          "ki"
+          Show          on
+          Position      [390, 85]
+          Direction     right
+          Flipped       off
+          Parameter {
+            Variable      "K"
+            Value         "ki"
+            Show          off
+          }
+          Parameter {
+            Variable      "Multiplication"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataType"
+            Value         "11"
+            Show          off
+          }
+        }
+        Component {
+          Type          CScript
+          Name          "Integrator\nwith reset"
+          Show          on
+          Position      [455, 85]
+          Direction     up
+          Flipped       off
+          Parameter {
+            Variable      "DialogGeometry"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "NumInputs"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumOutputs"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumContStates"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumDiscStates"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "NumZCSignals"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "DirectFeedthrough"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "Ts"
+            Value         "[T,0;0, 0]"
+            Show          off
+          }
+          Parameter {
+            Variable      "Parameters"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "LangStandard"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "GnuExtensions"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "RuntimeCheck"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Declarations"
+            Value         "#include <stdlib.h>\n"
+"#include <stdio.h>\n"
+"#include <math.h>\n"
+            Show          off
+          }
+          Parameter {
+            Variable      "StartFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "OutputFcn"
+            Value         "if(IsMajorStep)\n"
+"{\n"
+"\tif(IsSampleHit(0))\n"
+"\t{\n"
+"\t\tOutput(0) = ContState(0);\n"
+"\t\tContState(0) = 0;\n"
+"\t}\n"
+"}"
+            Show          off
+          }
+          Parameter {
+            Variable      "UpdateFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "DerivativeFcn"
+            Value         "ContDeriv(0) = Input(0);"
+            Show          off
+          }
+          Parameter {
+            Variable      "TerminateFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "StoreCustomStateFcn"
+            Value         ""
+            Show          off
+          }
+          Parameter {
+            Variable      "RestoreCustomStateFcn"
+            Value         ""
+            Show          off
+          }
+        }
+        Component {
+          Type          Gain
+          Name          "Volume"
+          Show          on
+          Position      [575, 85]
+          Direction     right
+          Flipped       off
+          Parameter {
+            Variable      "K"
+            Value         "v_core"
+            Show          off
+          }
+          Parameter {
+            Variable      "Multiplication"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataType"
+            Value         "11"
+            Show          off
+          }
+        }
+        Component {
+          Type          Gain
+          Name          "1/T"
+          Show          on
+          Position      [520, 85]
+          Direction     right
+          Flipped       off
+          Parameter {
+            Variable      "K"
+            Value         "1/T"
+            Show          off
+          }
+          Parameter {
+            Variable      "Multiplication"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataType"
+            Value         "11"
+            Show          off
+          }
+        }
+        Component {
+          Type          Reference
+          SrcComponent  "Components/Control/Filters/Periodic Average"
+          Name          "Periodic Average"
+          Show          off
+          Position      [115, 150]
+          Direction     up
+          Flipped       off
+          Frame         [-15, -15; 15, 15]
+          LabelPosition [0, 18]
+          LabelAlign    up
+          Parameter {
+            Variable      "T_average"
+            Value         "T"
+            Show          off
+          }
+          Terminal {
+            Type          Output
+            Position      [19, 0]
+            Direction     right
+          }
+          Terminal {
+            Type          Input
+            Position      [-15, 0]
+            Direction     left
+          }
+        }
+        Component {
+          Type          Sum
+          Name          "Sum"
+          Show          off
+          Position      [140, 110]
+          Direction     up
+          Flipped       off
+          Parameter {
+            Variable      "IconShape"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Inputs"
+            Value         "|+-"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataType"
+            Value         "11"
+            Show          off
+          }
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Abs"
+          SrcTerminal   2
+          DstComponent  "Fcn"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Product"
+          SrcTerminal   1
+          DstComponent  "ki"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Volume"
+          SrcTerminal   2
+          DstComponent  "P"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Integrator\nwith reset"
+          SrcTerminal   2
+          DstComponent  "1/T"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Sum"
+          SrcTerminal   1
+          DstComponent  "Peak-Peak"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Periodic Average"
+          SrcTerminal   1
+          Points        [140, 150]
+          DstComponent  "Sum"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Fcn1"
+          SrcTerminal   2
+          Points        [300, 110; 300, 90]
+          DstComponent  "Product"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Fcn"
+          SrcTerminal   2
+          Points        [300, 60; 300, 80]
+          DstComponent  "Product"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "1/T"
+          SrcTerminal   2
+          DstComponent  "Volume"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "ki"
+          SrcTerminal   2
+          DstComponent  "Integrator\nwith reset"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Peak-Peak"
+          SrcTerminal   2
+          DstComponent  "Fcn1"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "dBdt"
+          SrcTerminal   1
+          DstComponent  "Abs"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "B"
+          SrcTerminal   1
+          Points        [80, 110]
+          Branch {
+            DstComponent  "Sum"
+            DstTerminal   2
+          }
+          Branch {
+            Points        [80, 150]
+            DstComponent  "Periodic Average"
+            DstTerminal   2
+          }
+        }
+      }
+    }
+    Component {
+      Type          Gain
+      Name          "1/Ac"
+      Show          off
+      Position      [175, 190]
+      Direction     left
+      Flipped       on
+      Parameter {
+        Variable      "K"
+        Value         "1/(676e-6*2)"
+        Show          off
+      }
+      Parameter {
+        Variable      "Multiplication"
+        Value         "1"
+        Show          off
+      }
+      Parameter {
+        Variable      "DataType"
+        Value         "11"
+        Show          off
+      }
+    }
+    Component {
+      Type          PlecsProbe
+      Name          base64 "ZM6mL2R0"
+      Show          on
+      Position      [120, 190]
+      Direction     left
+      Flipped       on
+    }
+    Component {
+      Type          PlecsProbe
+      Name          "B"
+      Show          on
+      Position      [120, 210]
+      Direction     right
+      Flipped       off
+    }
+    Component {
+      Type          FluxRateMeter
+      Name          "dPhi"
+      Show          off
+      Position      [140, 30]
+      Direction     left
+      Flipped       off
+    }
+    Component {
+      Type          SignalMux
+      Name          "Mux"
+      Show          off
+      Position      [305, 240]
+      Direction     left
+      Flipped       on
+      Parameter {
+        Variable      "Width"
+        Value         "[2 2 1]"
+        Show          off
+      }
+    }
+    Component {
+      Type          PlecsProbe
+      Name          "Probe1"
+      Show          off
+      Position      [260, 265]
+      Direction     right
+      Flipped       off
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "C1"
+      SrcTerminal   2
+      Points        [320, 160]
+      Branch {
+        Points        [200, 160]
+        Branch {
+          Points        [80, 160]
+          DstComponent  "V_dc"
+          DstTerminal   2
+        }
+        Branch {
+          DstComponent  "FETD"
+          DstTerminal   2
+        }
+      }
+      Branch {
+        Points        [360, 160]
+        DstComponent  "R1"
+        DstTerminal   2
+      }
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "C1"
+      SrcTerminal   1
+      Points        [320, 80]
+      Branch {
+        DstComponent  "D1"
+        DstTerminal   2
+      }
+      Branch {
+        Points        [360, 80]
+        DstComponent  "R1"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Pulse\nGenerator"
+      SrcTerminal   1
+      DstComponent  "FETD"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "MagInt"
+      SrcTerminal   3
+      DstComponent  "Pc"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "MagInt"
+      SrcTerminal   4
+      Points        [170, 70]
+      DstComponent  "Pg"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  base64 "ZM6mL2R0"
+      SrcTerminal   1
+      DstComponent  "1/Ac"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "B"
+      SrcTerminal   1
+      DstComponent  "iGSE"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "1/Ac"
+      SrcTerminal   2
+      DstComponent  "iGSE"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "Pc"
+      SrcTerminal   2
+      DstComponent  "dPhi"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Magnetic
+      SrcComponent  "dPhi"
+      SrcTerminal   2
+      Points        [170, 30]
+      DstComponent  "Pg"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "iGSE"
+      SrcTerminal   2
+      Points        [290, 200]
+      Branch {
+        DstComponent  "Ploss"
+        DstTerminal   1
+      }
+      Branch {
+        DstComponent  "Mux"
+        DstTerminal   4
+      }
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "MagInt"
+      SrcTerminal   1
+      Points        [80, 80]
+      DstComponent  "V_dc"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "MagInt"
+      SrcTerminal   2
+      Points        [200, 80]
+      Branch {
+        DstComponent  "D1"
+        DstTerminal   1
+      }
+      Branch {
+        DstComponent  "FETD"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Probe"
+      SrcTerminal   1
+      DstComponent  "Mux"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Probe1"
+      SrcTerminal   1
+      Points        [290, 265]
+      DstComponent  "Mux"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Mux"
+      SrcTerminal   1
+      DstComponent  "Out"
+      DstTerminal   1
+    }
+    Annotation {
+      Name          "Air"
+      Position      [195, 40]
+    } 
+    Annotation {
+      Name          "Gap"
+      Position      [195, 55]
+    } 
+    Annotation {
+      Name          "Ferrite"
+      Position      [80, 40]
+    } 
+    Annotation {
+      Name          "Core"
+      Position      [80, 55]
+    } 
+  }
+  ProbeBlock {
+    Tag           "Boost/Probe"
+    Probe {
+      Component     "Pc"
+      Path          ""
+      Signals       {"Flux density", "Field strength"}
+    }
+  }
+  ProbeBlock {
+    Tag           base64 "Qm9vc3QvZM6mXC9kdA=="
+    Probe {
+      Component     "dPhi"
+      Path          ""
+      Signals       {"Flux rate"}
+    }
+  }
+  ProbeBlock {
+    Tag           "Boost/B"
+    Probe {
+      Component     "Pc"
+      Path          ""
+      Signals       {"Flux density"}
+    }
+  }
+  ProbeBlock {
+    Tag           "Boost/Probe1"
+    Probe {
+      Component     "MagInt"
+      Path          ""
+      Signals       {"Winding voltage", "Winding current"}
+    }
+  }
+  Analysis {
+    Type          SteadyStateAnalysis
+    Name          "Steady-State Analysis"
+    OperatingPoint "1"
+    TimeSpan      "1/fsw*5"
+    StartTime     "0"
+    Tolerance     "1e-4"
+    MaxIter       "20"
+    JacobianPerturbation "1e-4"
+    JacobianCalculation "2"
+    InitCycles    "0"
+    ShowCycles    "1"
+  }
+}
+DemoSignature "fJTR7hK2BjAkW2X3EIWsR+1W+bkNVpfQFmLYysuKmjQ="

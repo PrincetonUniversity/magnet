@@ -1,0 +1,25 @@
+import streamlit as st
+import json
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+import re
+import pandas as pd
+from search import sinesearch
+from search import taglsearch
+import xmlrpc.client as xmlrpclib
+import scipy.io as sio
+import io
+import altair as alt
+import os
+
+class CircuitModel(object)
+    Vi, Vo = 400, 400
+    fsw = 1000
+    Rload = 10
+    Name = ""
+
+    def __init__(self, Name_init, s1, s2, s3):
+        self.Name = Name
+
+        Triangles.count+= 1
