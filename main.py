@@ -5,12 +5,13 @@ import plotly.graph_objects as go
 import numpy as np
 import re
 import pandas as pd
-from search import sinesearch
-from search import taglsearch
 import xmlrpc.client as xmlrpclib
 import scipy.io as sio
 import io
 import altair as alt
+from search import sinesearch
+from search import taglsearch
+
 
 from SimPLECS.SimFunctions import *
 
