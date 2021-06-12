@@ -129,7 +129,7 @@ if function_select == "Core Loss Database":
 
         st.header("**"+material_typeA+", "+excitation_typeA+", f=["+str(FminA)+"~"+str(FmaxA)+"] Hz"
                  +", B=["+str(BminA)+"~"+str(BmaxA)+"] mT"+", D="+str(DutyA)+"**")
-        st.header("Note: D=0.2332 means <20% Up + 30% Flat + 30% Down + 20% Flat> from left to right")
+        st.header("Note: D=0.2332 means **20% Up + 30% Flat + 30% Down + 20% Flat** from left to right")
 
         # read the corresponding data
         data_dirA="./Data/Data_" + material_typeA + "_" + "Trapezoidal" + "_light.json"
@@ -247,7 +247,7 @@ if function_select == "Core Loss Database":
 
         st.header("**"+material_typeB+", "+excitation_typeB+", f=["+str(FminB)+"~"+str(FmaxB)+"] Hz"
                  +", B=["+str(BminB)+"~"+str(BmaxB)+"] mT"+", D="+str(DutyB)+"**")
-        st.header("Note: D=0.1414 means <10% Up + 40% Flat + 10% Down + 40% Flat> from left to right")
+        st.header("Note: D=0.1414 means **10% Up + 40% Flat + 10% Down + 40% Flat** from left to right")
 
         # read the corresponding data
         data_dirB="./Data/Data_" + material_typeB + "_" + "Trapezoidal" + "_light.json"
