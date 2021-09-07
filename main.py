@@ -10,7 +10,7 @@ from search import taglsearch
 import torch
 import torch.nn as nn
 
-# from SimPLECS.SimFunctions import *
+from SimPLECS.SimFunctions import *
 
 # Neural network setup
 NN_ARCHITECTURE = [3, 15, 15, 9, 1]  # Number of neurons in each layer
