@@ -2,5 +2,5 @@ streamlit==0.82.0
 json5==0.9.5
 plotly==4.14.3
 numpy==1.20.1
-scipy==1.6.0
 pandas==1.2.4
+torch==1.9.0
