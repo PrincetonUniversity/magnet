@@ -3,4 +3,4 @@ json5==0.9.5
 plotly==4.14.3
 numpy==1.20.1
 pandas==1.2.4
-pytorch==1.9.0
+torch==1.9.0
