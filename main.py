@@ -71,7 +71,7 @@ if function_select == "Core Loss Database":
 
     st.sidebar.header("Information for Material A")
     # read the necessary information for display
-    material_listA = ("N27", "N49", "N87")
+    material_listA = ("N27", "N49", "N87", "3C90", "3C94")
     material_typeA = st.sidebar.selectbox(
         "Material A:",
         material_listA
@@ -190,7 +190,7 @@ if function_select == "Core Loss Database":
     ################################################################
     # read the necessary information for display
     st.sidebar.header("Information for Material B")
-    material_listB = ("N27", "N49", "N87")
+    material_listB = ("N27", "N49", "N87", "3C90", "3C94")
     material_typeB = st.sidebar.selectbox(
         "Material B:",
         material_listB
@@ -312,7 +312,7 @@ if function_select == "Core Loss Prediction":
     st.markdown("""---""")
     st.header("Please provide waveform information")
     # read the necessary information for display
-    material_list = ("N27", "N49", "N87")
+    material_list = ("N27", "N49", "N87", "3C90", "3C94")
     material_type = st.sidebar.selectbox(
         "Material:",
         material_list
@@ -378,13 +378,13 @@ if function_select == "Core Loss Prediction":
 
         if algorithm_type == "iGSE":
             time = np.linspace(0, 10e-9 * 10000, 10001)
-            B = 10 * np.sin(np.multiply(np.multiply(time, Freq), np.pi * 2))
+            B = np.multiply( np.sin(np.multiply(np.multiply(time, Freq), np.pi * 2)), Flux / 2)
             dt = time[1] - time[0]
             dBdt = np.gradient(B, dt)
             T = time[-1] - time[0]
             core_loss = 1 / T * np.trapz(ki * (np.abs(dBdt) ** alpha) * (Flux ** (beta - alpha)), time)
         if algorithm_type == "Machine Learning":
-            core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux)),
+            core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux/2)),
                                                                           0.5]))).item()
 
     if excitation_type == "Triangle":
@@ -418,7 +418,7 @@ if function_select == "Core Loss Prediction":
             dBdt = np.gradient(B, dt)
             core_loss = 1 / T * np.trapz(ki * (np.abs(dBdt) ** alpha) * (Flux ** (beta - alpha)), time)
         if algorithm_type == "Machine Learning":
-            core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux)),
+            core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux/2)),
                                                                           Duty]))).item()
 
     if excitation_type == "Trapezoidal":
