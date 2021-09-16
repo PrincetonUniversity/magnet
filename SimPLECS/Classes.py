@@ -110,7 +110,7 @@ class MagModel(object):
 
     # Destructor
     def __del__(self):
-        if MagMmodel.cntInst > 0:
+        if MagModel.cntInst > 0:
             MagModel.cntInst -= 1
 
     # Set Parameters
@@ -144,7 +144,7 @@ class CoreMaterial(object):
 
     # Destructor
     def __del__(self):
-        if MagMmodel.cntInst > 0:
+        if MagModel.cntInst > 0:
             MagModel.cntInst -= 1
 
     # Set Parameters
