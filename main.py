@@ -305,12 +305,49 @@ if function_select == "Core Loss Database":
                                   labels={'x': 'Flux Density [mT]', 'y': 'Power Loss [kW/m^3]', 'color': 'Duty Ratio'})
                 st.plotly_chart(fig4, use_container_width=True)
 
+
+#######################################################################
+#######################################################################
+
 if function_select == "Core Loss Prediction":
     # core_loss=np.random.rand()
     st.title("Princeton MagNet - Core Loss Prediction")
     st.header("Princeton Power Electronics Research Lab, Princeton University")
     st.markdown("""---""")
     st.header("Please provide waveform information")
+    
+    
+    # function to calculate the iGSE core loss
+    def calc_iGSE_sine(Freq,Flux,ki,alpha,beta):
+        time = np.linspace(0, 10e-9 * 10000, 10001)
+        B = np.multiply( np.sin(np.multiply(np.multiply(time, Freq), np.pi * 2)), Flux / 2)
+        dt = time[1] - time[0]
+        dBdt = np.gradient(B, dt)
+        T = time[-1] - time[0]
+        core_loss = 1 / T * np.trapz(ki * (np.abs(dBdt) ** alpha) * (Flux ** (beta - alpha)), time)
+        return core_loss
+    
+        # function to calculate the iGSE core loss
+    def calc_ML_sine(Freq,Flux):
+        core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux/2)),
+                                                                          0.5]))).item()
+        return core_loss
+    
+        # function to calculate the iGSE core loss
+    def calc_iGSE_tagl(Freq,Flux,flux_list,duty_list,ki,alpha,beta):
+        time = np.linspace(0, 1 / Freq, 10001)
+        T = time[-1] - time[0]
+        B = np.interp(time, np.multiply(duty_list, T), flux_list)
+        dt = time[1] - time[0]
+        dBdt = np.gradient(B, dt)
+        core_loss = 1 / T * np.trapz(ki * (np.abs(dBdt) ** alpha) * (Flux ** (beta - alpha)), time)
+        return core_loss
+    
+    def calc_ML_tagl(Freq,Flux,Duty):
+        core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux/2)),
+                                                                          Duty]))).item()
+        return core_loss
+    
     # read the necessary information for display
     material_list = ("N27", "N49", "N87", "3C90", "3C94")
     material_type = st.sidebar.selectbox(
@@ -330,6 +367,7 @@ if function_select == "Core Loss Prediction":
         "Algorithm:",
         algorithm_list
     )
+
 
     # Load the iGSE parameters and NN models for different materials
     if material_type == "N27":
@@ -377,16 +415,10 @@ if function_select == "Core Loss Prediction":
                   + ", \u0394B=" + str(Flux) + " mT" + ", Bias=" + str(Bias) + " mT")
 
         if algorithm_type == "iGSE":
-            time = np.linspace(0, 10e-9 * 10000, 10001)
-            B = np.multiply( np.sin(np.multiply(np.multiply(time, Freq), np.pi * 2)), Flux / 2)
-            dt = time[1] - time[0]
-            dBdt = np.gradient(B, dt)
-            T = time[-1] - time[0]
-            core_loss = 1 / T * np.trapz(ki * (np.abs(dBdt) ** alpha) * (Flux ** (beta - alpha)), time)
+            core_loss = calc_iGSE_sine(Freq,Flux,ki,alpha,beta)
         if algorithm_type == "Machine Learning":
-            core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux/2)),
-                                                                          0.5]))).item()
-
+            core_loss = calc_ML_sine(Freq,Flux)
+            
     if excitation_type == "Triangle":
         Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
         Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, step=10)
@@ -411,15 +443,9 @@ if function_select == "Core Loss Prediction":
                   + ", \u0394B=" + str(Flux) + " mT" + ", D=" + str(Duty) + ", Bias=" + str(Bias) + " mT")
 
         if algorithm_type == "iGSE":
-            time = np.linspace(0, 1 / Freq, 10001)
-            T = time[-1] - time[0]
-            B = np.interp(time, np.multiply(duty_list, T), flux_list)
-            dt = time[1] - time[0]
-            dBdt = np.gradient(B, dt)
-            core_loss = 1 / T * np.trapz(ki * (np.abs(dBdt) ** alpha) * (Flux ** (beta - alpha)), time)
+            core_loss = calc_iGSE_tagl(Freq,Flux,flux_list,duty_list,ki,alpha,beta)
         if algorithm_type == "Machine Learning":
-            core_loss = 10.0 ** neural_network(torch.from_numpy(np.array([np.log10(float(Freq)), np.log10(float(Flux/2)),
-                                                                          Duty]))).item()
+            core_loss = calc_ML_tagl(Freq,Flux,Duty)
 
     if excitation_type == "Trapezoidal":
         Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
