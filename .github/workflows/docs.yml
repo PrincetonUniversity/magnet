@@ -1,0 +1,40 @@
+name: Docs
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - '*'
+
+jobs:
+
+  build_docs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          lfs: false
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install package
+        run: |
+          pip install .[dev]
+
+      - name: Build docs
+        run: |
+          cd docs && sphinx-apidoc -f -o ./source ../src -H Modules && make html && touch build/html/.nojekyll
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.1
+        with:
+          branch: gh-pages
+          folder: docs/build/html 
