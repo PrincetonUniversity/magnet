@@ -554,7 +554,7 @@ if function_select == "Core Loss Prediction":
             fig6.update_yaxes(type="log")
             st.plotly_chart(fig6, use_container_width=True)
         with col3:
-            st.header("Core Loss with D Sweep at " + str(Freq) + " Hz and" + str(Flux) + " mT")
+            st.header("Core Loss with D Sweep at " + str(Freq) + " Hz and " + str(Flux) + " mT")
             fig7 = go.Figure()
             fig7.add_trace(go.Scatter(name="iGSE", x=duty_coreloss['Sweep'],  y=duty_coreloss['iGSE'],
                                   line=dict(color='firebrick', width=4)))
