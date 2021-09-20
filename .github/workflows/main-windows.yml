@@ -34,6 +34,10 @@ jobs:
           python -m pip install --upgrade virtualenv
           python -m pip install --upgrade nox 
 
+      - name: Warm up virtualenv cache
+        run: |
+          ./virtualenv_warmup.sh
+
       - name: Test with nox
         run: |
           nox 
