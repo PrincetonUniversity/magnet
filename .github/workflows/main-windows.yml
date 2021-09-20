@@ -1,4 +1,4 @@
-name: Main-Windows 
+name: Build-Windows
 
 on:
   push:
