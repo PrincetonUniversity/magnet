@@ -4,7 +4,7 @@ Princeton MagNet is a large-scale dataset designed to enable researchers modelin
 
 ## Website
 
-Princeton MagNet is currently deployed at https://pmagnet.herokuapp.com/
+Princeton MagNet is currently deployed at https://share.streamlit.io/minjiechen/pmagnet/main/main.py
 
 ## How to Cite
 
