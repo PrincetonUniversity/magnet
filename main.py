@@ -10,6 +10,7 @@ from search import taglsearch
 import torch
 import torch.nn as nn
 
+from pmagnet.constants import materials
 from SimPLECS.SimFunctions import *
 
 # Neural network setup
@@ -361,7 +362,7 @@ if function_select == "Core Loss Prediction":
         core_loss = np.random.rand()  # TBD
         return core_loss
     
-    def calc_iGSE_arbit(Freq,Flux,flux_list,duty_list,ki,alpha,beta):
+    def calc_iGSE_arbit(Freq,flux_delta,flux_list,duty_list,ki,alpha,beta):
         time = np.linspace(0, 1 / Freq, 10001)
         T = time[-1] - time[0]
         B = np.interp(time, np.multiply(duty_list, T), flux_list)
@@ -394,22 +395,8 @@ if function_select == "Core Loss Prediction":
         algorithm_list
     )
 
-
     # Load the iGSE parameters and NN models for different materials
-    if material_type == "N27":
-        alpha = 1.09
-        beta = 2.44
-        ki = 4.88e-10
-
-    if material_type == "N87":
-        alpha = 1.43
-        beta = 2.49
-        ki = 5.77e-12
-
-    if material_type == "N49":
-        alpha = 1.27
-        beta = 3.17
-        ki = 1.18e-12
+    ki, alpha, beta = materials[material_type]
 
     use_GPU = False
     if use_GPU and not torch.cuda.is_available():

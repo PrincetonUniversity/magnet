@@ -1,3 +1,5 @@
+[![Main](https://github.com/minjiechen/PMagnet/actions/workflows/main.yml/badge.svg)](https://github.com/minjiechen/PMagnet/actions/workflows/main.yml)
+
 ![MagNet Logo](magnetlogo.jpg)
 
 Princeton MagNet is a large-scale dataset designed to enable researchers modeling magnetic core loss using machine learning to accelerate the design process of power electronics. The dataset contains a large amount of voltage and current data of different magnetic components with different shapes of waveforms and different properties measured in the real world. Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss to derive static models.
@@ -5,6 +7,14 @@ Princeton MagNet is a large-scale dataset designed to enable researchers modelin
 ## Website
 
 Princeton MagNet is currently deployed at https://share.streamlit.io/minjiechen/pmagnet/main/main.py
+
+## Documentation
+
+The web application for Princeton MagNet uses the `pmagnet` package, a python package under development where most of
+the functionality is exposed. Before `pmagnet` is released on PyPI, it can be installed using
+`pip install git+https://github.com/minjiechen/PMagnet`.
+
+API Documentation for `pmagnet` can be viewed online at [https://minjiechen.github.io/PMagnet](https://minjiechen.github.io/PMagnet)
 
 ## How to Cite
 
