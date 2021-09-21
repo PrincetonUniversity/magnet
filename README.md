@@ -14,7 +14,7 @@ The web application for Princeton MagNet uses the `pmagnet` package, a python pa
 the functionality is exposed. Before `pmagnet` is released on PyPI, it can be installed using
 `pip install git+https://github.com/minjiechen/PMagnet`.
 
-API Documentation for `pmagnet` can be viewed online at [https://minjiechen.github.io/PMagnet](https://minjiechen.github.io/PMagnet)
+API Documentation for `pmagnet` can be viewed online at [https://princetonuniversity.github.io/PMagnet](https://princetonuniversity.github.io/PMagnet)
 
 ## How to Cite
 
