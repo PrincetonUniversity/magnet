@@ -1,21 +1,21 @@
-pmagnet package
+magnet package
 ===============
 
 Submodules
 ----------
 
-pmagnet.constants module
+magnet.constants module
 ------------------------
 
-.. automodule:: pmagnet.constants
+.. automodule:: magnet.constants
    :members:
    :undoc-members:
    :show-inheritance:
 
-pmagnet.core module
+magnet.core module
 -------------------
 
-.. automodule:: pmagnet.core
+.. automodule:: magnet.core
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ pmagnet.core module
 Module contents
 ---------------
 
-.. automodule:: pmagnet
+.. automodule:: magnet
    :members:
    :undoc-members:
    :show-inheritance:

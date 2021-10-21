@@ -21,7 +21,7 @@ import os
 import sys
 import sphinx_rtd_theme
 sys.path.insert(0, os.path.abspath('../../src'))
-import pmagnet 
+import magnet
 
 # -- General configuration ------------------------------------------------
 
@@ -47,7 +47,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'pmagnet'
+project = 'magnet'
 copyright = '2021'
 author = 'Minjie Chen'
 
@@ -56,7 +56,7 @@ author = 'Minjie Chen'
 # built documents.
 #
 # The short X.Y version.
-version = pmagnet.__version__
+version = magnet.__version__
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -90,6 +90,6 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pmagnet'
+htmlhelp_basename = 'magnet'
 
 autoclass_content = 'both'

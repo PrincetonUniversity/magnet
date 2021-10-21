@@ -1,7 +1,7 @@
 import numpy as np
 from pytest import approx
 from numpy.random import default_rng
-from pmagnet.core import core_loss_iGSE
+from magnet.core import core_loss_iGSE
 
 
 def test_coreloss1():

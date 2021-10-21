@@ -1,4 +1,4 @@
-PMagnet
+Magnet
 =======
 
 Magnetic Core Loss Modeling using ML

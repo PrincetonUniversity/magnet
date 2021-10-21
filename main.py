@@ -10,7 +10,7 @@ from search import taglsearch
 import torch
 import torch.nn as nn
 
-from pmagnet.constants import materials
+from magnet.constants import materials
 from SimPLECS.SimFunctions import *
 
 # Neural network setup
@@ -41,11 +41,11 @@ class Net(nn.Module):
 
 
 # setup the user interface
-st.set_page_config(page_title="PMagNet", layout="wide")
+st.set_page_config(page_title="MagNet", layout="wide")
 st.image('pulogo.jpg', width=600)
 st.sidebar.image('magnetlogo.jpg', width=300)
 
-st.sidebar.header('PMagNet v1.1 Beta')
+st.sidebar.header('MagNet v1.1 Beta')
 function_list = ("Core Loss Database", "Core Loss Prediction")
 function_select = st.sidebar.radio("Select one of the two functions",
                                    function_list

@@ -1,5 +1,5 @@
 import numpy as np
-from pmagnet.constants import materials
+from magnet.constants import materials
 
 
 def core_loss_iGSE(freq, flux, duty, k_i, alpha, beta, n_interval=10001):
