@@ -1,0 +1,2 @@
+recursive-include src/magnet/data *.h5
+recursive-include src/magnet/models *.sd

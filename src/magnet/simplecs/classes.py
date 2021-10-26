@@ -5,23 +5,20 @@ import plotly.graph_objects as go
 import numpy as np
 import re
 import pandas as pd
-from search import sinesearch
-from search import taglsearch
 import xmlrpc.client as xmlrpclib
 import scipy.io as sio
 import io
 import altair as alt
 import os
 
+
 class CircuitModel(object):
     cntInst = 0
-    # Constructor
     def __init__(self, name_init):
         self.Name = name_init
         self.opt = {'ModelVars': {}}
         CircuitModel.cntInst += 1
 
-    # Destructor
     def __del__(self):
         if CircuitModel.cntInst > 0:
             CircuitModel.cntInst -= 1
@@ -38,7 +35,7 @@ class CircuitModel(object):
 
     # Display schematic
     def displaySch(self, path):
-        path_graphic = path + "/Graphics"
+        path_graphic = path + "/graphics"
         st.image(path_graphic + "/" + self.Name + "_sch.png", width=500)
 
     # Configure magnetic model
@@ -58,7 +55,7 @@ class CircuitModel(object):
     # Run PLECS steady state analysis
     def steadyRun(self, path):
         server = xmlrpclib.Server("http://localhost:1080/RPC2")
-        path_model = path + "/Models"
+        path_model = path + "/models"
         server.plecs.load(path_model + '/' + self.Name)
         Data_raw = server.plecs.analyze(self.Name, "Steady-State Analysis", self.opt)
         server.plecs.close(self.Name)
@@ -100,6 +97,7 @@ class CircuitModel(object):
         fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         st.plotly_chart(fig2, use_container_width=True)
 
+
 class MagModel(object):
     cntInst = 0
 
@@ -123,7 +121,7 @@ class MagModel(object):
 
     # Display schematic
     def displaySch(self, path):
-        path_graphic = path + "/Graphics"
+        path_graphic = path + "/graphics"
         st.image(path_graphic + "/" + self.Name + ".png", width=300)
 
     # Configure material model
@@ -133,6 +131,7 @@ class MagModel(object):
     # Calculate core loss
     def calCoreLoss(self):
         self.core_loss = 0
+
 
 class CoreMaterial(object):
     cntInst = 0
