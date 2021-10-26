@@ -1,18 +1,10 @@
 import streamlit as st
-import json
-import plotly.express as px
-import plotly.graph_objects as go
 import numpy as np
-import re
 import pandas as pd
-from search import sinesearch
-from search import taglsearch
-import xmlrpc.client as xmlrpclib
-import scipy.io as sio
-import io
-import altair as alt
 import os
-from SimPLECS.Classes import *
+
+from magnet.simplecs.classes import CircuitModel, MagModel, CoreMaterial
+
 
 def SimulationPLECS(material_type, algorithm_type):
     path = os.path.dirname(os.path.realpath(__file__))
