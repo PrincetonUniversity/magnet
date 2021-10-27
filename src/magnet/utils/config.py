@@ -14,27 +14,7 @@ class ConfigSection(object):
         self.d = {}  # key value dict where the value is typecast to int/float/str
 
         for k, v in section_proxy.items():
-
-            if v in ('True', 'False'):
-                self.d[k] = eval(v)
-                continue
-
-            try:
-                v = int(v)
-            except ValueError:
-                try:
-                    v = float(v)
-                except ValueError:
-                    # We interpret a missing value as None, and a "" as the empty string
-                    if v.startswith('"') and v.endswith('"'):
-                        v = v[1:-1]
-                    elif v == '':
-                        v = None
-                    self.d[k] = v
-                else:
-                    self.d[k] = v
-            else:
-                self.d[k] = v
+            self.d[k] = self.parse(v)
 
     def __setattr__(self, key, value):
         if key in ('config', 'name', 'd'):
@@ -48,6 +28,30 @@ class ConfigSection(object):
             env_varname = '_'.join([str(x).upper() for x in [self.config.name, self.name, item]])
             env_var = os.getenv(env_varname)
             return env_var or self.d[item]
+
+    def parse(self, s):
+        s = s.strip()
+        if s in ('True', 'False'):
+            return eval(s)
+
+        try:
+            v = int(s)
+        except ValueError:
+            try:
+                v = float(s)
+            except ValueError:
+                # We interpret a missing value as None, and a "" as the empty string
+                if s.startswith('"') and s.endswith('"'):
+                    v = s[1:-1]
+                elif s == '':
+                    v = None
+                elif s.startswith('[') and s.endswith(']'):
+                    return [self.parse(t) for t in s[1:-1].split(',')]
+                return v
+            else:
+                return v
+        else:
+            return v
 
     def items(self):
         return self.d.items()

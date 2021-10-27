@@ -1,7 +1,8 @@
 import os.path
 import streamlit as st
 from magnet import __version__
-from ui import ui_core_loss_db, ui_core_loss_predict
+from ui_db import ui_core_loss_db
+from ui_predict import ui_core_loss_predict
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
