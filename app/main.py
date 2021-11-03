@@ -24,8 +24,8 @@ if __name__ == '__main__':
     st.markdown('''---''')
 
     if function_select == 'Core Loss Database':
-        ui_core_loss_db(material_selector='A')
-        ui_core_loss_db(material_selector='B')
+        ui_core_loss_db('A')
+        ui_core_loss_db('B')
 
     if function_select == 'Core Loss Prediction':
         ui_core_loss_predict()
