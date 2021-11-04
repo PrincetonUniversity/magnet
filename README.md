@@ -1,11 +1,11 @@
 [![Build](https://github.com/PrincetonUniversity/Magnet/actions/workflows/main.yml/badge.svg)](https://github.com/PrincetonUniversity/Magnet/actions/workflows/main.yml)
 ![MagNet Logo](app/img/magnetlogo.jpg)
 
-Princeton MagNet is a large-scale dataset designed to enable researchers modeling magnetic core loss using machine learning to accelerate the design process of power electronics. The dataset contains a large amount of voltage and current data of different magnetic components with different shapes of waveforms and different properties measured in the real world. Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss to derive static models.
+Princeton MagNet is a large-scale dataset designed to enable researchers modeling magnetic core loss using machine learning to accelerate the design process of power electronics. The dataset contains a large amount of voltage and current data of different magnetic components with different shapes of waveforms and different properties measured in the real world. Researchers may use these data as pairs of excitations and responses to build up analytical magnetic models or calculate the core loss to derive static models.
 
 ## Website
 
-Princeton MagNet is currently deployed at https://share.streamlit.io/minjiechen/pmagnet/main/main.py
+Princeton MagNet is currently deployed at https://mag-net.princeton.edu/
 
 ## Documentation
 
@@ -41,6 +41,6 @@ Princeton MagNet is currently maintained by the Power Electronics Research Lab a
 
 ## Sponsors
 
-This work is sponsored by the ARPA-E DIFFERENTIATE Program.
+This work is sponsored by the ARPA-E DIFFERENTIATE Program and the Princeton CSML DataX program.
 
 ![MagNet Sponsor](app/img/sponsor.jpg)
