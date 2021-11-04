@@ -41,6 +41,6 @@ Princeton MagNet is currently maintained by the Power Electronics Research Lab a
 
 ## Sponsors
 
-This work is sponsored by the ARPA-E DIFFERENTIATE Program and the Princeton CSML DataX program.
+This work is sponsored by the ARPA-E DIFFERENTIATE Program, Princeton CSML DataX program, Princeton Andlinger Center for Energy and the Environment, and National Science Foundation under the NSF CAREER Award. 
 
 ![MagNet Sponsor](app/img/sponsor.jpg)
