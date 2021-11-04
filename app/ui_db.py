@@ -41,7 +41,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2 = st.beta_columns(2)
+            col1, col2 = st.columns(2)
             with col1:
                 st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'), use_container_width=True)
             with col2:
@@ -57,7 +57,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2 = st.beta_columns(2)
+            col1, col2 = st.columns(2)
             with col1:
                 st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
             with col2:
@@ -75,7 +75,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2 = st.beta_columns(2)
+            col1, col2 = st.columns(2)
             with col1:
                 st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
             with col2:

@@ -16,7 +16,7 @@ def ui_core_loss_predict():
 
     if excitation in ('Datasheet', 'Sinusoidal'):
 
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.header("Please provide waveform information")
             Freq = st.slider('Frequency (Hz)', 10000, 500000, 250000, step=1000)
@@ -34,7 +34,7 @@ def ui_core_loss_predict():
         core_loss = loss(waveform='sine', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux)
         st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             core_loss_multiple(
                 st,
@@ -57,7 +57,7 @@ def ui_core_loss_predict():
 
     if excitation == "Triangle":
 
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.header("Please provide waveform information")
             Freq = st.slider('Frequency (Hz)', 10000, 500000, 250000, step=1000)
@@ -78,7 +78,7 @@ def ui_core_loss_predict():
         core_loss = loss(waveform='sawtooth', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux, duty_ratio=Duty)
         st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
-        col1, col2, col3 = st.beta_columns(3)
+        col1, col2, col3 = st.columns(3)
         with col1:
             core_loss_multiple(
                 st,
@@ -111,7 +111,7 @@ def ui_core_loss_predict():
 
     if excitation == "Trapezoidal":
 
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             st.header("Please provide waveform information")
             Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
@@ -135,7 +135,7 @@ def ui_core_loss_predict():
         core_loss = loss(waveform='trapezoid', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux, duty_ratios=duty_ratios)
         st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             core_loss_multiple(
                 st,
@@ -158,7 +158,7 @@ def ui_core_loss_predict():
 
     if excitation == "Arbitrary":
 
-        col1, col2 = st.beta_columns(2)
+        col1, col2 = st.columns(2)
         with col1:
             Freq = st.slider('Cycle Frequency (Hz)', 10000, 500000, step=1000)
             duty_string = st.text_input('Waveform Pattern Duty in a Cycle (%)',
