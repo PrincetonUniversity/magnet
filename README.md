@@ -1,4 +1,4 @@
-[![Build](https://github.com/PrincetonUniversity/Magnet/actions/workflows/main.yml/badge.svg)](https://github.com/PrincetonUniversity/Magnet/actions/workflows/main.yml)
+[![Build](https://github.com/PrincetonUniversity/magnet/actions/workflows/main.yml/badge.svg)](https://github.com/PrincetonUniversity/magnet/actions/workflows/main.yml)
 ![MagNet Logo](app/img/magnetlogo.jpg)
 
 Princeton MagNet is a large-scale dataset designed to enable researchers modeling magnetic core loss using machine learning to accelerate the design process of power electronics. The dataset contains a large amount of voltage and current data of different magnetic components with different shapes of waveforms and different properties measured in the real world. Researchers may use these data as pairs of excitations and responses to build up analytical magnetic models or calculate the core loss to derive static models.
@@ -11,9 +11,9 @@ Princeton MagNet is currently deployed at https://mag-net.princeton.edu/
 
 The web application for Princeton MagNet uses the `magnet` package, a python package under development where most of
 the functionality is exposed. Before `magnet` is released on PyPI, it can be installed using
-`pip install git+https://github.com/PrincetonUniversity/Magnet`.
+`pip install git+https://github.com/PrincetonUniversity/magnet`.
 
-API Documentation for `magnet` can be viewed online at [https://princetonuniversity.github.io/Magnet/](https://princetonuniversity.github.io/Magnet/)
+API Documentation for `magnet` can be viewed online at [https://princetonuniversity.github.io/magnet/](https://princetonuniversity.github.io/magnet/)
 
 ## How to Cite
 
