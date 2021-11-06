@@ -19,7 +19,7 @@ API Documentation for `magnet` can be viewed online at [https://princetonunivers
 
 If you used MagNet, please cite us with the following.
 
-```
+
 H. Li, S. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
 
 E. Dogariu, H. Li, D. Serrano López, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling,” IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
@@ -27,7 +27,6 @@ E. Dogariu, H. Li, D. Serrano López, S. Wang, M. Luo and M. Chen, "Transfer Lea
 H. Li, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
 
 
-```
 ## Team Members
 
 Princeton MagNet is currently maintained by the Power Electronics Research Lab as Princeton University. We also collaborate with Dartmouth College, and Plexim.
