@@ -1,7 +1,6 @@
 from importlib.resources import path
 import pandas as pd
 
-
 # Adapted from
 #   https://stackoverflow.com/questions/29129095/save-additional-attributes-in-pandas-dataframe/29130146#29130146
 def h5_store(filename, df, **kwargs):
@@ -17,7 +16,7 @@ def h5_load(filename):
         metadata = store.get_storer('dataframe').attrs.metadata
         return data, metadata
 
-
+@st.cache
 def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=None, flux_max=None, duty_ratios=None,
               duty_ratio_margin=0):
 
@@ -41,5 +40,4 @@ def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=
                      ')'
 
         data = data.query(query)
-
     return data
