@@ -1,6 +1,5 @@
 import os.path
 import streamlit as st
-from magnet import __version__
 from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
 
@@ -12,11 +11,13 @@ if __name__ == '__main__':
     st.image(os.path.join(STREAMLIT_ROOT, 'img', 'pulogo.jpg'), width=600)
     st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg'), width=300)
 
-    st.sidebar.header('Princeton MagNet Project')
+    st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
-        'Select one of the two functions',
-        ('Core Loss Database', 'Core Loss Prediction')
+        'Select MagNet Function:',
+        ('Core Loss Database', 'Core Loss Analysis')
     )
+
+    itemnum = st.sidebar.radio("Select Number of Materials for Analysis:",('1','2','3'))
 
     st.title('Princeton-Dartmouth-Plexim MagNet Project')
     st.header('Data Driven Methods for Magnetic Core Loss Modeling')
@@ -24,22 +25,37 @@ if __name__ == '__main__':
     st.markdown('''---''')
 
     if function_select == 'Core Loss Database':
-        ui_core_loss_db('A')
-        ui_core_loss_db('B')
+        if itemnum == '1':
+            ui_core_loss_db('A')
+        if itemnum == '2':
+            ui_core_loss_db('A')
+            ui_core_loss_db('B')
+        if itemnum == '3':
+            ui_core_loss_db('A')
+            ui_core_loss_db('B')
+            ui_core_loss_db('C')
 
-    if function_select == 'Core Loss Prediction':
-        ui_core_loss_predict()
+    if function_select == 'Core Loss Analysis':
+        if itemnum == '1':
+            ui_core_loss_predict('A')
+        if itemnum == '2':
+            ui_core_loss_predict('A')
+            ui_core_loss_predict('B')
+        if itemnum == '3':
+            ui_core_loss_predict('A')
+            ui_core_loss_predict('B')
+            ui_core_loss_predict('C')
 
     st.markdown('''---''')
-    st.title('Mag-Net Research Team')
-    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg'), width=1000)
-    st.title('Mag-Net Sponsors')
-    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg'), width=1000)
-    st.title('Mag-Net Website Developers')
-    st.subheader('Haoran Li (haoranli@princeton.edu)')
-    st.subheader('Diego Serrano Lopez (ds9056@princeton.edu)')
-    st.subheader('Evan Dogariu (edogariu@princeton.edu)')
-    st.subheader('Min Luo (luo@plexim.com )')
-    st.subheader('Thomas Guillod (Thomas.Paul.Henri.Guillod@dartmouth.edu)')
-    st.subheader('Vineet Bansal (vineetb@princeton.edu)')
-    st.subheader('Minjie Chen (minjie@princeton.edu)')
+    st.sidebar.title('Mag-Net Research Team')
+    st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg'), width=1000)
+    st.sidebar.title('Mag-Net Sponsors')
+    st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg'), width=1000)
+    st.sidebar.title('Mag-Net Website Developers')
+    st.sidebar.subheader('Haoran Li (haoranli@princeton.edu)')
+    st.sidebar.subheader('Diego Serrano Lopez (ds9056@princeton.edu)')
+    st.sidebar.subheader('Evan Dogariu (edogariu@princeton.edu)')
+    st.sidebar.subheader('Min Luo (luo@plexim.com )')
+    st.sidebar.subheader('Thomas Guillod (Thomas.Paul.Henri.Guillod@dartmouth.edu)')
+    st.sidebar.subheader('Vineet Bansal (vineetb@princeton.edu)')
+    st.sidebar.subheader('Minjie Chen (minjie@princeton.edu)')

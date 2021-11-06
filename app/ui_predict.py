@@ -9,30 +9,32 @@ from magnet.core import loss
 from magnet.simplecs.simfunctions import SimulationPLECS
 
 
-def ui_core_loss_predict():
-    material = st.sidebar.selectbox('Material:', material_names)
-    excitation = st.sidebar.selectbox('Excitation:', excitations + ("Arbitrary", "Simulated"))
-    algorithm = st.sidebar.selectbox('Algorithm:', ('iGSE', 'Machine Learning'))
+def header(material, excitation):
+    s = f'Core Loss Analysis - {material} Material {excitation} '
+    return st.title(s)
+
+def ui_core_loss_predict(m):
+    st.sidebar.header(f'Information for Material {m}')
+    material = st.sidebar.selectbox(f'Material {m}:', material_names)
+    excitation = st.sidebar.selectbox(f'Excitation {m}:', excitations + ("Arbitrary", "Simulated"))
+    algorithm = st.sidebar.selectbox(f'Algorithm {m}:', ('iGSE', 'Machine Learning'))
+    st.sidebar.markdown("""---""")
+    st.markdown("""---""")
 
     if excitation in ('Datasheet', 'Sinusoidal'):
-
+        header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
             st.header("Please provide waveform information")
-            Freq = st.slider('Frequency (Hz)', 10000, 500000, 250000, step=1000)
-            Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, 150, step=1)
-            Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
+            Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, 250000, step=1000)
+            Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, 150, step=1)
+            Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
             duty_list = np.linspace(0, 1, 101)
             flux_read = np.multiply(np.sin(np.multiply(duty_list, np.pi * 2)), Flux / 2)
             flux_list = np.add(flux_read, Bias)
 
         with col2:
             waveform_visualization(st, x=duty_list, y=flux_list)
-
-        st.header(f'{material}, {excitation}, f={Freq} Hz, \u0394B={Flux} mT, Bias={Bias} mT')
-
-        core_loss = loss(waveform='sine', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux)
-        st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
         col1, col2 = st.columns(2)
         with col1:
@@ -54,16 +56,20 @@ def ui_core_loss_predict():
                 title=f'Core Loss with Fixed Frequency {Freq} Hz',
                 x_title='Flux Density [mT]'
             )
+        
+        st.header(f'{material}, {excitation}, f={Freq} Hz, \u0394B={Flux} mT, Bias={Bias} mT')
+        core_loss = loss(waveform='sine', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux)
+        st.header(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
     if excitation == "Triangle":
-
+        header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
             st.header("Please provide waveform information")
-            Freq = st.slider('Frequency (Hz)', 10000, 500000, 250000, step=1000)
-            Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, 150, step=10)
-            Duty = st.slider('Duty Ratio', 0.0, 1.0, 0.5, step=0.01)
-            Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
+            Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, 250000, step=1000)
+            Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, 150, step=10)
+            Duty = st.slider(f'Duty Ratio {m}', 0.0, 1.0, 0.5, step=0.01)
+            Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
             duty_list = [0, Duty, 1]
             flux_read = [0, Flux, 0]
             flux_mean = Flux / 2
@@ -72,11 +78,6 @@ def ui_core_loss_predict():
 
         with col2:
             waveform_visualization(st, x=duty_list, y=flux_list)
-
-        st.header(f'{material}, {excitation}, f={Freq} Hz \u0394B={Flux} mT, D={Duty}, Bias={Bias} mT')
-
-        core_loss = loss(waveform='sawtooth', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux, duty_ratio=Duty)
-        st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -109,17 +110,21 @@ def ui_core_loss_predict():
                 x_title='Duty Ratio'
             )
 
-    if excitation == "Trapezoidal":
+        st.header(f'{material}, {excitation}, f={Freq} Hz \u0394B={Flux} mT, D={Duty}, Bias={Bias} mT')
+        core_loss = loss(waveform='sawtooth', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux, duty_ratio=Duty)
+        st.header(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
+    if excitation == "Trapezoidal":
+        header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
             st.header("Please provide waveform information")
-            Freq = st.slider('Frequency (Hz)', 10000, 500000, step=1000)
-            Flux = st.slider('Peak to Peak Flux Density (mT)', 10, 300, step=10)
-            Duty1 = st.slider('Duty Ratio 1', 0.0, 1.0, 0.25, step=0.01)
-            Duty2 = st.slider('Duty Ratio 2', 0.0, 1.0, 0.5, step=0.01)
-            Duty3 = st.slider('Duty Ratio 3', 0.0, 1.0, 0.75, step=0.01)
-            Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
+            Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, step=1000)
+            Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, step=10)
+            Duty1 = st.slider(f'Duty Ratio 1 {m}', 0.0, 1.0, 0.25, step=0.01)
+            Duty2 = st.slider(f'Duty Ratio 2 {m}', 0.0, 1.0, 0.5, step=0.01)
+            Duty3 = st.slider(f'Duty Ratio 3 {m}', 0.0, 1.0, 0.75, step=0.01)
+            Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
             duty_list = [0, Duty1, Duty2, Duty3, 1]
             flux_read = [0, Flux, Flux, 0, 0]
             flux_mean = Flux / 2
@@ -130,10 +135,6 @@ def ui_core_loss_predict():
             waveform_visualization(st, x=duty_list, y=flux_list)
 
         st.header(f'{material}, {excitation}, f={Freq} Hz, \u0394B={Flux} mT, D1={Duty1}, D2={Duty2}, D3={Duty3}, Bias={Bias} mT')
-
-        duty_ratios = [Duty1, Duty2, Duty3]
-        core_loss = loss(waveform='trapezoid', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux, duty_ratios=duty_ratios)
-        st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
         col1, col2 = st.columns(2)
         with col1:
@@ -155,17 +156,21 @@ def ui_core_loss_predict():
                 title=f'Core Loss with Fixed Frequency {Freq} Hz',
                 x_title='Flux Density [mT]'
             )
+            
+        duty_ratios = [Duty1, Duty2, Duty3]
+        core_loss = loss(waveform='trapezoid', algorithm=algorithm, material=material, freq=Freq, flux_p2p=Flux, duty_ratios=duty_ratios)
+        st.header(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
     if excitation == "Arbitrary":
-
+        header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
-            Freq = st.slider('Cycle Frequency (Hz)', 10000, 500000, step=1000)
-            duty_string = st.text_input('Waveform Pattern Duty in a Cycle (%)',
+            Freq = st.slider(f'Cycle Frequency (Hz) {m}', 10000, 500000, step=1000)
+            duty_string = st.text_input(f'Waveform Pattern Duty in a Cycle (%) {m}',
                                         [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-            flux_string = st.text_input('Waveform Pattern Relative Flux Density (mT)',
+            flux_string = st.text_input(f'Waveform Pattern Relative Flux Density (mT) {m}',
                                         [0, 10, 20, 10, 20, 30, -10, -30, 10, -10, 0])
-            Bias = st.slider('DC Bias (mT)', -300, 300, 0, step=10)
+            Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
 
             duty_list = [float(i) for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", duty_string)]
             flux_read = [float(i) for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", flux_string)]
@@ -180,5 +185,6 @@ def ui_core_loss_predict():
         st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
 
     if excitation == 'Simulated':
+        header(material, excitation)
         core_loss = SimulationPLECS(material, algorithm)
         st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
