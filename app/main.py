@@ -2,6 +2,7 @@ import os.path
 import streamlit as st
 from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
+from ui_raw import ui_download_raw_data
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -14,17 +15,17 @@ if __name__ == '__main__':
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
         'Select MagNet Function:',
-        ('Core Loss Database', 'Core Loss Analysis')
+        ('Core Loss Database', 'Core Loss Analysis','Download Raw Data')
     )
 
-    itemnum = st.sidebar.radio("Select Number of Materials for Analysis:",('1','2','3'))
-
+    
     st.title('Princeton-Dartmouth-Plexim MagNet Project')
     st.header('Data Driven Methods for Magnetic Core Loss Modeling')
     st.header('GitHub: https://github.com/PrincetonUniversity/Magnet')
     st.markdown('''---''')
 
     if function_select == 'Core Loss Database':
+        itemnum = st.sidebar.selectbox("Number of Materials for Analysis:",('1','2','3'))
         if itemnum == '1':
             ui_core_loss_db('A')
         if itemnum == '2':
@@ -36,6 +37,7 @@ if __name__ == '__main__':
             ui_core_loss_db('C')
 
     if function_select == 'Core Loss Analysis':
+        itemnum = st.sidebar.selectbox("Number of Materials for Analysis:",('1','2','3'))
         if itemnum == '1':
             ui_core_loss_predict('A')
         if itemnum == '2':
@@ -45,8 +47,20 @@ if __name__ == '__main__':
             ui_core_loss_predict('A')
             ui_core_loss_predict('B')
             ui_core_loss_predict('C')
+            
+    if function_select == 'Download Raw Data':
+        itemnum = st.sidebar.selectbox("Number of Materials for Analysis:",('1','2','3'))
+        if itemnum == '1':
+            ui_download_raw_data('A')
+        if itemnum == '2':
+            ui_download_raw_data('A')
+            ui_download_raw_data('B')
+        if itemnum == '3':
+            ui_download_raw_data('A')
+            ui_download_raw_data('B')
+            ui_download_raw_data('C')       
+            
 
-    st.markdown('''---''')
     st.sidebar.title('Mag-Net Research Team')
     st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg'), width=1000)
     st.sidebar.title('Mag-Net Sponsors')

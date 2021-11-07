@@ -48,14 +48,14 @@ def ui_core_loss_db(m):
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
             with col2:          # to be replaced with data driven error graphs
-                st.subheader(xaxis+' - Error')    
+                st.subheader(xaxis+' - Estimated Error')    
                 if xaxis == 'Frequency':
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file, material+"-"+excitation+".csv","text/csv",key=m)
-            st.subheader("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.subheader("CSV Columns: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
 
     if excitation == 'Triangle':
         Duty = st.sidebar.multiselect(f'Duty Ratio {m}', c.streamlit.duty_ratios_triangle, c.streamlit.duty_ratios_triangle)
@@ -75,14 +75,14 @@ def ui_core_loss_db(m):
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             with col2:
-                st.subheader(xaxis+' - Error')    
+                st.subheader(xaxis+' - Estimated Error')    
                 if xaxis == 'Frequency':
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file,material+"-"+excitation+".csv","text/csv",key=m)
-            st.subheader("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.subheader("CSV Columns: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
 
     if excitation == 'Trapezoidal':
         Duty = st.sidebar.multiselect(f'Duty Ratio {m}', c.streamlit.duty_ratios_trapezoid, c.streamlit.duty_ratios_trapezoid)
@@ -104,14 +104,14 @@ def ui_core_loss_db(m):
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             with col2:
-                st.subheader(xaxis+' - Error')    
+                st.subheader(xaxis+' - Estimated Error')    
                 if xaxis == 'Frequency':
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file,material+"-"+excitation+".csv","text/csv",key=m)
-            st.subheader("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.subheader("CSV Columns: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")

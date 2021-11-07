@@ -19,7 +19,6 @@ def ui_core_loss_predict(m):
     excitation = st.sidebar.selectbox(f'Excitation {m}:', excitations + ("Arbitrary", "Simulated"))
     algorithm = st.sidebar.selectbox(f'Algorithm {m}:', ('iGSE', 'Machine Learning'))
     st.sidebar.markdown("""---""")
-    st.markdown("""---""")
 
     if excitation in ('Datasheet', 'Sinusoidal'):
         header(material, excitation)
@@ -87,7 +86,9 @@ def ui_core_loss_predict(m):
                 y1=[loss(waveform='sawtooth', algorithm='iGSE', material=material, freq=i, flux_p2p=Flux, duty_ratio=Duty) for i in config.streamlit.core_loss_freq],
                 y2=[loss(waveform='sawtooth', algorithm='ML', material=material, freq=i, flux_p2p=Flux, duty_ratio=Duty) for i in config.streamlit.core_loss_freq],
                 title=f'Core Loss with F Sweep at {Flux} mT and D={Duty}',
-                x_title='Frequency [Hz]'
+                x_title='Frequency [Hz]',
+                x_log=True,
+                y_log=True
             )
 
         with col2:
@@ -97,7 +98,9 @@ def ui_core_loss_predict(m):
                 y1=[loss(waveform='sawtooth', algorithm='iGSE', material=material, freq=Freq, flux_p2p=i, duty_ratio=Duty) for i in config.streamlit.core_loss_flux],
                 y2=[loss(waveform='sawtooth', algorithm='ML', material=material, freq=Freq, flux_p2p=i, duty_ratio=Duty) for i in config.streamlit.core_loss_flux],
                 title=f'Core Loss with B Sweep at {Freq} Hz and D={Duty}',
-                x_title='Flux Density [mT]'
+                x_title='Flux Density [mT]',
+                x_log=True,
+                y_log=True
             )
 
         with col3:
@@ -107,7 +110,9 @@ def ui_core_loss_predict(m):
                 y1=[loss(waveform='sawtooth', algorithm='iGSE', material=material, freq=Freq, flux_p2p=Flux, duty_ratio=i) for i in config.streamlit.core_loss_duty],
                 y2=[loss(waveform='sawtooth', algorithm='ML', material=material, freq=Freq, flux_p2p=Flux, duty_ratio=i) for i in config.streamlit.core_loss_duty],
                 title=f'Core Loss with D Sweep at {Freq} Hz and {Flux} mT',
-                x_title='Duty Ratio'
+                x_title='Duty Ratio',
+                x_log=False,
+                y_log=True
             )
 
         st.header(f'{material}, {excitation}, f={Freq} Hz \u0394B={Flux} mT, D={Duty}, Bias={Bias} mT')
@@ -188,3 +193,5 @@ def ui_core_loss_predict(m):
         header(material, excitation)
         core_loss = SimulationPLECS(material, algorithm)
         st.title(f'{algorithm} Core Loss: {core_loss} kW/m^3')
+        
+    st.markdown("""---""")

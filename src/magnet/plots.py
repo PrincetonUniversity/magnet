@@ -13,9 +13,9 @@ def power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'):
         log_y=True,
         color_continuous_scale=px.colors.sequential.Turbo,
         labels={
-            'x': f'{x} [{default_units(x)}]',
-            'y': 'Power Loss [kW/m^3]',
-            'color': f'{color_prop} [{default_units(color_prop)}]'
+            x: f'{x} [{default_units(x)}]',
+            'Power_Loss': 'Power Loss [kW/m^3]'
+            color_prop: f'{color_prop} [{default_units(color_prop)}]'
         }
     )
 
