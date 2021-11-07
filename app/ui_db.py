@@ -9,7 +9,7 @@ def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
     s = f'{material}, {excitation}, f=[{f_min}~{f_max}] Hz, B=[{b_min}~{b_max}] mT, P: kW/m^3'
     if duty is not None:
         s += f', D={duty}'
-    return st.title(s)
+    return st.subheader(s)
 
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
@@ -33,7 +33,7 @@ def ui_core_loss_db(m):
     )
 
     if excitation in ('Datasheet', 'Sinusoidal'):
-        st.title("Core Loss Database:")
+        st.title(f"Core Loss Database {m}:")
         header(material, excitation, Fmin, Fmax, Bmin, Bmax)
         df = load_dataframe(material, excitation, Fmin,Fmax, Bmin, Bmax)
 
@@ -55,7 +55,8 @@ def ui_core_loss_db(m):
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file, material+"-"+excitation+".csv","text/csv",key=m)
-            st.subheader("CSV Columns: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.write("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.write("Data Info: Core Shape - ? ; Temperature - ? ; Method - ? ; Winding Turns - ?; Princeton Measured")
 
     if excitation == 'Triangle':
         Duty = st.sidebar.multiselect(f'Duty Ratio {m}', c.streamlit.duty_ratios_triangle, c.streamlit.duty_ratios_triangle)
@@ -82,7 +83,8 @@ def ui_core_loss_db(m):
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file,material+"-"+excitation+".csv","text/csv",key=m)
-            st.subheader("CSV Columns: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.write("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.write("Data Info: Core Shape - ? ; Temperature - ? ; Method - ? ; Winding Turns - ?; Princeton Measured")
 
     if excitation == 'Trapezoidal':
         Duty = st.sidebar.multiselect(f'Duty Ratio {m}', c.streamlit.duty_ratios_trapezoid, c.streamlit.duty_ratios_trapezoid)
@@ -111,7 +113,8 @@ def ui_core_loss_db(m):
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file,material+"-"+excitation+".csv","text/csv",key=m)
-            st.subheader("CSV Columns: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.write("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
+            st.write("Data Info: Core Shape - ? ; Temperature - ? ; Method - ? ; Winding Turns - ?; Princeton Measured")
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")

@@ -10,7 +10,7 @@ from magnet.simplecs.simfunctions import SimulationPLECS
 
 
 def header(material, excitation):
-    s = f'Core Loss Analysis - {material} Material {excitation} '
+    s = f'Core Loss Analysis - {material} Material, {excitation} '
     return st.title(s)
 
 def ui_core_loss_predict(m):
@@ -24,7 +24,7 @@ def ui_core_loss_predict(m):
         header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
-            st.header("Please provide waveform information")
+            st.header("Waveform Information")
             Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, 250000, step=1000)
             Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, 150, step=1)
             Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
@@ -64,7 +64,7 @@ def ui_core_loss_predict(m):
         header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
-            st.header("Please provide waveform information")
+            st.header("Waveform Information")
             Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, 250000, step=1000)
             Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, 150, step=10)
             Duty = st.slider(f'Duty Ratio {m}', 0.0, 1.0, 0.5, step=0.01)
@@ -123,7 +123,7 @@ def ui_core_loss_predict(m):
         header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
-            st.header("Please provide waveform information")
+            st.header("Waveform information")
             Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, step=1000)
             Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, step=10)
             Duty1 = st.slider(f'Duty Ratio 1 {m}', 0.0, 1.0, 0.25, step=0.01)

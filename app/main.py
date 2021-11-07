@@ -9,7 +9,6 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'pulogo.jpg'), width=600)
     st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg'), width=300)
 
     st.sidebar.header('Welcome to Princeton MagNet')
@@ -20,8 +19,8 @@ if __name__ == '__main__':
 
     
     st.title('Princeton-Dartmouth-Plexim MagNet Project')
-    st.header('Data Driven Methods for Magnetic Core Loss Modeling')
-    st.header('GitHub: https://github.com/PrincetonUniversity/Magnet')
+    st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
+    st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
     st.markdown('''---''')
 
     if function_select == 'Core Loss Database':
@@ -61,15 +60,17 @@ if __name__ == '__main__':
             ui_download_raw_data('C')       
             
 
-    st.sidebar.title('Mag-Net Research Team')
-    st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg'), width=1000)
-    st.sidebar.title('Mag-Net Sponsors')
-    st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg'), width=1000)
-    st.sidebar.title('Mag-Net Website Developers')
+    st.title('MagNet Research Team')
+    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg'), width=1000)
+    st.title('MagNet Sponsors')
+    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg'), width=1000)
+    st.sidebar.title('Thanks for using MagNet!')
     st.sidebar.subheader('Haoran Li (haoranli@princeton.edu)')
     st.sidebar.subheader('Diego Serrano Lopez (ds9056@princeton.edu)')
     st.sidebar.subheader('Evan Dogariu (edogariu@princeton.edu)')
-    st.sidebar.subheader('Min Luo (luo@plexim.com )')
     st.sidebar.subheader('Thomas Guillod (Thomas.Paul.Henri.Guillod@dartmouth.edu)')
     st.sidebar.subheader('Vineet Bansal (vineetb@princeton.edu)')
+    st.sidebar.subheader('Niraj Jha (jha@princeton.edu)')
+    st.sidebar.subheader('Min Luo (luo@plexim.com )')
+    st.sidebar.subheader('Charles R. Sullivan (charles.r.sullivan@dartmouth.edu)')
     st.sidebar.subheader('Minjie Chen (minjie@princeton.edu)')

@@ -16,8 +16,8 @@ def ui_download_raw_data(m):
     
     header(material, excitation)
     file=""
-    st.download_button(f'Download Material {m}',file,material+"-"+excitation+".csv","text/csv",key=m)
-    st.write("CSV Format: ")
+    st.download_button(f'Download CSV',file,material+"-"+excitation+".csv","text/csv",key=m)
+    st.write("Data Info: Four Wire V-I Method; R10 ; 25C ; 10/6 Windings ; Princeton Measured")
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")

@@ -20,9 +20,8 @@ def power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'):
     )
 
 
-def waveform_visualization(st, x, y, title='Waveform Visualization',
-                           x_title='Duty in a Cycle', y_title='Flux Density [mT]', color='firebrick', width=4):
-    st.header(title)
+def waveform_visualization(st, x, y, title, x_title='Duty in a Cycle', y_title='Flux Density [mT]', color='firebrick', width=4):
+    st.subheader(title)
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -40,7 +39,7 @@ def waveform_visualization(st, x, y, title='Waveform Visualization',
 
 
 def core_loss_multiple(st, x, y1, y2, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
-    st.header(title)
+    st.subheader(title)
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
