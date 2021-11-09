@@ -1,4 +1,5 @@
 import os.path
+from PIL import Image
 import streamlit as st
 from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
@@ -9,7 +10,7 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-    st.sidebar.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg'), width=300)
+    st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
 
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
@@ -61,9 +62,9 @@ if __name__ == '__main__':
             
 
     st.title('MagNet Research Team')
-    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg'), width=1000)
+    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg')), width=1000)
     st.title('MagNet Sponsors')
-    st.image(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg'), width=1000)
+    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg')), width=1000)
     st.sidebar.title('Thanks for using MagNet!')
     st.sidebar.subheader('Haoran Li (haoranli@princeton.edu)')
     st.sidebar.subheader('Diego Serrano Lopez (ds9056@princeton.edu)')

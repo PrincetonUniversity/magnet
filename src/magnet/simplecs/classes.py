@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 import json
 import plotly.express as px
 import plotly.graph_objects as go
@@ -10,6 +11,7 @@ import scipy.io as sio
 import io
 import altair as alt
 import os
+import os.path
 
 
 class CircuitModel(object):
@@ -35,8 +37,7 @@ class CircuitModel(object):
 
     # Display schematic
     def displaySch(self, path):
-        path_graphic = path + "/graphics"
-        st.image(path_graphic + "/" + self.Name + "_sch.png", width=500)
+        st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}_sch.png')), width=500)
 
     # Configure magnetic model
     def setMagModel(self, mag_init, material_init):
@@ -121,8 +122,7 @@ class MagModel(object):
 
     # Display schematic
     def displaySch(self, path):
-        path_graphic = path + "/graphics"
-        st.image(path_graphic + "/" + self.Name + ".png", width=300)
+        st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}.png')), width=300)
 
     # Configure material model
     def configMaterialModel(self, material_init):
