@@ -1,7 +1,7 @@
 import os.path
 from PIL import Image
 import streamlit as st
-from ui_db import ui_core_loss_db
+from ui_db import ui_core_loss_dbs
 from ui_predict import ui_core_loss_predict
 from ui_raw import ui_download_raw_data
 
@@ -26,15 +26,7 @@ if __name__ == '__main__':
 
     if function_select == 'Core Loss Database':
         itemnum = st.sidebar.selectbox("Number of Materials for Analysis:",('1','2','3'))
-        if itemnum == '1':
-            ui_core_loss_db('A')
-        if itemnum == '2':
-            ui_core_loss_db('A')
-            ui_core_loss_db('B')
-        if itemnum == '3':
-            ui_core_loss_db('A')
-            ui_core_loss_db('B')
-            ui_core_loss_db('C')
+        ui_core_loss_dbs(itemnum)
 
     if function_select == 'Core Loss Analysis':
         itemnum = st.sidebar.selectbox("Number of Materials for Analysis:",('1','2','3'))

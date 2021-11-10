@@ -11,6 +11,10 @@ def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
         s += f', D={duty}'
     return st.subheader(s)
 
+def ui_core_loss_dbs(n=1):
+    for i in range(int(n)):
+        ui_core_loss_db(chr(ord('A') + i))
+
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
     material = st.sidebar.selectbox(f'Material {m}:', material_names)
