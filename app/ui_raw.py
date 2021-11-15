@@ -5,9 +5,11 @@ import streamlit as st
 from magnet import config
 from magnet.constants import material_names, excitations
 
+
 def header(material, excitation):
     s = f'Download Raw Data - {material} Material {excitation} '
     return st.header(s)
+
 
 def ui_download_raw_data(m):
     st.sidebar.header(f'Information for Material {m}')

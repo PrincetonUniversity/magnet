@@ -5,15 +5,13 @@ from magnet.constants import material_names, excitations
 from magnet.io import load_dataframe
 from magnet.plots import power_loss_scatter_plot
 
+
 def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
     s = f'{material}, {excitation}, f=[{f_min}~{f_max}] Hz, B=[{b_min}~{b_max}] mT, P: kW/m^3'
     if duty is not None:
         s += f', D={duty}'
     return st.subheader(s)
 
-def ui_core_loss_dbs(n=1):
-    for i in range(int(n)):
-        ui_core_loss_db(chr(ord('A') + i))
 
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')

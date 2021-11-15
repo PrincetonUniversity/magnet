@@ -13,6 +13,7 @@ def header(material, excitation):
     s = f'Core Loss Analysis - {material} Material, {excitation} '
     return st.title(s)
 
+
 def ui_core_loss_predict(m):
     st.sidebar.header(f'Information for Material {m}')
     material = st.sidebar.selectbox(f'Material {m}:', material_names)
