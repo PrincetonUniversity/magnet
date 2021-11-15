@@ -24,6 +24,10 @@ def ui_multiple_materials(fn, n=1, *args, **kwargs):
         fn(chr(ord('A') + i), *args, **kwargs)
 
 
+def contributor(name, email):
+    st.sidebar.markdown(f'<h5>{name} ({email})</h5>', unsafe_allow_html=True)
+
+ 
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
@@ -65,12 +69,12 @@ if __name__ == '__main__':
     st.markdown(f"<h6>MAGNet v{__version__}</h6>", unsafe_allow_html=True)
 
     st.sidebar.title('Thanks for using MagNet!')
-    st.sidebar.subheader('Haoran Li (haoranli@princeton.edu)')
-    st.sidebar.subheader('Diego Serrano Lopez (ds9056@princeton.edu)')
-    st.sidebar.subheader('Evan Dogariu (edogariu@princeton.edu)')
-    st.sidebar.subheader('Thomas Guillod (Thomas.Paul.Henri.Guillod@dartmouth.edu)')
-    st.sidebar.subheader('Vineet Bansal (vineetb@princeton.edu)')
-    st.sidebar.subheader('Niraj Jha (jha@princeton.edu)')
-    st.sidebar.subheader('Min Luo (luo@plexim.com )')
-    st.sidebar.subheader('Charles R. Sullivan (charles.r.sullivan@dartmouth.edu)')
-    st.sidebar.subheader('Minjie Chen (minjie@princeton.edu)')
+    contributor('Haoran Li', 'haoranli@princeton.edu')
+    contributor('Diego Serrano Lopez', 'ds9056@princeton.edu')
+    contributor('Evan Dogariu', 'edogariu@princeton.edu')
+    contributor('Thomas Guillod', 'Thomas.Paul.Henri.Guillod@dartmouth.edu')
+    contributor('Vineet Bansal', 'vineetb@princeton.edu')
+    contributor('Niraj Jha', 'jha@princeton.edu')
+    contributor('Min Luo', 'luo@plexim.com')
+    contributor('Charles R. Sullivan', 'charles.r.sullivan@dartmouth.edu')
+    contributor('Minjie Chen', 'minjie@princeton.edu')
