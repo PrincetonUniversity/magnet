@@ -8,6 +8,7 @@ Magnetic Core Loss Modeling using ML
    :maxdepth: 2
    :caption: Contents
 
+   installation
    modules
 
 
