@@ -1,0 +1,11 @@
+numpy
+pandas
+scipy
+torch
+
+[dev]
+pytest
+sphinx
+numpydoc
+sphinxcontrib-bibtex<2.0.0
+sphinx-rtd-theme
