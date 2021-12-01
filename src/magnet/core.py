@@ -54,16 +54,15 @@ def core_loss_iGSE_sine(freq, flux_p2p, k_i=None, alpha=None, beta=None, materia
 
 
 def core_loss_ML_sine(freq, flux_p2p, material):
-    nn = model(material=material)
+    nn = model(material=material,waveform='Sinusoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)),
-                0.5
+                np.log10(float(flux_p2p / 2)/1e3)
             ])
         )
-    ).item()
+    ).item()/1e3
     return core_loss
 
 
@@ -81,16 +80,19 @@ def core_loss_iGSE_sawtooth(freq, flux_p2p, duty_ratio, k_i=None, alpha=None, be
 
 
 def core_loss_ML_sawtooth(freq, flux_p2p, duty_ratio, material):
-    nn = model(material=material)
+    nn = model(material=material,waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)),
-                duty_ratio
+                np.log10(float(flux_p2p / 2)/1e3),
+                duty_ratio,
+                0,
+                1-duty_ratio,
+                0
             ])
         )
-    ).item()
+    ).item()/1e3
     return core_loss
 
 
@@ -110,7 +112,20 @@ def core_loss_iGSE_trapezoid(freq, flux_p2p, duty_ratios, k_i=None, alpha=None, 
 
 
 def core_loss_ML_trapezoid(freq, flux_p2p, duty_ratios, material):
-    raise NotImplementedError
+    nn = model(material=material,waveform='Trapezoidal')
+    core_loss = 10.0 ** nn(
+        torch.from_numpy(
+            np.array([
+                np.log10(float(freq)),
+                np.log10(float(flux_p2p / 2)/1e3),
+                duty_ratios[0],
+                duty_ratios[1]-duty_ratios[0],
+                duty_ratios[2]-duty_ratios[1],
+                1-duty_ratios[2]
+            ])
+        )
+    ).item()/1e3
+    return core_loss
 
 
 def core_loss_ML_arbitrary(freq, flux_p2p, duty_ratio, material):

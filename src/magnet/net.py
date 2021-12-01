@@ -3,11 +3,9 @@ import functools
 import torch
 import torch.nn as nn
 
-NN_ARCHITECTURE = [3, 15, 15, 9, 1]  # Number of neurons in each layer
-
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self,NN_ARCHITECTURE):
         super(Net, self).__init__()
         # Define a fully connected layers model with three inputs (frequency, flux density, duty ratio)
         # and one output (power loss).
@@ -30,11 +28,17 @@ class Net(nn.Module):
 
 
 @functools.lru_cache(maxsize=8)
-def model(material, device='cpu'):
-    with path('magnet.models', f'{material}.sd') as sd_file:
+def model(material, waveform, device='cpu'):
+    with path('magnet.models', f'Model_{material}_{waveform}.sd') as sd_file:
         state_dict = torch.load(sd_file)
 
-    neural_network = Net().double().to(device)
+    if waveform == 'Sinusoidal':
+        NN_ARCHITECTURE = [2,24,24,24,1]
+        neural_network = Net(NN_ARCHITECTURE).double().to(device)
+    elif waveform == 'Trapezoidal':
+        NN_ARCHITECTURE = [6,24,24,24,1]
+        neural_network = Net(NN_ARCHITECTURE).double().to(device)
+        
     neural_network.load_state_dict(state_dict, strict=True)
     neural_network.eval()  # TODO: ??
 
