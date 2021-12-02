@@ -4,13 +4,17 @@ import torch
 from magnet.constants import materials
 from magnet.net import model
 
+# CHANGE LOG:
+# added a default unit for outlier factor as a percentage
+# changed default units of flux density to Tesla
 
 def default_units(prop):
     prop = prop.lower().strip()
     return {
         'frequency': 'Hz',
-        'flux_density': 'mT',
-        'duty_ratio': ''
+        'flux_density': 'T',
+        'duty_ratio': '',
+        'outlier_factor': '%'
     }[prop]
 
 

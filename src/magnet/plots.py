@@ -2,6 +2,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from magnet.core import default_units
 
+# CHANGE LOG (Arielle):
+# Added an outlier scatter plot function
 
 def power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'):
     return px.scatter(
@@ -14,13 +16,32 @@ def power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'):
         color_continuous_scale=px.colors.sequential.Turbo,
         labels={
             x: f'{x} [{default_units(x)}]',
-            'Power_Loss': 'Power Loss [kW/m^3]',
+            'Power_Loss': 'Power Loss [W/m^3]',
             color_prop: f'{color_prop} [{default_units(color_prop)}]'
         }
     )
 
 
-def waveform_visualization(st, x, y, title='Waveform Visualization', x_title='Duty in a Cycle', y_title='Flux Density [mT]', color='firebrick', width=4):
+def outliers_scatter_plot(df):
+    color_prop = 'Outlier_Factor'
+    return px.scatter(
+        df,
+        x=df['Flux_Density'],
+        y=df['Frequency'],
+        color=df[color_prop],
+        log_x=True,
+        log_y=True,
+        color_continuous_scale=px.colors.sequential.Turbo,
+        labels={
+            'Flux_Density': 'Flux Density [T]',
+            'Frequency': 'Frequency [Hz]',
+            color_prop: f'{color_prop} [{default_units(color_prop)}]'
+        }
+    )
+
+
+def waveform_visualization(st, x, y, title='Waveform Visualization', x_title='Duty in a Cycle',
+                           y_title='Flux Density [mT]', color='firebrick', width=4):
     st.subheader(title)
     fig = go.Figure()
     fig.add_trace(

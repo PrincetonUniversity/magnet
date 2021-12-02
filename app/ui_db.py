@@ -4,6 +4,13 @@ from magnet import config as c
 from magnet.constants import material_names, excitations
 from magnet.io import load_dataframe
 from magnet.plots import power_loss_scatter_plot
+from magnet.plots import outliers_scatter_plot
+
+# CHANGE LOG (Arielle):
+# Added outlier plots for each excitation
+
+# TO-DO: modify Bmin/Bmax to be in T / change slider range
+
 
 def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
     s = f'{material}, {excitation}, f=[{f_min}~{f_max}] Hz, B=[{b_min}~{b_max}] mT, P: kW/m^3'
@@ -11,9 +18,11 @@ def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
         s += f', D={duty}'
     return st.subheader(s)
 
+
 def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
         ui_core_loss_db(chr(ord('A') + i))
+
 
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
@@ -44,7 +53,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 st.subheader(xaxis+' - Power Loss')
                 if xaxis == 'Frequency':
@@ -57,6 +66,11 @@ def ui_core_loss_db(m):
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
+            with col3:
+                st.subheader('Outlier Factor')
+                st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
+
+
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file, material+"-"+excitation+".csv","text/csv",key=m)
             st.write("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
@@ -72,7 +86,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 st.subheader(xaxis+' - Power Loss')
                 if xaxis == 'Frequency':
@@ -85,6 +99,10 @@ def ui_core_loss_db(m):
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
+            with col3:
+                st.subheader('Outlier Factor')
+                st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
+
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file,material+"-"+excitation+".csv","text/csv",key=m)
             st.write("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
@@ -102,7 +120,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 st.subheader(xaxis+' - Power Loss')
                 if xaxis == 'Frequency':
@@ -115,6 +133,10 @@ def ui_core_loss_db(m):
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
+            with col3:
+                st.subheader('Outlier Factor')
+                st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
+
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file,material+"-"+excitation+".csv","text/csv",key=m)
             st.write("CSV Column: [Index; Frequency (Hz); Flux Density (mT); Duty Ratio; Power Loss (kW/m^3)]")
