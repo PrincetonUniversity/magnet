@@ -53,23 +53,16 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             with col1:
                 st.subheader(xaxis+' - Power Loss')
                 if xaxis == 'Frequency':
                     st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'), use_container_width=True)
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
-            with col2:          # to be replaced with data driven error graphs
-                st.subheader(xaxis+' - Estimated Error')    
-                if xaxis == 'Frequency':
-                    st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'), use_container_width=True)
-                else:
-                    st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
-            with col3:
+            with col2:
                 st.subheader('Outlier Factor')
                 st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
-
 
             file = df.to_csv().encode('utf-8')
             st.download_button("Download CSV",file, material+"-"+excitation+".csv","text/csv",key=m)
@@ -86,7 +79,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             with col1:
                 st.subheader(xaxis+' - Power Loss')
                 if xaxis == 'Frequency':
@@ -94,12 +87,6 @@ def ui_core_loss_db(m):
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             with col2:
-                st.subheader(xaxis+' - Estimated Error')    
-                if xaxis == 'Frequency':
-                    st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
-                else:
-                    st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
-            with col3:
                 st.subheader('Outlier Factor')
                 st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
 
@@ -120,7 +107,7 @@ def ui_core_loss_db(m):
         if df.empty:
             st.write("Warning: No Data in Range")
         else:
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             with col1:
                 st.subheader(xaxis+' - Power Loss')
                 if xaxis == 'Frequency':
@@ -128,12 +115,6 @@ def ui_core_loss_db(m):
                 else:
                     st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
             with col2:
-                st.subheader(xaxis+' - Estimated Error')    
-                if xaxis == 'Frequency':
-                    st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Duty_Ratio'), use_container_width=True)
-                else:
-                    st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Duty_Ratio'), use_container_width=True)
-            with col3:
                 st.subheader('Outlier Factor')
                 st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
 
