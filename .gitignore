@@ -137,5 +137,13 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Custom list of ignored files/folders
+
+# package version info - managed by setuptools_scm
+src/magnet/_version.py
+
+# MacOS folder customizations
 .DS_Store
+# Pycharm files
 .idea/
+
