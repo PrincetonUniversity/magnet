@@ -13,6 +13,7 @@ def header(material, excitation):
     s = f'Core Loss Analysis - {material} Material, {excitation} '
     return st.title(s)
 
+
 def ui_core_loss_predict(m):
     st.sidebar.header(f'Information for Material {m}')
     material = st.sidebar.selectbox(f'Material {m}:', material_names)
@@ -25,7 +26,7 @@ def ui_core_loss_predict(m):
         col1, col2 = st.columns(2)
         with col1:
             st.header("Waveform Information")
-            Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, 250000, step=1000)
+            Freq = st.slider(f'Frequency (Hz) {m}', 50000, 500000, 200000, step=1000)
             Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, 150, step=1)
             Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
             duty_list = np.linspace(0, 1, 101)
@@ -65,7 +66,7 @@ def ui_core_loss_predict(m):
         col1, col2 = st.columns(2)
         with col1:
             st.header("Waveform Information")
-            Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, 250000, step=1000)
+            Freq = st.slider(f'Frequency (Hz) {m}', 50000, 500000, 200000, step=1000)
             Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, 150, step=10)
             Duty = st.slider(f'Duty Ratio {m}', 0.0, 1.0, 0.5, step=0.01)
             Bias = st.slider(f'DC Bias (mT) {m}', -300, 300, 0, step=10)
@@ -124,7 +125,7 @@ def ui_core_loss_predict(m):
         col1, col2 = st.columns(2)
         with col1:
             st.header("Waveform information")
-            Freq = st.slider(f'Frequency (Hz) {m}', 10000, 500000, step=1000)
+            Freq = st.slider(f'Frequency (Hz) {m}', 50000, 500000,200000, step=1000)
             Flux = st.slider(f'Peak to Peak Flux Density (mT) {m}', 10, 300, step=10)
             Duty1 = st.slider(f'Duty Ratio 1 {m}', 0.0, 1.0, 0.25, step=0.01)
             Duty2 = st.slider(f'Duty Ratio 2 {m}', 0.0, 1.0, 0.5, step=0.01)
@@ -135,6 +136,7 @@ def ui_core_loss_predict(m):
             flux_mean = Flux / 2
             flux_diff = Bias - flux_mean
             flux_list = np.add(flux_read, flux_diff)
+            duty_ratios = [Duty1,Duty2,Duty3]
 
         with col2:
             waveform_visualization(st, x=duty_list, y=flux_list)

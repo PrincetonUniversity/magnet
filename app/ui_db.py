@@ -6,11 +6,6 @@ from magnet.io import load_dataframe
 from magnet.plots import power_loss_scatter_plot
 from magnet.plots import outliers_scatter_plot
 
-# CHANGE LOG (Arielle):
-# Added outlier plots for each excitation
-
-# TO-DO: modify Bmin/Bmax to be in T / change slider range
-
 
 def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
     s = f'{material}, {excitation}, f=[{f_min}~{f_max}] Hz, B=[{b_min}~{b_max}] mT, P: kW/m^3'
@@ -18,12 +13,12 @@ def header(material, excitation, f_min, f_max, b_min, b_max, duty=None):
         s += f', D={duty}'
     return st.subheader(s)
 
-
+  
 def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
         ui_core_loss_db(chr(ord('A') + i))
 
-
+        
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
     material = st.sidebar.selectbox(f'Material {m}:', material_names)
