@@ -5,7 +5,6 @@ import streamlit as st
 from magnet import config
 from magnet.constants import material_names  # , excitations # We don't need "Datasheet"
 
-
 def header(material, excitation):
     s = f'Download Raw Data - {material} Material {excitation} '
     return st.header(s)
