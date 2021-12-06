@@ -1,0 +1,7 @@
+Excitation: Sinusoidal, Sampling time: 1e-08, Temperature of the water tank: 25 C, DC flux density bias: 0 T
+Core material: N49, Core shape: R16.0X9.6X6.3, Primary winding: 10 turns Litz wire, Secondary winding: 10 turns Solid wire awg 20
+Setup --- Series Capacitor: 50V 87.5uF Film, Power Amplifier: Amplifier Research 25A250AMB, Signal Generator: RIGOL DG4102, Oil Bath: Mineral Oil, Water Heater: ANOVA nano
+Scope --- Tektronix DPO5054, Record Lenght: 10000, Horizontal Scale: 10e-6, Ch1: None, Ch2: Voltage, Ch3: Current, Ch4: None, Trigger: Edge CH2 Positive Flank, Acquisition Mode: Hi Res
+Voltage measurement --- P6501R, Termination: 1e6, Bandwidth: 20e6
+Current measurement --- Shunt: T&M Research Products 0.983 W-5-10-1STUD, Coaxial: RG 58/U, Termination: 50, Bandwidth: 20e6
+Measured at Princeton Power Electronics Research Lab, Measurement date: 2021-11-27
