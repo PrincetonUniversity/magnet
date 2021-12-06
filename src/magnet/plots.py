@@ -2,8 +2,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from magnet.core import default_units
 
-# CHANGE LOG (Arielle):
-# Added an outlier scatter plot function
 
 def power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'):
     return px.scatter(
