@@ -4,19 +4,26 @@ import torch
 from magnet.constants import materials
 from magnet.net import model
 
-# CHANGE LOG:
-# added a default unit for outlier factor as a percentage
-# changed default units of flux density to Tesla
 
-def default_units(prop):
+def default_units(prop): # Probably we are not going to need the default units
     prop = prop.lower().strip()
     return {
         'frequency': 'Hz',
         'flux_density': 'T',
-        'duty_ratio': '',
+        # 'duty_ratio': '',
+        'power_loss': '[W/m^3]',
         'outlier_factor': '%'
     }[prop]
 
+def plot_label(prop):
+    prop = prop.lower().strip()
+    return {
+        'frequency': 'Frequency [kHz]',
+        'flux_density': 'Peak Flux Density [mT]',
+        # 'duty_ratio': '',
+        'power_loss': 'Power Loss [kW/m^3]',
+        'outlier_factor': 'Outlier Factor [%]'
+    }[prop]
 
 def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
     """

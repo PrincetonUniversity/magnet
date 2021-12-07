@@ -13,5 +13,5 @@ materials = {
 }
 
 material_names = list(materials.keys())
-excitations = ('Datasheet', 'Sinusoidal', 'Triangle', 'Trapezoidal')
+excitations = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
 prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')

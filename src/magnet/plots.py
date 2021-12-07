@@ -1,41 +1,21 @@
 import plotly.express as px
 import plotly.graph_objects as go
-from magnet.core import default_units
+from magnet.core import plot_label
 
-# CHANGE LOG (Arielle):
-# Added an outlier scatter plot function
 
-def power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'):
+def scatter_plot(df, x='Frequency', y='Power_Loss', c='Flux_Density'):
     return px.scatter(
         df,
         x=df[x],
-        y=df['Power_Loss'],
-        color=df[color_prop],
+        y=df[y],
+        color=df[c],
         log_x=True,
         log_y=True,
         color_continuous_scale=px.colors.sequential.Turbo,
         labels={
-            x: f'{x} [{default_units(x)}]',
-            'Power_Loss': 'Power Loss [W/m^3]',
-            color_prop: f'{color_prop} [{default_units(color_prop)}]'
-        }
-    )
-
-
-def outliers_scatter_plot(df):
-    color_prop = 'Outlier_Factor'
-    return px.scatter(
-        df,
-        x=df['Flux_Density'],
-        y=df['Frequency'],
-        color=df[color_prop],
-        log_x=True,
-        log_y=True,
-        color_continuous_scale=px.colors.sequential.Turbo,
-        labels={
-            'Flux_Density': 'Flux Density [T]',
-            'Frequency': 'Frequency [Hz]',
-            color_prop: f'{color_prop} [{default_units(color_prop)}]'
+            x: f' {plot_label(x)}',
+            y: f' {plot_label(y)}',
+            c: f' {plot_label(c)}'
         }
     )
 
