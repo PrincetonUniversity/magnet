@@ -3,8 +3,7 @@ import streamlit as st
 from magnet import config as c
 from magnet.constants import material_names, excitations
 from magnet.io import load_dataframe
-from magnet.plots import power_loss_scatter_plot
-from magnet.plots import outliers_scatter_plot
+from magnet.plots import scatter_plot
 
 
 def header(material, excitation, f_min, f_max, b_min, b_max, duty_1=None, duty_3=None):
@@ -26,28 +25,27 @@ def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
     material = st.sidebar.selectbox(f'Material {m}:', material_names)
     excitation = st.sidebar.selectbox(f'Excitation {m}:', excitations)
-    xaxis = st.sidebar.selectbox(f'Select X-axis for Plotting {m}:', ['Flux Density', 'Frequency'])
+    caxis = st.sidebar.selectbox(f'Select color-axis for Plotting {m}:', ['Flux Density', 'Frequency', 'Power Loss'])
 
     [Fmin_kHz, Fmax_kHz] = st.sidebar.slider(
-        f'Frequency Range {m} (kHz)',
-        c.streamlit.freq_min/1000,
-        c.streamlit.freq_max/1000,
-        (c.streamlit.freq_min/1000, c.streamlit.freq_max/1000),
-        step=c.streamlit.freq_step/1000
-    )
-    Fmin = Fmin_kHz*1000
-    Fmax = Fmax_kHz*1000
+        "Frequency Range (kHz)",
+        c.streamlit.freq_min/1e3,
+        c.streamlit.freq_max/1e3,
+        (c.streamlit.freq_min/1e3, c.streamlit.freq_max/1e3),
+        step=c.streamlit.freq_step/1e3)
+
+    Fmin = Fmin_kHz * 1e3
+    Fmax = Fmax_kHz * 1e3
 
     [Bmin_mT, Bmax_mT] = st.sidebar.slider(
-        f'Flux Density Range {m} (mT)',
-        c.streamlit.flux_min*1000,
-        c.streamlit.flux_max*1000,
-        (c.streamlit.flux_min*1000, c.streamlit.flux_max*1000),
-        step=c.streamlit.flux_step*1000
-    )
+        "Flux Density Range (mT)",
+        c.streamlit.flux_min*1e3,
+        c.streamlit.flux_max*1e3,
+        (c.streamlit.flux_min*1e3, c.streamlit.flux_max*1e3),
+        step=c.streamlit.flux_step*1e3)
 
-    Bmin = Bmin_mT/1000
-    Bmax = Bmax_mT/1000
+    Bmin = Bmin_mT / 1e3
+    Bmax = Bmax_mT / 1e3
 
     if excitation in ('Datasheet', 'Sinusoidal'):
         st.title(f"Core Loss Database {m}:")
@@ -90,14 +88,18 @@ def ui_core_loss_db(m):
     else:
         col1, col2 = st.columns(2)
         with col1:
-            st.subheader(xaxis+' - Power Loss')
-            if xaxis == 'Frequency':
-                st.plotly_chart(power_loss_scatter_plot(df, x='Frequency', color_prop='Flux_Density'), use_container_width=True)
+            if caxis == 'Frequency':
+                st.subheader('Frequency - Power Loss')
+                st.plotly_chart(scatter_plot(df, x='Frequency', y='Power_Loss', c='Flux_Density'), use_container_width=True)
+            elif caxis == 'Flux Density':
+                st.subheader('Flux Density - Power Loss')
+                st.plotly_chart(scatter_plot(df, x='Flux_Density', y='Power_Loss', c='Frequency'), use_container_width=True)
             else:
-                st.plotly_chart(power_loss_scatter_plot(df, x='Flux_Density', color_prop='Frequency'), use_container_width=True)
+                st.subheader('Flux Density - Frequency')
+                st.plotly_chart(scatter_plot(df, x='Flux_Density', y='Frequency', c='Power_Loss'), use_container_width=True)
         with col2:
             st.subheader('Outlier Factor')
-            st.plotly_chart(outliers_scatter_plot(df), use_container_width=True)
+            st.plotly_chart(scatter_plot(df, x='Flux_Density', y='Frequency', c='Outlier_Factor'), use_container_width=True)
 
         file = df.to_csv().encode('utf-8')
         st.download_button("Download CSV", file, material+"-"+excitation+".csv", "text/csv", key=m)
