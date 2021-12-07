@@ -15,3 +15,4 @@ materials = {
 material_names = list(materials.keys())
 excitations = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
 prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')
+input_dir = "src/magnet/data/"
