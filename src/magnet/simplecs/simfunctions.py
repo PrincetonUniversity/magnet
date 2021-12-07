@@ -6,7 +6,7 @@ import os
 from magnet.simplecs.classes import CircuitModel, MagModel, CoreMaterial
 
 
-def SimulationPLECS(material_type, algorithm_type):
+def SimulationPLECS(material, algorithm):
     path = os.path.dirname(os.path.realpath(__file__))
 
     # Select topology
