@@ -19,7 +19,7 @@ def plot_label(prop):
     prop = prop.lower().strip()
     return {
         'frequency': 'Frequency [kHz]',
-        'flux_density': 'Peak Flux Density [mT]',
+        'flux_density': 'AC Flux Density Amplitude [mT]',
         # 'duty_ratio': '',
         'power_loss': 'Power Loss [kW/m^3]',
         'outlier_factor': 'Outlier Factor [%]'
