@@ -72,7 +72,7 @@ def ui_core_loss_predict(m):
         core_loss_ML = loss(waveform='sine', algorithm='ML', material=material, freq=Freq, flux_p2p=Flux)/1e3
         st.header(f'Core Loss: {round(core_loss_iGSE,2)} kW/m^3 (by iGSE), {round(core_loss_ML,2)} kW/m^3 (by ML)')
 
-    if excitation == "Triangle":
+    if excitation == "Triangular":
         header(material, excitation)
         col1, col2 = st.columns(2)
         with col1:
