@@ -5,7 +5,7 @@ from magnet.constants import materials
 from magnet.net import model
 
 
-def default_units(prop): # Probably we are not going to need the default units
+def default_units(prop):  # Probably we are not going to need the default units
     prop = prop.lower().strip()
     return {
         'frequency': 'Hz',
@@ -37,10 +37,11 @@ def plot_title(prop):
         'flux_density_mt': 'Flux Density',
         'power_loss_kw/m3': 'Power Loss',
         'frequency': 'Frequency',
-        'flux_density': 'Flux Density Amplitude',
+        'flux_density': 'Flux Density',
         'power_loss': 'Power Loss',
         'outlier_factor': 'Outlier Factor'
     }[prop]
+
 
 def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
     """
