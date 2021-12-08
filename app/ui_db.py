@@ -1,10 +1,10 @@
 import streamlit as st
 
 from magnet import config as c
-from magnet.constants import material_names, excitations, input_dir
+from magnet.constants import material_names, excitations
 from magnet.io import load_dataframe
 from magnet.plots import scatter_plot
-
+from importlib.resources import path
 
 def header(material, excitation, f_min, f_max, b_min, b_max, DutyP=None, DutyN=None):
     s = f'{material}, {excitation}, f=[{f_min/1000}~{f_max/1000}] kHz, B=[{b_min*1000}~{b_max*1000}] mT'
@@ -52,8 +52,9 @@ def ui_core_loss_db(m):
     if excitation == 'Triangular':
         read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
 
+    st.title(f"Core Loss Database {m}:")
+
     if excitation in ('Datasheet', 'Sinusoidal'):
-        st.title(f"Core Loss Database {m}:")
         header(material, excitation, Fmin, Fmax, Bmin, Bmax)
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax)
 
@@ -79,8 +80,6 @@ def ui_core_loss_db(m):
         st.sidebar.slider(f'Duty Ratio (Flat) {m} (Fixed)', Duty0-0.01, Duty0+0.01, Duty0, step=1.0, help="D2=D4")
 
         header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
-        # st.header("Note: D=0.2332 means **20% Up + 30% Flat + 30% Down + 20% Flat** from left to right")
-
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
 
     if df.empty:
@@ -88,29 +87,29 @@ def ui_core_loss_db(m):
     else:
         col1, col2 = st.columns(2)
         with col1:
-            if caxis == 'Frequency':
+            if caxis == 'Flux_Density':
                 st.subheader('Frequency - Power Loss')
-                st.plotly_chart(scatter_plot(df, x='Frequency', y='Power_Loss', c='Flux_Density'), use_container_width=True)
-            elif caxis == 'Flux Density':
+                st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'), use_container_width=True)
+            elif caxis == 'Frequency':
                 st.subheader('Flux Density - Power Loss')
-                st.plotly_chart(scatter_plot(df, x='Flux_Density', y='Power_Loss', c='Frequency'), use_container_width=True)
+                st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'), use_container_width=True)
             else:
                 st.subheader('Flux Density - Frequency')
-                st.plotly_chart(scatter_plot(df, x='Flux_Density', y='Frequency', c='Power_Loss'), use_container_width=True)
+                st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'), use_container_width=True)
         with col2:
             st.subheader('Outlier Factor')
-            st.plotly_chart(scatter_plot(df, x='Flux_Density', y='Frequency', c='Outlier_Factor'), use_container_width=True)
+            st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Outlier_Factor'), use_container_width=True)
 
-        file_txt = input_dir + material + "_" + read_excitation + "_Test_Info.txt"
-        txt_info_file = open(file_txt)
-        txt_info_lines = txt_info_file.readlines()
-        st.write(txt_info_lines[0])  # Excitation information (first line of the txt file)
-        st.write(txt_info_lines[1])  # Core information (second line of the txt file)
-        st.write(txt_info_lines[-1])  # Date information (last line of the txt file)
+        with path('magnet.data', f'{material}_{read_excitation}_Test_Info.txt') as file_txt:
+            txt_info_file = open(file_txt)
+            txt_info_lines = txt_info_file.readlines()
+            st.write(txt_info_lines[0])  # Excitation information (first line of the txt file)
+            st.write(txt_info_lines[1])  # Core information (second line of the txt file)
+            st.write(txt_info_lines[-1])  # Date information (last line of the txt file)
 
         file = df.to_csv().encode('utf-8')
         st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
-        st.write("CSV Columns: [Index; Frequency (Hz); Flux Density (T); D1; D2; D3; D4; Outlier factor (%); Power Loss (W/m^3)]")
+        # st.write("CSV Columns: [Index; Frequency (Hz); Flux Density (T); D1; D2; D3; D4; Outlier factor (%); Power Loss (W/m^3)]")
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")

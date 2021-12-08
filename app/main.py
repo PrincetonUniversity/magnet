@@ -58,7 +58,7 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
             
     if function_select == 'Download Raw Data':
-        ui_multiple_materials(ui_download_raw_data, st.session_state.n_material)
+        ui_multiple_materials(ui_download_raw_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
 
     st.title('MagNet Research Team')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg')), width=1000)
