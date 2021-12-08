@@ -1,6 +1,6 @@
 import plotly.express as px
 import plotly.graph_objects as go
-from magnet.core import plot_label
+from magnet.core import plot_label,plot_title
 
 
 def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'):
@@ -16,7 +16,8 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
             x: f' {plot_label(x)}',
             y: f' {plot_label(y)}',
             c: f' {plot_label(c)}'
-        }
+        },
+        title=f' {plot_title(c)} vs {plot_title(x)} and {plot_title(y)}',
     )
 
 

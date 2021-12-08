@@ -2,9 +2,9 @@ import streamlit as st
 
 from magnet import config as c
 from magnet.constants import material_names, excitations
-from magnet.io import load_dataframe
+from magnet.io import load_dataframe, load_metadata
 from magnet.plots import scatter_plot
-from importlib.resources import path
+
 
 def header(material, excitation, f_min, f_max, b_min, b_max, DutyP=None, DutyN=None):
     s = f'{material}, {excitation}, f=[{f_min/1000}~{f_max/1000}] kHz, B=[{b_min*1000}~{b_max*1000}] mT'
@@ -21,95 +21,162 @@ def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
         ui_core_loss_db(chr(ord('A') + i))
 
-        
+
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
-    material = st.sidebar.selectbox(f'Material {m}:', material_names)
-    excitation = st.sidebar.selectbox(f'Excitation {m}:', excitations[1:]) # Datasheet disabled until the new JSON files are availabe
-    caxis = st.sidebar.selectbox(f'Select color-axis for Plotting {m}:', ['Flux Density', 'Frequency', 'Power Loss'])
+    material = st.sidebar.selectbox(f'Material:', material_names, key="material"+m)
+    excitation = st.sidebar.selectbox(f'Excitation:', excitations, key="excitation"+m, index=1)
+    c_axis = st.sidebar.selectbox(f'Select color-axis for Plotting:', ['Flux Density', 'Frequency', 'Power Loss'], key="c_axis"+m)
 
     [Fmin_kHz, Fmax_kHz] = st.sidebar.slider(
-        "Frequency Range (kHz)",
+        f'Frequency Range (kHz)',
         c.streamlit.freq_min/1e3,
         c.streamlit.freq_max/1e3,
         (c.streamlit.freq_min/1e3, c.streamlit.freq_max/1e3),
-        step=c.streamlit.freq_step/1e3)
+        step=c.streamlit.freq_step/1e3,
+        key="frequency"+m)
 
     Fmin = Fmin_kHz*1e3
     Fmax = Fmax_kHz*1e3
 
     [Bmin_mT, Bmax_mT] = st.sidebar.slider(
-        "AC Flux Density Amplitude Range (mT)",
+        f'AC Flux Density Amplitude Range (mT)',
         c.streamlit.flux_min*1e3,
         c.streamlit.flux_max*1e3,
         (c.streamlit.flux_min*1e3, c.streamlit.flux_max*1e3),
-        step=c.streamlit.flux_step*1e3)
+        step=c.streamlit.flux_step*1e3,
+        key="flux"+m)
 
     Bmin = Bmin_mT/1e3
     Bmax = Bmax_mT/1e3
 
-    read_excitation = excitation
+    # TODO: add the temperature filter for the datasheet plot
+    # if excitation == 'Datasheet':
+    # Temperature = st.sidebar.slider(f'Temperature (C) (coming soon)', 0, 120, 25, step=1000, key="temp"+m)
+
+    if excitation == 'Triangular':
+        DutyP = st.sidebar.slider(
+            f'Duty Ratio',
+            c.streamlit.duty_min_db,
+            c.streamlit.duty_max_db,
+            0.5,
+            step=c.streamlit.duty_step_db,
+            key="duty"+m)
+        DutyN = 1.0-DutyP  # For triangular excitation, there are no flat parts
+
+    if excitation == 'Trapezoidal':
+        DutyP = st.sidebar.slider(f'Duty Ratio (Rising)',
+                                  c.streamlit.duty_min_db,
+                                  c.streamlit.duty_max_db-2*c.streamlit.duty_step_db,
+                                  0.4,
+                                  step=c.streamlit.duty_step_db,
+                                  key="dutyP"+m,
+                                  help="D1")
+        DutyNmax = 1.0-DutyP-0.2
+        if DutyP in [0.1, 0.3, 0.5, 0.7]:
+            DutyNmin = 0.1
+        elif DutyP in [0.2, 0.4, 0.6]:
+            DutyNmin = 0.2
+        else:
+            DutyNmin = DutyNmax+0.01
+
+        if DutyNmax <= DutyNmin+0.01:
+            DutyN = st.sidebar.slider(
+                f'Duty Ratio (Falling) Fixed',
+                DutyNmax-0.01,
+                DutyNmax+0.01,
+                DutyNmax,
+                step=1.0,
+                key="dutyN"+m,
+                help="D3, fixed by D1")  # Step outside the range to fix the variable
+        else:
+            DutyN = st.sidebar.slider(
+                f'Duty Ratio (Falling)',
+                DutyNmin,
+                DutyNmax,
+                DutyNmax,
+                step=2*c.streamlit.duty_step_db,
+                key="dutyN"+m,
+                help="D3, maximum imposed by D1")
+        Duty0 = (1.0-DutyP-DutyN)/2.0
+        st.sidebar.slider(
+            f'Duty Ratio (Flat) Fixed',
+            Duty0-0.01,
+            Duty0+0.01,
+            Duty0,
+            step=c.streamlit.duty_step_db,
+            key="duty0"+m,
+            help="D2=D4=(1-D1-D3)/2")  # Step outside the range to fix the variable
+
+    if excitation != 'Datasheet':
+        Outmax = st.sidebar.slider(
+            f'Maximum Outlier Factor (%)',
+            1,
+            20,
+            20,
+            step=1,
+            key="outlier"+m)
+
     if excitation == 'Triangular':
         read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
+    else:
+        read_excitation = excitation
 
     st.title(f"Core Loss Database {m}:")
 
-    if excitation in ('Datasheet', 'Sinusoidal'):
+    if excitation in ('Datasheet','Sinusoidal'):
         header(material, excitation, Fmin, Fmax, Bmin, Bmax)
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax)
 
     if excitation == 'Triangular':
-        DutyP = st.sidebar.slider(f'Duty Ratio {m}', 0.1, 0.9, 0.5, step=0.1)
-        DutyN = 1.0-DutyP  # For triangular excitation, there are no flat parts
-
         header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP)
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
 
     if excitation == 'Trapezoidal':
-        DutyP = st.sidebar.slider(f'Duty Ratio (Rising) {m}', 0.1, 0.7, 0.4, step=0.1, help="D1")
-        if DutyP == 0.1 or DutyP == 0.3 or DutyP == 0.5 or DutyP == 0.7:
-            DutyNmin = 0.1
-        elif DutyP == 0.2 or DutyP == 0.4 or DutyP == 0.6:
-            DutyNmin = 0.2
-        DutyNmax = 1.0-DutyP-0.2
-        if DutyNmax <= DutyNmin+0.01:
-            DutyN = st.sidebar.slider(f'Duty Ratio (Falling) {m} (Fixed)', DutyNmax-0.01, DutyNmax+0.01, DutyNmax, step=1.0, help="D3") # Step outside the range to fix the variable
-        else:
-            DutyN = st.sidebar.slider(f'Duty Ratio (Falling) {m}', DutyNmin, DutyNmax, DutyNmax, step=0.2, help="D3")
-        Duty0 = (1.0-DutyP-DutyN)/2.0
-        st.sidebar.slider(f'Duty Ratio (Flat) {m} (Fixed)', Duty0-0.01, Duty0+0.01, Duty0, step=1.0, help="D2=D4")
-
         header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
+
+    if excitation in 'Datasheet':
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax)
+
+    if excitation in 'Sinusoidal':
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, -1, -1, Outmax)
+
+    if excitation == ('Triangular','Trapezoidal'):
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
 
     if df.empty:
         st.write("Warning: No Data in Range")
     else:
-        col1, col2 = st.columns(2)
-        with col1:
-            if caxis == 'Flux_Density':
-                st.subheader('Frequency - Power Loss')
+        if excitation == 'Datasheet':
+            if c_axis == 'Flux Density':
                 st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'), use_container_width=True)
-            elif caxis == 'Frequency':
-                st.subheader('Flux Density - Power Loss')
+            elif c_axis == 'Frequency':
                 st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'), use_container_width=True)
             else:
-                st.subheader('Flux Density - Frequency')
                 st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'), use_container_width=True)
-        with col2:
-            st.subheader('Outlier Factor')
-            st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Outlier_Factor'), use_container_width=True)
+        else:  # For Sinusoidal, Triangular and Trapezoidal, the outlier function is also plotted
+            col1, col2 = st.columns(2)
+            with col1:
+                if c_axis == 'Flux Density':
+                    st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'), use_container_width=True)
+                elif c_axis == 'Frequency':
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'), use_container_width=True)
+                else:
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'), use_container_width=True)
+            with col2:
+                if c_axis == 'Flux Density':
+                    st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Outlier_Factor'), use_container_width=True)
+                elif c_axis == 'Frequency':
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Outlier_Factor'), use_container_width=True)
+                else:
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Outlier_Factor'), use_container_width=True)
 
-        with path('magnet.data', f'{material}_{read_excitation}_Test_Info.txt') as file_txt:
-            txt_info_file = open(file_txt)
-            txt_info_lines = txt_info_file.readlines()
-            st.write(txt_info_lines[0])  # Excitation information (first line of the txt file)
-            st.write(txt_info_lines[1])  # Core information (second line of the txt file)
-            st.write(txt_info_lines[-1])  # Date information (last line of the txt file)
+        metadata = load_metadata(material, read_excitation)
+        st.write(metadata['info_date'])
+        st.write(metadata['info_excitation'])
+        if excitation != 'Datasheet':
+            st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
 
         file = df.to_csv().encode('utf-8')
         st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
-        # st.write("CSV Columns: [Index; Frequency (Hz); Flux Density (T); D1; D2; D3; D4; Outlier factor (%); Power Loss (W/m^3)]")
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")
