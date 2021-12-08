@@ -108,13 +108,14 @@ def ui_core_loss_db(m):
             key="duty0"+m,
             help="D2=D4=(1-D1-D3)/2")  # Step outside the range to fix the variable
 
-    Outmax = st.sidebar.slider(
-        f'Maximum Outlier Factor (%)',
-        1,
-        20,
-        20,
-        step=1,
-        key="outlier"+m)
+    if excitation != 'Datasheet':
+        Outmax = st.sidebar.slider(
+            f'Maximum Outlier Factor (%)',
+            1,
+            20,
+            20,
+            step=1,
+            key="outlier"+m)
 
     if excitation == 'Triangular':
         read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
@@ -123,16 +124,22 @@ def ui_core_loss_db(m):
 
     st.title(f"Core Loss Database {m}:")
 
-    if excitation in ('Datasheet', 'Sinusoidal'):
+    if excitation in ('Datasheet','Sinusoidal'):
         header(material, excitation, Fmin, Fmax, Bmin, Bmax)
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, -1, -1, Outmax)
 
     if excitation == 'Triangular':
         header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP)
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
 
     if excitation == 'Trapezoidal':
         header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
+
+    if excitation in 'Datasheet':
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax)
+
+    if excitation in 'Sinusoidal':
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, -1, -1, Outmax)
+
+    if excitation == ('Triangular','Trapezoidal'):
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
 
     if df.empty:
