@@ -5,7 +5,7 @@ from magnet.constants import materials
 from magnet.net import model
 
 
-def default_units(prop): # Probably we are not going to need the default units
+def default_units(prop):  # Probably we are not going to need the default units
     prop = prop.lower().strip()
     return {
         'frequency': 'Hz',
@@ -27,6 +27,19 @@ def plot_label(prop):
         'power_loss': 'Power Loss [W/m^3]',
         'duty_ratio': 'Duty Ratio',
         'outlier_factor': 'Outlier Factor [%]'
+    }[prop]
+
+
+def plot_title(prop):
+    prop = prop.lower().strip()
+    return {
+        'frequency_khz': 'Frequency',
+        'flux_density_mt': 'Flux Density',
+        'power_loss_kw/m3': 'Power Loss',
+        'frequency': 'Frequency',
+        'flux_density': 'Flux Density',
+        'power_loss': 'Power Loss',
+        'outlier_factor': 'Outlier Factor'
     }[prop]
 
 
