@@ -28,7 +28,13 @@ if __name__ == '__main__':
         'Duty_4': list,
         'Flux_Density': list,
         'Outlier_Factor': list,
-
+        'Info_Date': str,
+        'Info_Excitation': str,
+        'Info_Core': str,
+        'Info_Setup': str,
+        'Info_Scope': str,
+        'Info_Volt_Meas': str,
+        'Info_Curr_Meas': str,
     }
 
     df_cols = {
@@ -62,7 +68,7 @@ if __name__ == '__main__':
                     assert isinstance(d[k], list) and len(d[k]) == 0
 
             material = d['Material'].lower()
-            excitation = (d['Excitation_Type'] or 'Datasheet').lower()
+            excitation = (d['Excitation_Type']).lower()
             assert filename.lower().endswith(f'{material}_{excitation}_webpage.json')
             # -------------------------
             # DATA VALIDATION
@@ -80,6 +86,13 @@ if __name__ == '__main__':
                 excitation_type=excitation,
                 primary_turns=d['Primary_Turns'] or None,
                 secondary_turns=d['Secondary_Turns'] or None,
+                info_date=d['Info_Date'] or None,
+                info_excitation=d['Info_Excitation'] or None,
+                info_core=d['Info_Core'] or None,
+                info_setup=d['Info_Setup'] or None,
+                info_scope=d['Info_Scope'] or None,
+                info_volt_meas=d['Info_Volt_Meas'] or None,
+                info_curr_meas=d['Info_Curr_Meas'] or None,
             )
 
             df = pd.DataFrame({k: d[k] for k in df_cols}).astype(df_cols)

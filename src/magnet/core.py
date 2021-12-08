@@ -30,6 +30,18 @@ def plot_label(prop):
     }[prop]
 
 
+def plot_title(prop):
+    prop = prop.lower().strip()
+    return {
+        'frequency_khz': 'Frequency',
+        'flux_density_mt': 'Flux Density',
+        'power_loss_kw/m3': 'Power Loss',
+        'frequency': 'Frequency',
+        'flux_density': 'Flux Density Amplitude',
+        'power_loss': 'Power Loss',
+        'outlier_factor': 'Outlier Factor'
+    }[prop]
+
 def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
     """
     Calculate magnetic core loss using iGSE

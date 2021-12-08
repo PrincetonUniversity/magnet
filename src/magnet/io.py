@@ -54,3 +54,10 @@ def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=
 
         data = data.query(query)
     return data
+
+
+def load_metadata(material, excitation):
+    excitation = excitation.lower()
+    with path('magnet.data', f'{material}_{excitation}.h5') as h5file:
+        data, metadata = h5_load(h5file)
+    return metadata
