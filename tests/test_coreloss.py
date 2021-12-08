@@ -1,7 +1,7 @@
 import numpy as np
 from pytest import approx
 from numpy.random import default_rng
-from magnet.core import core_loss_iGSE_arbitrary, core_loss_iGSE_sine, core_loss_iGSE_sawtooth, core_loss_iGSE_trapezoid
+from magnet.core import core_loss_iGSE_arbitrary, core_loss_iGSE_sine, core_loss_iGSE_triangle, core_loss_iGSE_trapezoid
 
 
 def test_coreloss_random1():
@@ -37,7 +37,7 @@ def test_coreless_triangle1():
     duty_ratio = 0.3
     dc_bias = 6.45
 
-    loss = core_loss_iGSE_sawtooth(freq, flux, duty_ratio, k_i=4.88e-10, alpha=1.09, beta=2.44, dc_bias=dc_bias)
+    loss = core_loss_iGSE_triangle(freq, flux, duty_ratio, k_i=4.88e-10, alpha=1.09, beta=2.44, dc_bias=dc_bias)
     assert loss == approx(7.848518722152074)
 
 
