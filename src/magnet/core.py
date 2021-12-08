@@ -25,12 +25,12 @@ def plot_label(prop):
         'outlier_factor': 'Outlier Factor [%]'
     }[prop]
 
-def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
+def core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
     """
     Calculate magnetic core loss using iGSE
 
     :param freq: Frequency of excitation waveform (Hz)
-    :param flux: Relative Flux Density (T) in a single waveform cycle, as an ndarray
+    :param flux_list: Relative Flux Density (T) in a single waveform cycle, as an ndarray
     :param frac_time: Fractional time wrt time period, in [0, 1], in a single waveform cycle, as an ndarray
     :param k_i: Steinmetz coefficient k_i
     :param alpha: Steinmetz coefficient alpha
@@ -44,59 +44,58 @@ def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=N
         k_i, alpha, beta = materials[material]
 
     period = 1 / freq
-    flux_delta = np.amax(flux) - np.amin(flux)
+    flux_delta = np.amax(flux_list) - np.amin(flux_list)
     time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
-    B = np.interp(time, np.multiply(frac_time, period), flux)
+    B = np.interp(time, np.multiply(frac_time, period), flux_list)
     dBdt = np.gradient(B, dt)
     core_loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
 
     return core_loss
 
 
-def core_loss_iGSE_sine(freq, flux_p2p, k_i=None, alpha=None, beta=None, material=None, dc_bias=0, n_interval=10_000):
+def core_loss_iGSE_sine(freq, flux, k_i=None, alpha=None, beta=None, material=None, dc_bias=0, n_interval=10_000):
     if material is not None:
         assert material in materials, f'Material {material} not found'
         k_i, alpha, beta = materials[material]
 
     frac_time = np.linspace(0, 1, n_interval)
-    flux = dc_bias + (flux_p2p / 2) * np.sin(2 * np.pi * frac_time)
+    flux_list = dc_bias + flux * np.sin(2 * np.pi * frac_time)
 
-    return core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material, n_interval=n_interval)
+    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material, n_interval=n_interval)
 
 
-def core_loss_ML_sine(freq, flux_p2p, material):
+def core_loss_ML_sine(freq, flux, material):
     nn = model(material=material,waveform='Sinusoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2))
+                np.log10(float(flux))
             ])
         )
     ).item()
     return core_loss
 
 
-def core_loss_iGSE_sawtooth(freq, flux_p2p, duty_ratio, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
+def core_loss_iGSE_triangle(freq, flux, duty_ratio, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
     if material is not None:
         assert material in materials, f'Material {material} not found'
         k_i, alpha, beta = materials[material]
 
     assert 0 <= duty_ratio <= 1.0, 'Duty ratio should be between 0 and 1'
     frac_time = np.array([0, duty_ratio, 1])
-    flux_amplitude = flux_p2p / 2.0
-    flux = dc_bias + np.array([-flux_amplitude, flux_amplitude, -flux_amplitude])
+    flux_list = dc_bias + np.array([-flux, flux, -flux])
 
-    return core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
+    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
 
 
-def core_loss_ML_sawtooth(freq, flux_p2p, duty_ratio, material):
+def core_loss_ML_triangle(freq, flux, duty_ratio, material):
     nn = model(material=material,waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)),
+                np.log10(float(flux)),
                 duty_ratio,
                 0,
                 1-duty_ratio,
@@ -107,7 +106,7 @@ def core_loss_ML_sawtooth(freq, flux_p2p, duty_ratio, material):
     return core_loss
 
 
-def core_loss_iGSE_trapezoid(freq, flux_p2p, duty_ratios, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
+def core_loss_iGSE_trapezoid(freq, flux, duty_ratios, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
     if material is not None:
         assert material in materials, f'Material {material} not found'
         k_i, alpha, beta = materials[material]
@@ -117,23 +116,23 @@ def core_loss_iGSE_trapezoid(freq, flux_p2p, duty_ratios, k_i=None, alpha=None, 
 
     frac_time = np.array([0, duty_ratios[0], duty_ratios[0]+duty_ratios[2], 1-duty_ratios[2], 1])
     if duty_ratios[0]>duty_ratios[1] :
-        BPplot=flux_p2p/2 # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
+        BPplot=flux # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
         BNplot=-BPplot*((-1-duty_ratios[0]+duty_ratios[1])*duty_ratios[1])/((1-duty_ratios[0]+duty_ratios[1])*duty_ratios[0]) # proportional to (-1-dp+dN)*dn
     else :
-        BNplot=flux_p2p/2 # proportional to (-1-dP+dN)*dN
+        BNplot=flux # proportional to (-1-dP+dN)*dN
         BPplot=-BNplot*((1-duty_ratios[0]+duty_ratios[1])*duty_ratios[0])/((-1-duty_ratios[0]+duty_ratios[1])*duty_ratios[1]) # proportional to (1-dP+dN)*dP
-    flux = dc_bias + np.array([-BPplot,BPplot,BNplot,-BNplot,-BPplot])
+    flux_list = dc_bias + np.array([-BPplot,BPplot,BNplot,-BNplot,-BPplot])
     
-    return core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
+    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
 
 
-def core_loss_ML_trapezoid(freq, flux_p2p, duty_ratios, material):
+def core_loss_ML_trapezoid(freq, flux, duty_ratios, material):
     nn = model(material=material,waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)),
+                np.log10(float(flux)),
                 duty_ratios[0],
                 duty_ratios[2],
                 duty_ratios[1],
@@ -144,7 +143,7 @@ def core_loss_ML_trapezoid(freq, flux_p2p, duty_ratios, material):
     return core_loss
 
 
-def core_loss_ML_arbitrary(material, freq, flux, frac_time):
+def core_loss_ML_arbitrary(material, freq, flux_list, frac_time):
     return 0
     #raise NotImplementedError
 
@@ -152,7 +151,7 @@ def core_loss_ML_arbitrary(material, freq, flux, frac_time):
 def loss(waveform, algorithm, **kwargs):
     if algorithm == 'Machine Learning':
         algorithm = 'ML'
-    assert waveform in ('sine', 'sawtooth', 'trapezoid', 'arbitrary'), f'Unknown waveform {waveform}'
+    assert waveform in ('sine', 'triangle', 'trapezoid', 'arbitrary'), f'Unknown waveform {waveform}'
     assert algorithm in ('iGSE', 'ML' ,'Ref'), f'Unknown algorithm {algorithm}'
 
     fn = globals()[f'core_loss_{algorithm}_{waveform}']
