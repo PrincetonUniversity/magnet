@@ -54,6 +54,80 @@ def ui_core_loss_db(m):
     # if excitation == 'Datasheet':
     # Temperature = st.sidebar.slider(f'Temperature (C) (coming soon)', 0, 120, 25, step=1000, key="temp"+m)
 
+    if excitation == 'Datasheet':
+        read_excitation = excitation
+        st.title(f"Core Loss Database {m}:")
+        header(material, excitation, Fmin, Fmax, Bmin, Bmax)
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax)
+
+        if df.empty:
+            st.write("Warning: No Data in Range")
+        else:
+            if c_axis == 'Flux Density':
+                st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'),
+                                use_container_width=True)
+            elif c_axis == 'Frequency':
+                st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'),
+                                use_container_width=True)
+            else:
+                st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'),
+                                use_container_width=True)
+
+        metadata = load_metadata(material, read_excitation)
+        st.write(metadata['info_date'])
+        st.write(metadata['info_excitation'])
+
+        file = df.to_csv().encode('utf-8')
+        st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
+
+    if excitation == 'Sinusoidal':
+        Outmax = st.sidebar.slider(
+            f'Maximum Outlier Factor (%)',
+            1,
+            20,
+            20,
+            step=1,
+            key="outlier" + m)
+
+        read_excitation = excitation
+
+        st.title(f"Core Loss Database {m}:")
+        header(material, excitation, Fmin, Fmax, Bmin, Bmax)
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, -1, -1, Outmax)
+
+        if df.empty:
+            st.write("Warning: No Data in Range")
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                if c_axis == 'Flux Density':
+                    st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'),
+                                    use_container_width=True)
+                elif c_axis == 'Frequency':
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'),
+                                    use_container_width=True)
+                else:
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'),
+                                    use_container_width=True)
+            with col2:
+                if c_axis == 'Flux Density':
+                    st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Outlier_Factor'),
+                                    use_container_width=True)
+                elif c_axis == 'Frequency':
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Outlier_Factor'),
+                                    use_container_width=True)
+                else:
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Outlier_Factor'),
+                                    use_container_width=True)
+
+            metadata = load_metadata(material, read_excitation)
+            st.write(metadata['info_date'])
+            st.write(metadata['info_excitation'])
+            st.write(metadata['info_core'])
+
+            file = df.to_csv().encode('utf-8')
+            st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
+
     if excitation == 'Triangular':
         DutyP = st.sidebar.slider(
             f'Duty Ratio',
@@ -63,6 +137,52 @@ def ui_core_loss_db(m):
             step=c.streamlit.duty_step_db,
             key="duty"+m)
         DutyN = 1.0-DutyP  # For triangular excitation, there are no flat parts
+        Outmax = st.sidebar.slider(
+            f'Maximum Outlier Factor (%)',
+            1,
+            20,
+            20,
+            step=1,
+            key="outlier"+m)
+
+        read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
+
+        st.title(f"Core Loss Database {m}:")
+        header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP)
+        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
+
+        if df.empty:
+            st.write("Warning: No Data in Range")
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                if c_axis == 'Flux Density':
+                    st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'),
+                                    use_container_width=True)
+                elif c_axis == 'Frequency':
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'),
+                                    use_container_width=True)
+                else:
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'),
+                                    use_container_width=True)
+            with col2:
+                if c_axis == 'Flux Density':
+                    st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Outlier_Factor'),
+                                    use_container_width=True)
+                elif c_axis == 'Frequency':
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Outlier_Factor'),
+                                    use_container_width=True)
+                else:
+                    st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Outlier_Factor'),
+                                    use_container_width=True)
+
+            metadata = load_metadata(material, read_excitation)
+            st.write(metadata['info_date'])
+            st.write(metadata['info_excitation'])
+            st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
+
+            file = df.to_csv().encode('utf-8')
+            st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
 
     if excitation == 'Trapezoidal':
         DutyP = st.sidebar.slider(f'Duty Ratio (Rising)',
@@ -107,8 +227,6 @@ def ui_core_loss_db(m):
             step=c.streamlit.duty_step_db,
             key="duty0"+m,
             help="D2=D4=(1-D1-D3)/2")  # Step outside the range to fix the variable
-
-    if excitation != 'Datasheet':
         Outmax = st.sidebar.slider(
             f'Maximum Outlier Factor (%)',
             1,
@@ -117,42 +235,15 @@ def ui_core_loss_db(m):
             step=1,
             key="outlier"+m)
 
-    if excitation == 'Triangular':
-        read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
-    else:
         read_excitation = excitation
 
-    st.title(f"Core Loss Database {m}:")
-
-    if excitation in ('Datasheet','Sinusoidal'):
-        header(material, excitation, Fmin, Fmax, Bmin, Bmax)
-
-    if excitation == 'Triangular':
-        header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP)
-
-    if excitation == 'Trapezoidal':
+        st.title(f"Core Loss Database {m}:")
         header(material, excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN)
-
-    if excitation in 'Datasheet':
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax)
-
-    if excitation in 'Sinusoidal':
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, -1, -1, Outmax)
-
-    if excitation == ('Triangular','Trapezoidal'):
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
 
-    if df.empty:
-        st.write("Warning: No Data in Range")
-    else:
-        if excitation == 'Datasheet':
-            if c_axis == 'Flux Density':
-                st.plotly_chart(scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'), use_container_width=True)
-            elif c_axis == 'Frequency':
-                st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Power_Loss_kW/m3', c='Frequency_kHz'), use_container_width=True)
-            else:
-                st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Power_Loss_kW/m3'), use_container_width=True)
-        else:  # For Sinusoidal, Triangular and Trapezoidal, the outlier function is also plotted
+        if df.empty:
+            st.write("Warning: No Data in Range")
+        else:
             col1, col2 = st.columns(2)
             with col1:
                 if c_axis == 'Flux Density':
@@ -169,14 +260,13 @@ def ui_core_loss_db(m):
                 else:
                     st.plotly_chart(scatter_plot(df, x='Flux_Density_mT', y='Frequency_kHz', c='Outlier_Factor'), use_container_width=True)
 
-        metadata = load_metadata(material, read_excitation)
-        st.write(metadata['info_date'])
-        st.write(metadata['info_excitation'])
-        if excitation != 'Datasheet':
+            metadata = load_metadata(material, read_excitation)
+            st.write(metadata['info_date'])
+            st.write(metadata['info_excitation'])
             st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
 
-        file = df.to_csv().encode('utf-8')
-        st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
+            file = df.to_csv().encode('utf-8')
+            st.download_button("Download CSV", file, material + "-" + excitation + ".csv", "text/csv", key=m)
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")
