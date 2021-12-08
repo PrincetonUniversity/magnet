@@ -15,15 +15,20 @@ def default_units(prop): # Probably we are not going to need the default units
         'outlier_factor': '%'
     }[prop]
 
+
 def plot_label(prop):
     prop = prop.lower().strip()
     return {
-        'frequency': 'Frequency [kHz]',
-        'flux_density': 'AC Flux Density Amplitude [mT]',
-        # 'duty_ratio': '',
-        'power_loss': 'Power Loss [kW/m^3]',
+        'frequency_khz': 'Frequency [kHz]',
+        'flux_density_mt': 'AC Flux Density Amplitude [mT]',
+        'power_loss_kw/m3': 'Power Loss [kW/m^3]',
+        'frequency': 'Frequency [Hz]',
+        'flux_density': 'AC Flux Density Amplitude [T]',
+        'power_loss': 'Power Loss [W/m^3]',
+        'duty_ratio': 'Duty Ratio',
         'outlier_factor': 'Outlier Factor [%]'
     }[prop]
+
 
 def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
     """

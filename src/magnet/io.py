@@ -25,6 +25,10 @@ def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=
     with path('magnet.data', f'{material}_{excitation}.h5') as h5file:
         data, metadata = h5_load(h5file)
 
+        data['Frequency_kHz'] = data['Frequency'] / 1e3
+        data['Flux_Density_mT'] = data['Flux_Density'] * 1e3
+        data['Power_Loss_kW/m3'] = data['Power_Loss'] / 1e3
+
         if freq_min is None:
             freq_min = data['Frequency'].min()
         if freq_max is None:

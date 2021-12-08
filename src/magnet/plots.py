@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from magnet.core import plot_label
 
 
-def scatter_plot(df, x='Frequency', y='Power_Loss', c='Flux_Density'):
+def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'):
     return px.scatter(
         df,
         x=df[x],
