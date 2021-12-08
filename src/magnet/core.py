@@ -35,14 +35,14 @@ def core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=None, alpha=None, beta=N
     Calculate magnetic core loss using iGSE
 
     :param freq: Frequency of excitation waveform (Hz)
-    :param flux: Relative Flux Density (mT) in a single waveform cycle, as an ndarray
+    :param flux: Relative Flux Density (T) in a single waveform cycle, as an ndarray
     :param frac_time: Fractional time wrt time period, in [0, 1], in a single waveform cycle, as an ndarray
     :param k_i: Steinmetz coefficient k_i
     :param alpha: Steinmetz coefficient alpha
     :param beta: Steinmetz coefficient beta
     :param material: Name of material. If specified, k_i/alpha/beta are ignored.
     :param n_interval: No. of intervals to use to solve iGSE using trapezoidal rule
-    :return: Core loss (kW/m^3)
+    :return: Core loss (W/m^3)
     """
     if material is not None:
         assert material in materials, f'Material {material} not found'
@@ -75,10 +75,10 @@ def core_loss_ML_sine(freq, flux_p2p, material):
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)/1e3)
+                np.log10(float(flux_p2p / 2))
             ])
         )
-    ).item()/1e3
+    ).item()
     return core_loss
 
 
@@ -101,14 +101,14 @@ def core_loss_ML_sawtooth(freq, flux_p2p, duty_ratio, material):
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)/1e3),
+                np.log10(float(flux_p2p / 2)),
                 duty_ratio,
                 0,
                 1-duty_ratio,
                 0
             ])
         )
-    ).item()/1e3
+    ).item()
     return core_loss
 
 
@@ -120,10 +120,15 @@ def core_loss_iGSE_trapezoid(freq, flux_p2p, duty_ratios, k_i=None, alpha=None, 
     assert len(duty_ratios) == 3, 'Please specify 3 values as the Duty Ratios'
     assert np.all((0 <= np.array(duty_ratios)) & (np.array(duty_ratios) <= 1)), 'Duty ratios should be between 0 and 1'
 
-    frac_time = np.array([0, duty_ratios[0], duty_ratios[1], duty_ratios[2], 1])
-    flux_amplitude = flux_p2p / 2.0
-    flux = dc_bias + np.array([-flux_amplitude, flux_amplitude, flux_amplitude, -flux_amplitude, -flux_amplitude])
-
+    frac_time = np.array([0, duty_ratios[0], duty_ratios[0]+duty_ratios[2], 1-duty_ratios[2], 1])
+    if duty_ratios[0]>duty_ratios[1] :
+        BPplot=flux_p2p/2 # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
+        BNplot=-BPplot*((-1-duty_ratios[0]+duty_ratios[1])*duty_ratios[1])/((1-duty_ratios[0]+duty_ratios[1])*duty_ratios[0]) # proportional to (-1-dp+dN)*dn
+    else :
+        BNplot=flux_p2p/2 # proportional to (-1-dP+dN)*dN
+        BPplot=-BNplot*((1-duty_ratios[0]+duty_ratios[1])*duty_ratios[0])/((-1-duty_ratios[0]+duty_ratios[1])*duty_ratios[1]) # proportional to (1-dP+dN)*dP
+    flux = dc_bias + np.array([-BPplot,BPplot,BNplot,-BNplot,-BPplot])
+    
     return core_loss_iGSE_arbitrary(freq, flux, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
 
 
@@ -133,26 +138,27 @@ def core_loss_ML_trapezoid(freq, flux_p2p, duty_ratios, material):
         torch.from_numpy(
             np.array([
                 np.log10(float(freq)),
-                np.log10(float(flux_p2p / 2)/1e3),
+                np.log10(float(flux_p2p / 2)),
                 duty_ratios[0],
-                duty_ratios[1]-duty_ratios[0],
-                duty_ratios[2]-duty_ratios[1],
-                1-duty_ratios[2]
+                duty_ratios[2],
+                duty_ratios[1],
+                duty_ratios[2]
             ])
         )
-    ).item()/1e3
+    ).item()
     return core_loss
 
 
-def core_loss_ML_arbitrary(freq, flux_p2p, duty_ratio, material):
-    raise NotImplementedError
+def core_loss_ML_arbitrary(material, freq, flux, frac_time):
+    return 0
+    #raise NotImplementedError
 
 
 def loss(waveform, algorithm, **kwargs):
     if algorithm == 'Machine Learning':
         algorithm = 'ML'
     assert waveform in ('sine', 'sawtooth', 'trapezoid', 'arbitrary'), f'Unknown waveform {waveform}'
-    assert algorithm in ('iGSE', 'ML'), f'Unknown algorithm {algorithm}'
+    assert algorithm in ('iGSE', 'ML' ,'Ref'), f'Unknown algorithm {algorithm}'
 
     fn = globals()[f'core_loss_{algorithm}_{waveform}']
     return fn(**kwargs)

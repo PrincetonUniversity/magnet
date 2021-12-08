@@ -44,8 +44,8 @@ def test_coreless_triangle1():
 def test_coreless_trapezoid1():
     freq = 10_000
     flux_p2p = 182.0
-    duty_ratios = [0.2, 0.4, 0.8]
+    duty_ratios = [0.2, 0.4, 0.2]
     dc_bias = 6.45
 
     loss = core_loss_iGSE_trapezoid(freq, flux_p2p, duty_ratios, k_i=4.88e-10, alpha=1.09, beta=2.44, dc_bias=dc_bias)
-    assert loss == approx(8.195712329473336)
+    assert loss == approx(7.933593859474901)
