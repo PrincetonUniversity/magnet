@@ -160,18 +160,18 @@ def ui_core_loss_predict(m):
                              config.streamlit.flux_max/2*1e3, 
                              step=config.streamlit.flux_step*1e3,key = f'Flux {m}')   /1e3
             DutyP = st.slider("Duty Ratio (Rising)", 
-                             config.streamlit.flux_step,
-                             1-config.streamlit.flux_step*3,
+                             config.streamlit.duty_step,
+                             1-config.streamlit.duty_step*3,
                              (config.streamlit.duty_min+config.streamlit.duty_max)/2,
                              step=config.streamlit.flux_step,key = f'DutyP {m}')
             DutyN = st.slider("Duty Ratio (Falling)", 
-                             config.streamlit.flux_step, 
-                             1-DutyP-config.streamlit.flux_step*2, 
+                             config.streamlit.duty_step, 
+                             1-DutyP-config.streamlit.duty_step*2, 
                              round((1-DutyP)/3,2), 
-                             step=config.streamlit.flux_step,key = f'DutyN {m}')
+                             step=config.streamlit.duty_step,key = f'DutyN {m}')
             Duty0 = st.slider("Duty Ratio (Flat) (Asymmetric Flat Duty Ratio Coming Soon)",  #TBD
-                             config.streamlit.flux_step, 
-                             1-config.streamlit.flux_step*3, 
+                             config.streamlit.duty_step, 
+                             1-config.streamlit.duty_step*3, 
                              (1-DutyP-DutyN)/2, 
                              step=1e7,key = f'Duty0 {m}')
             Bias = st.slider("DC Bias (mT) (Coming Soon, Default as 0mT)", -300, 300, 0, step=int(1e7),key = f'Bias {m}') # Use step=Inf to disable this slider  #TBD
