@@ -40,7 +40,7 @@ def waveform_visualization(st, x, y, title='Waveform Visualization', x_title='Du
     st.plotly_chart(fig, use_container_width=True)
 
 
-def core_loss_multiple(st, x, y1, y2, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
+def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
     st.subheader(title)
     fig = go.Figure()
     fig.add_trace(
@@ -53,13 +53,32 @@ def core_loss_multiple(st, x, y1, y2, title, x_title, y_title='Power Loss [kW/m^
     )
     fig.add_trace(
         go.Scatter(
+            marker_symbol = "diamond",
+            marker_size = 13,
+            name="iGSE",
+            x=x0,
+            y=y01,
+            line=dict(color='firebrick', width=4)
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
             name="ML",
             x=x,
             y=y2,
             line=dict(color='darkslategrey', width=4)
         )
     )
-
+    fig.add_trace(
+        go.Scatter(
+            marker_symbol = "diamond",
+            marker_size = 13,
+            name="ML",
+            x=x0,
+            y=y02,
+            line=dict(color='darkslategrey', width=4)
+        )
+    )
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title

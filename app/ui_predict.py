@@ -40,6 +40,9 @@ def ui_core_loss_predict(m):
             duty_list = np.linspace(0, 1, 101)
             flux_read = np.multiply(np.sin(np.multiply(duty_list, np.pi * 2)), Flux)
             flux_list = np.multiply(np.add(flux_read, Bias),1e3)
+            
+        core_loss_iGSE = loss(waveform='sine', algorithm='iGSE', material=material, freq=Freq, flux=Flux)/1e3
+        core_loss_ML = loss(waveform='sine', algorithm='ML', material=material, freq=Freq, flux=Flux)/1e3
 
         with col2:
             waveform_visualization(st, x=duty_list, y=flux_list)
@@ -51,7 +54,9 @@ def ui_core_loss_predict(m):
                 x=[freq/1e3 for freq in config.streamlit.core_loss_freq],
                 y1=[1e-3*loss(waveform='sine', algorithm='iGSE', material=material, freq=i, flux=Flux) for i in config.streamlit.core_loss_freq],
                 y2=[1e-3*loss(waveform='sine', algorithm='ML', material=material, freq=i, flux=Flux) for i in config.streamlit.core_loss_freq],
-                #y3=[loss(waveform='sine', algorithm='Ref', material=material, freq=i, flux=Flux) for i in config.streamlit.core_loss_freq],
+                x0 = list([Freq/1e3]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Frequency Sweeping and Fixed Flux Density {Flux*1e3} mT',
                 x_title='Frequency [kHz]'
             )
@@ -62,14 +67,14 @@ def ui_core_loss_predict(m):
                 x=[flux*1e3 for flux in config.streamlit.core_loss_flux],
                 y1=[1e-3*loss(waveform='sine', algorithm='iGSE', material=material, freq=Freq, flux=i) for i in config.streamlit.core_loss_flux],
                 y2=[1e-3*loss(waveform='sine', algorithm='ML', material=material, freq=Freq, flux=i) for i in config.streamlit.core_loss_flux],
-                #y3=[loss(waveform='sine', algorithm='Ref', material=material, freq=Freq, flux=i) for i in config.streamlit.core_loss_flux],
+                x0 = list([Flux*1e3]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Flux Density Sweeping and Fixed Frequency {Freq/1e3} kHz',
                 x_title='Flux Density [mT]'
             )
         
         st.header(f'{material}, {excitation}, f={Freq/1e3} kHz, \u0394B={Flux*1e3} mT, Bias={Bias} mT')
-        core_loss_iGSE = loss(waveform='sine', algorithm='iGSE', material=material, freq=Freq, flux=Flux)/1e3
-        core_loss_ML = loss(waveform='sine', algorithm='ML', material=material, freq=Freq, flux=Flux)/1e3
         st.header(f'Core Loss: {round(core_loss_iGSE,2)} kW/m^3 (by iGSE), {round(core_loss_ML,2)} kW/m^3 (by ML)')
 
     if excitation == "Triangular":
@@ -98,6 +103,9 @@ def ui_core_loss_predict(m):
             flux_mean = Flux
             flux_diff = Bias - flux_mean
             flux_list = np.multiply(np.add(flux_read, flux_diff),1e3)
+            
+        core_loss_iGSE = loss(waveform='triangle', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratio=Duty)/1e3
+        core_loss_ML = loss(waveform='triangle', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratio=Duty)/1e3
 
         with col2:
             waveform_visualization(st, x=duty_list, y=flux_list)
@@ -109,6 +117,9 @@ def ui_core_loss_predict(m):
                 x=[freq/1e3 for freq in config.streamlit.core_loss_freq],
                 y1=[1e-3*loss(waveform='triangle', algorithm='iGSE', material=material, freq=i, flux=Flux, duty_ratio=Duty) for i in config.streamlit.core_loss_freq],
                 y2=[1e-3*loss(waveform='triangle', algorithm='ML', material=material, freq=i, flux=Flux, duty_ratio=Duty) for i in config.streamlit.core_loss_freq],
+                x0 = list([Freq/1e3]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Frequency Sweeping, Fixed Flux Density {Flux*1e3} mT at D={Duty}',
                 x_title='Frequency [kHz]',
                 x_log=True,
@@ -121,6 +132,9 @@ def ui_core_loss_predict(m):
                 x=[flux*1e3 for flux in config.streamlit.core_loss_flux],
                 y1=[1e-3*loss(waveform='triangle', algorithm='iGSE', material=material, freq=Freq, flux=i, duty_ratio=Duty) for i in config.streamlit.core_loss_flux],
                 y2=[1e-3*loss(waveform='triangle', algorithm='ML', material=material, freq=Freq, flux=i, duty_ratio=Duty) for i in config.streamlit.core_loss_flux],
+                x0 = list([Flux*1e3]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Flux Density Sweeping, Fixed Frequency {Freq/1e3} kHz at D={Duty}',
                 x_title='Flux Density [mT]',
                 x_log=True,
@@ -133,6 +147,9 @@ def ui_core_loss_predict(m):
                 x=config.streamlit.core_loss_duty,
                 y1=[1e-3*loss(waveform='triangle', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratio=i) for i in config.streamlit.core_loss_duty],
                 y2=[1e-3*loss(waveform='triangle', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratio=i) for i in config.streamlit.core_loss_duty],
+                x0 = list([Duty]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Duty Ratio Sweeping at {Freq/1e3} kHz and {Flux*1e3} mT',
                 x_title='Duty Ratio',
                 x_log=False,
@@ -140,8 +157,6 @@ def ui_core_loss_predict(m):
             )
 
         st.header(f'{material}, {excitation}, f={Freq/1e3} kHz \u0394B={Flux*1e3} mT, D={Duty}, Bias={Bias} mT')
-        core_loss_iGSE = loss(waveform='triangle', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratio=Duty)/1e3
-        core_loss_ML = loss(waveform='triangle', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratio=Duty)/1e3
         st.header(f'Core Loss: {round(core_loss_iGSE,2)} kW/m^3 (by iGSE), {round(core_loss_ML,2)} kW/m^3 (by ML)')
 
     if excitation == "Trapezoidal":
@@ -185,6 +200,9 @@ def ui_core_loss_predict(m):
             flux_read = [-BPplot,BPplot,BNplot,-BNplot,-BPplot]
             flux_list = np.multiply(np.add(flux_read, Bias),1e3)
             duty_ratios = [DutyP,DutyN,Duty0]
+            
+        core_loss_iGSE = loss(waveform='trapezoid', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratios=duty_ratios)/1e3
+        core_loss_ML = loss(waveform='trapezoid', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratios=duty_ratios)/1e3
 
         with col2:
             waveform_visualization(st, x=duty_list, y=flux_list)
@@ -196,6 +214,9 @@ def ui_core_loss_predict(m):
                 x=[freq/1e3 for freq in config.streamlit.core_loss_freq],
                 y1=[1e-3*loss(waveform='trapezoid', algorithm='iGSE', material=material, freq=i, flux=Flux, duty_ratios=duty_ratios) for i in config.streamlit.core_loss_freq],
                 y2=[1e-3*loss(waveform='trapezoid', algorithm='ML', material=material, freq=i, flux=Flux, duty_ratios=duty_ratios) for i in config.streamlit.core_loss_freq],
+                x0 = list([Freq/1e3]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Frequency Sweeping, Fixed Flux Density {Flux*1e3} mT and Given Duty Ratios',
                 x_title='Frequency [kHz]'
             )
@@ -206,14 +227,14 @@ def ui_core_loss_predict(m):
                 x=[flux*1e3 for flux in config.streamlit.core_loss_flux],
                 y1=[1e-3*loss(waveform='trapezoid', algorithm='iGSE', material=material, freq=Freq, flux=i, duty_ratios=duty_ratios) for i in config.streamlit.core_loss_flux],
                 y2=[1e-3*loss(waveform='trapezoid', algorithm='ML', material=material, freq=Freq, flux=i, duty_ratios=duty_ratios) for i in config.streamlit.core_loss_flux],
+                x0 = list([Flux*1e3]),
+                y01 = list([core_loss_iGSE]),
+                y02 = list([core_loss_ML]),
                 title=f'Core Loss with Flux Density Sweeping, Fixed Frequency {Freq/1e3} kHz and Given Duty Ratios',
                 x_title='Flux Density [mT]'
             )
             
         st.header(f'{material}, {excitation}, f={Freq/1e3} kHz, \u0394B={Flux*1e3} mT, DP={round(DutyP,2)}, DN={round(DutyN,2)}, D0={round(Duty0,2)}, Bias={Bias} mT')
-        duty_ratios = [DutyP,DutyN,Duty0]
-        core_loss_iGSE = loss(waveform='trapezoid', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratios=duty_ratios)/1e3
-        core_loss_ML = loss(waveform='trapezoid', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratios=duty_ratios)/1e3
         st.header(f'Core Loss: {round(core_loss_iGSE,2)} kW/m^3 (by iGSE), {round(core_loss_ML,2)} kW/m^3 (by ML)')
 
     if excitation == "Arbitrary":
