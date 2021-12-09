@@ -21,6 +21,24 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
     )
 
 
+def waveform_visualization_db(st, x, y, title='Waveform Visualization',
+                              x_title='Time [us]', y_title='Flux Density [mT]', color='firebrick', width=4):
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            line=dict(color=color, width=width)
+        )
+    )
+    fig.update_layout(
+        xaxis_title=x_title,
+        yaxis_title=y_title,
+        title=title
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def waveform_visualization(st, x, y, title='Waveform Visualization', x_title='Duty in a Cycle',
                            y_title='Flux Density [mT]', color='firebrick', width=4):
     st.subheader(title)
