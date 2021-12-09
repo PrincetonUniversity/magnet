@@ -20,7 +20,6 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
         title=f' {plot_title(c)} vs {plot_title(x)} and {plot_title(y)}',
     )
 
-
 def waveform_visualization_db(st, x, y, title='Waveform Visualization',
                               x_title='Time [us]', y_title='Flux Density [mT]', color='firebrick', width=4):
     fig = go.Figure()
@@ -37,11 +36,10 @@ def waveform_visualization_db(st, x, y, title='Waveform Visualization',
         title=title
     )
     st.plotly_chart(fig, use_container_width=True)
+  
 
-
-def waveform_visualization(st, x, y, title='Waveform Visualization', x_title='Duty in a Cycle',
-                           y_title='Flux Density [mT]', color='firebrick', width=4):
-    st.subheader(title)
+def waveform_visualization(st, x, y, x_title='Duty in a Cycle', y_title=None, color='firebrick', width=4):
+  
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -59,7 +57,6 @@ def waveform_visualization(st, x, y, title='Waveform Visualization', x_title='Du
 
 
 def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
-    st.subheader(title)
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -99,7 +96,9 @@ def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Pow
     )
     fig.update_layout(
         xaxis_title=x_title,
-        yaxis_title=y_title
+        yaxis_title=y_title,
+        title=title,
+        title_x=0.5
     )
 
     if x_log:
