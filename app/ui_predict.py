@@ -310,16 +310,14 @@ def ui_core_loss_predict(m):
             duty_string = st.text_input("Waveform Pattern Duty in a Cycle (%)",
                                         [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
                                         key = f'Duty {m}')
-            flux_string = st.text_input("Waveform Pattern Relative Flux Density (mT)",
+            flux_string = st.text_input("Waveform Pattern AC Flux Density (mT)",
                                         [0, 10, 20, 10, 20, 30, -10, -30, 10, -10, 0],
                                         key = f'Flux {m}')
             Bias = st.slider("DC Bias (mT)", -300, 300, 0, step=int(1e7),key = f'Bias {m}') #TBD
 
             duty_list = [float(i)/100 for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", duty_string)]
             flux_read = [float(i) for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", flux_string)]
-            flux_mean = np.average(flux_read)
-            flux_diff = Bias - flux_mean
-            flux_list = np.multiply(np.add(flux_read, flux_diff),1e-3)
+            flux_list = np.multiply(np.add(flux_read, Bias),1e-3) #TBD
 
         with col2:
             waveform_visualization(st, x=duty_list, y=np.multiply(flux_list,1e3))
