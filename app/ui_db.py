@@ -2,13 +2,13 @@ import streamlit as st
 import numpy as np
 
 from magnet import config as c
-from magnet.constants import material_names, excitations
+from magnet.constants import material_names, material_manufacturers, excitations
 from magnet.io import load_dataframe, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_db
 
 
 def header(material, excitation, f_min, f_max, b_min, b_max, Bbias=None, Temp=None, DutyP=None, DutyN=None):
-    s = f'{material}, {excitation}, f=[{f_min/1e3}~{f_max/1e3}] kHz, B=[{b_min*1e3}~{b_max*1e3}] mT'
+    s = f'{material_manufacturers[material]} - {material}, {excitation} Data, f=[{f_min/1e3}~{f_max/1e3}] kHz, B=[{b_min*1e3}~{b_max*1e3}] mT'
     if Bbias is not None:
         s += f', Bdc={Bbias*1e3} mT'
     if Temp is not None:
@@ -143,6 +143,10 @@ def ui_core_loss_db(m):
     else:
         read_excitation = excitation
 
+    if excitation in ['Datasheet', 'Sinusoidal']:
+        cycle_list = np.linspace(0, 1, 101)
+        flux_list = np.add(np.multiply(np.sin(np.multiply(cycle_list, np.pi * 2)), Bavg), Bbias)
+
     if read_excitation == 'Datasheet':
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, None, None, None)
     if read_excitation == 'Sinusoidal':
@@ -150,53 +154,64 @@ def ui_core_loss_db(m):
     if read_excitation == 'Trapezoidal':
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
 
-    st.title(f"Core Loss Database {m}:")
+    col1, col2 = st.columns([3, 3])
+    with col1:
+        st.title(f"Core Loss Database {m}:")
+        if excitation == 'Datasheet':
+            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, Temp, None, None)
+        if excitation == 'Sinusoidal':
+            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, None, None)
+        if excitation == 'Triangular':
+            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, DutyP, None)
+        if excitation == 'Trapezoidal':
+            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, DutyP, DutyN)
 
-    if excitation == 'Datasheet':
-        header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, Temp, None, None)
-    if excitation == 'Sinusoidal':
-        header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, None, None)
-    if excitation == 'Triangular':
-        header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, DutyP, None)
-    if excitation == 'Trapezoidal':
-        header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, DutyP, DutyN)
+        if df.empty:
+            st.write("Warning: no data in range, please change the range")
+        else:
 
-    if df.empty: # First and second column not required
-        col1, col2, col3 = st.columns([3, 1, 6])
-    elif excitation == 'Datasheet':  # Second column not required for Datasheet
-        col1, col2, col3 = st.columns([6, 1, 4])
-    else:
-        col1, col2, col3 = st.columns([3, 3, 2])
+            with st.expander("Measurement details"):  # We may use it if there is too much info here in the future
+                metadata = load_metadata(material, read_excitation)
+                st.write(metadata['info_date'])
+                st.write(metadata['info_excitation'])
+                if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
+                    st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
+            st.header(f"Download data:")  # st.markdown('<p style="color:rgb(232,119,34); font-size: 20px;">Download data:</p>', unsafe_allow_html=True)
+            file = df.to_csv().encode('utf-8')
+            st.download_button(
+                "Download CSV",
+                file,
+                material + "-" + excitation + ".csv",
+                "text/csv",
+                key=m,
+                help='Download a CSV file containing the flux, frequency, duty cycle, power loss and outlier factor for the depicted datapoints')
 
-    with col3:  # Representation of the waveform
-
-        if excitation in ['Datasheet', 'Sinusoidal']:
-            cycle_list = np.linspace(0, 1, 101)
-            flux_list = np.add(np.multiply(np.sin(np.multiply(cycle_list, np.pi * 2)), Bavg), Bbias)
-
+    with col2:
         if excitation in ['Triangular', 'Trapezoidal']:
-            cycle_list = [0, DutyP, DutyP+Duty0, 1-Duty0, 1]
+            cycle_list = [0, DutyP, DutyP + Duty0, 1 - Duty0, 1]
             if DutyP > DutyN:
                 BPplot = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
-                BNplot = -(-1-DutyP+DutyN)*DutyN/((1-DutyP+DutyN)*DutyP)  # Proportional to (-1-dp+dN)*dn
+                BNplot = -(-1 - DutyP + DutyN) * DutyN / ((1 - DutyP + DutyN) * DutyP)  # Proportional to (-1-dp+dN)*dn
             else:
                 BNplot = 1  # Proportional to (-1-dP+dN)*dN
-                BPplot = -(1-DutyP+DutyN)*DutyP/((-1-DutyP+DutyN)*DutyN)  # Proportional to (1-dP+dN)*dP
+                BPplot = -(1 - DutyP + DutyN) * DutyP / ((-1 - DutyP + DutyN) * DutyN)  # Proportional to (1-dP+dN)*dP
             flux_list = [-BPplot, BPplot, BNplot, -BNplot, -BPplot]
 
-        x_vector = np.multiply(cycle_list, 1e6/Favg)  # In us
+        x_vector = np.multiply(cycle_list, 1e6 / Favg)  # In us
         flux_vector = np.add(np.multiply(flux_list, Bavg), Bbias)
         y_vector = np.multiply(flux_vector, 1e3)  # In mT
         waveform_visualization_db(
             st,
             x=x_vector,
             y=y_vector,
-            title=f"Waveform visualization: {format(Favg/1e3,'.0f')} kHz, {format(Bavg*1e3,'.0f')} mT")
+            title=f"Waveform visualization: <br> f={format(Favg / 1e3, '.0f')} kHz, B={format(Bavg * 1e3, '.0f')} mT")
 
-    if df.empty:
-        with col1:
-            st.write("Warning: No Data in Range")
+    if df.empty or excitation == 'Datasheet':  # Second column not required
+        col1, col2 = st.columns([5, 1])
     else:
+        col1, col2 = st.columns([3, 3])
+
+    if not df.empty:
         with col1:
             if c_axis == 'Flux Density':
                 st.plotly_chart(scatter_plot(
@@ -242,14 +257,6 @@ def ui_core_loss_db(m):
                         y='Frequency_kHz',
                         c='Outlier_Factor'),
                         use_container_width=True)
-
-        metadata = load_metadata(material, read_excitation)
-        st.write(metadata['info_date'])  # st.write(metadata['info_excitation']) we may add it
-        if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
-            st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
-
-        file = df.to_csv().encode('utf-8')
-        st.download_button("Download CSV with selected data points", file, material + "-" + excitation + ".csv", "text/csv", key=m)
 
     st.sidebar.markdown("""---""")
     st.markdown("""---""")

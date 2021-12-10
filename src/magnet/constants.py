@@ -12,6 +12,19 @@ materials = {
     'N30': (0.0001319, 1.9629, 2.3541),
 }
 
+material_manufacturers = {
+    '3C90': 'Ferroxcube',
+    '3C94': 'Ferroxcube',
+    '3E6': 'Ferroxcube',
+    '3F4': 'Ferroxcube',
+    '77': 'Fair-Rite',
+    '78': 'Fair-Rite',
+    'N27': 'TDK',
+    'N30': 'TDK',
+    'N49': 'TDK',
+    'N87': 'TDK',
+}
+
 material_names = list(materials.keys())
 excitations = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
 prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')
