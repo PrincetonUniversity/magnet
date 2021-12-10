@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from magnet.constants import materials
-from magnet.net import model
+from magnet.net import model, model_lstm
 
 
 def default_units(prop):  # Probably we are not going to need the default units
@@ -163,8 +163,15 @@ def core_loss_ML_trapezoid(freq, flux, duty_ratios, material):
 
 
 def core_loss_ML_arbitrary(material, freq, flux_list, frac_time):
-    return 0
-    #raise NotImplementedError
+    nn = model_lstm(material=material)
+    Ts = 10e-9
+    Num = 5000
+    time = np.linspace(start = Ts, stop = Ts*Num, num = Num)
+    period = 1/freq
+    flux = np.interp(np.remainder(time,period),np.multiply(frac_time,period),flux_list)
+    flux = torch.from_numpy(flux).view(-1, 5000, 1)
+    core_loss = 10.0 ** nn(flux).item()
+    return core_loss
 
 
 def loss(waveform, algorithm, **kwargs):
