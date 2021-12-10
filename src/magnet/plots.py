@@ -33,7 +33,7 @@ def waveform_visualization_db(st, x, y, title='Waveform Visualization',
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title,
-        title=title
+        title=title,  # title_x=0.5
     )
     st.plotly_chart(fig, use_container_width=True)
   
