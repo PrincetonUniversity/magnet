@@ -23,7 +23,7 @@ def ui_download_raw_data(m, streamlit_root):
 
     header(material, excitation)
 
-    data_file = os.path.join(streamlit_root, config.data.raw_data_file.format(material=material, excitation=read_excitation))
+    data_file = os.path.join(streamlit_root, config.streamlit.raw_data_file.format(material=material, excitation=read_excitation))
     with open(data_file, 'rb') as file:
         st.download_button(f'Download Data file', file, os.path.basename(data_file), key=m)
 
