@@ -299,7 +299,6 @@ def ui_core_loss_predict(m):
 
     if excitation == "Arbitrary":
         header(material, excitation)
-        st.header("Coming Soon! This Section is still under development.") #TBD
         col1, col2 = st.columns(2)
         with col1:
             Freq = st.slider("Cycle Frequency (kHz)",
@@ -323,15 +322,17 @@ def ui_core_loss_predict(m):
             waveform_visualization(st, x=duty_list, y=np.multiply(flux_list,1e3))
 
         core_loss_iGSE = loss(waveform='arbitrary', algorithm='iGSE', material=material, freq=Freq, flux_list=flux_list, frac_time=duty_list)/1e3
-        core_loss_ML = loss(waveform='arbitrary', algorithm='ML', material=material, freq=Freq, flux_list=flux_list, frac_time=duty_list)/1e3
-        st.header("Coming Soon! This Section is still under development.") #TBD
+        # core_loss_ML = loss(waveform='arbitrary', algorithm='ML', material=material, freq=Freq, flux_list=flux_list, frac_time=duty_list)/1e3
+        core_loss_ML = 0
         st.subheader(f'Core Loss: {round(core_loss_iGSE,2)} kW/m^3 (by iGSE), {round(core_loss_ML,2)} kW/m^3 (by ML)')
+        st.subheader("Coming Soon! The sequence-based NN model is still under development.") #TBD
+
 
     if excitation == "Simulated":
         header(material, excitation)
         st.header("Coming Soon! This Section is still under development.") #TBD
         core_loss_iGSE = SimulationPLECS(material, algorithm='iGSE')/1e3
-        core_loss_ML = SimulationPLECS(material, algorithm='ML')/1e3
+        # core_loss_ML = SimulationPLECS(material, algorithm='ML')/1e3
         st.subheader(f'Core Loss: {round(core_loss_iGSE,2)} kW/m^3 (by iGSE), {round(core_loss_ML,2)} kW/m^3 (by ML)')
         
     st.markdown("""---""")
