@@ -20,6 +20,7 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
         title=f' {plot_title(c)} vs {plot_title(x)} and {plot_title(y)}',
     )
 
+
 def waveform_visualization_db(st, x, y, title='Waveform Visualization',
                               x_title='Time [us]', y_title='Flux Density [mT]', color='firebrick', width=4):
     fig = go.Figure()
