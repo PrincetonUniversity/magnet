@@ -6,6 +6,8 @@ from magnet import __version__
 from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
 from ui_raw import ui_download_raw_data
+from ui_faq import ui_faq
+
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -36,7 +38,7 @@ if __name__ == '__main__':
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
         'Select MagNet Function:',
-        ('Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data')
+        ('Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data', 'Frequently Asked Questions')
     )
 
     st.title('Princeton-Dartmouth-Plexim MagNet Project')
@@ -59,6 +61,9 @@ if __name__ == '__main__':
             
     if function_select == 'Download Waveform Data':
         ui_multiple_materials(ui_download_raw_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
+        
+    if function_select == 'Frequently Asked Questions':
+        ui_multiple_materials(ui_faq)
 
     st.title('MagNet Research Team')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg')), width=1000)
