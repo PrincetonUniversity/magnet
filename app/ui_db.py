@@ -8,7 +8,7 @@ from magnet.plots import scatter_plot, waveform_visualization_db
 
 
 def header(material, excitation, f_min, f_max, b_min, b_max, Bbias=None, Temp=None, DutyP=None, DutyN=None):
-    s = f'{material_manufacturers[material]} - {material}, {excitation} Data, f=[{f_min/1e3}~{f_max/1e3}] kHz, B=[{b_min*1e3}~{b_max*1e3}] mT'
+    s = f"{material_manufacturers[material]} - {material}, {excitation} Data, f=[{format(f_min/1e3,'.0f')}~{format(f_max/1e3, '.0f')}] kHz, B=[{format(b_min*1e3, '.0f') }~{format(b_max*1e3, '.0f')}] mT"
     if Bbias is not None:
         s += f', Bdc={Bbias*1e3} mT'
     if Temp is not None:
@@ -21,7 +21,7 @@ def header(material, excitation, f_min, f_max, b_min, b_max, Bbias=None, Temp=No
             s += f", D1={format(DutyP,'.1f')}, D2={format(Duty0,'.1f')}, D3={format(DutyN,'.1f')}, D4={format(Duty0,'.1f')}"
     return st.subheader(s)
 
-  
+
 def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
         ui_core_loss_db(chr(ord('A') + i))
@@ -170,13 +170,13 @@ def ui_core_loss_db(m):
             st.write("Warning: no data in range, please change the range")
         else:
 
-            with st.expander("Measurement details"):  # We may use it if there is too much info here in the future
+            with st.expander("Measurement details"):
                 metadata = load_metadata(material, read_excitation)
                 st.write(metadata['info_date'])
                 st.write(metadata['info_excitation'])
                 if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
                     st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
-            st.header(f"Download data:")  # st.markdown('<p style="color:rgb(232,119,34); font-size: 20px;">Download data:</p>', unsafe_allow_html=True)
+            st.header(f"Download data:")
             file = df.to_csv().encode('utf-8')
             st.download_button(
                 "Download CSV",
@@ -184,7 +184,8 @@ def ui_core_loss_db(m):
                 material + "-" + excitation + ".csv",
                 "text/csv",
                 key=m,
-                help='Download a CSV file containing the flux, frequency, duty cycle, power loss and outlier factor for the depicted datapoints')
+                help='Download a CSV file containing the flux, frequency, duty cycle,'
+                     'power loss and outlier factor for the depicted datapoints')
 
     with col2:
         if excitation in ['Triangular', 'Trapezoidal']:
@@ -219,7 +220,7 @@ def ui_core_loss_db(m):
                     x='Frequency_kHz',
                     y='Power_Loss_kW/m3',
                     c='Flux_Density_mT'),
-                    use_container_width=True)
+                    use_container_width=True,)
             elif c_axis == 'Frequency':
                 st.plotly_chart(scatter_plot(
                     df,
