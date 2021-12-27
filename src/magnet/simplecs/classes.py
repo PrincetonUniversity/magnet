@@ -1,21 +1,14 @@
 import streamlit as st
 from PIL import Image
-import json
-import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
-import re
-import pandas as pd
 import xmlrpc.client as xmlrpclib
-import scipy.io as sio
-import io
-import altair as alt
 import os
 import os.path
 
 
 class CircuitModel(object):
     cntInst = 0
+
     def __init__(self, name_init):
         self.Name = name_init
         self.opt = {'ModelVars': {}}
@@ -71,14 +64,14 @@ class CircuitModel(object):
         fig1 = go.Figure()
         fig1.add_trace(go.Scatter(x=self.Time, y=self.V, line=dict(color='gray', width=2)))
         fig1.update_layout(xaxis_title='Time', yaxis_title='Primary winding voltage [V]',
-        autosize=False,
-        margin=dict(
-            autoexpand=False,
-            l=50,
-            r=20,
-            t=50,
-        ),
-        plot_bgcolor='white')
+                           autosize=False,
+                           margin=dict(
+                               autoexpand=False,
+                               l=50,
+                               r=20,
+                               t=50,
+                           ),
+                           plot_bgcolor='white')
         fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         st.plotly_chart(fig1, use_container_width=True)
@@ -86,14 +79,14 @@ class CircuitModel(object):
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(x=self.Time, y=self.I, line=dict(color='gray', width=2)))
         fig2.update_layout(xaxis_title='Time', yaxis_title='Primary winding current [A]',
-        autosize=False,
-        margin=dict(
-            autoexpand=False,
-            l=50,
-            r=20,
-            t=50,
-        ),
-        plot_bgcolor='white')
+                           autosize=False,
+                           margin=dict(
+                               autoexpand=False,
+                               l=50,
+                               r=20,
+                               t=50,
+                           ),
+                           plot_bgcolor='white')
         fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         st.plotly_chart(fig2, use_container_width=True)

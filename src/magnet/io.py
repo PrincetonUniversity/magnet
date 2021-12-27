@@ -2,6 +2,7 @@ from importlib.resources import path
 import pandas as pd
 import streamlit as st
 
+
 # Adapted from
 #   https://stackoverflow.com/questions/29129095/save-additional-attributes-in-pandas-dataframe/29130146#29130146
 def h5_store(filename, df, **kwargs):
@@ -16,6 +17,7 @@ def h5_load(filename):
         data = store['dataframe']
         metadata = store.get_storer('dataframe').attrs.metadata
         return data, metadata
+
 
 @st.cache
 def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=None, flux_max=None,
@@ -34,7 +36,7 @@ def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=
         if freq_max is None:
             freq_max = data['Frequency'].max()
         if flux_min is None:
-            freq_min = data['Flux_Density'].min()
+            flux_min = data['Flux_Density'].min()
         if flux_max is None:
             flux_max = data['Flux_Density'].max()
         if out_max is None:
