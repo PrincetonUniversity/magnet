@@ -1,6 +1,6 @@
 import plotly.express as px
 import plotly.graph_objects as go
-from magnet.core import plot_label,plot_title
+from magnet.core import plot_label, plot_title
 
 
 def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT'):
@@ -57,7 +57,8 @@ def waveform_visualization(st, x, y, x_title='Duty in a Cycle', y_title=None, co
     st.plotly_chart(fig, use_container_width=True)
 
 
-def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
+def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True,
+                       y_log=True):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -69,8 +70,8 @@ def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Pow
     )
     fig.add_trace(
         go.Scatter(
-            marker_symbol = "diamond",
-            marker_size = 13,
+            marker_symbol="diamond",
+            marker_size=13,
             name="iGSE",
             x=x0,
             y=y01,
@@ -87,8 +88,8 @@ def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Pow
     )
     fig.add_trace(
         go.Scatter(
-            marker_symbol = "diamond",
-            marker_size = 13,
+            marker_symbol="diamond",
+            marker_size=13,
             name="ML",
             x=x0,
             y=y02,

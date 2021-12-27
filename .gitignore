@@ -147,10 +147,3 @@ src/magnet/_version.py
 
 # Pycharm files
 .idea/
-
-# src/magnet/data/N27_datasheet.h5
-# src/magnet/data/N27_triangle.h5
-# src/magnet/data/N49_datasheet.h5
-# src/magnet/data/N49_triangle.h5
-# src/magnet/data/N87_datasheet.h5
-# src/magnet/data/N87_triangle.h5
