@@ -18,12 +18,16 @@ def h5_load(filename):
         return data, metadata
 
 @st.cache
-def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=None, flux_max=None, duty_ratios=None,
-              duty_ratio_margin=0):
-
+def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=None, flux_max=None,
+                   duty_1=None, duty_3=None, out_max=None):
+    duty_margin = 0.01
     excitation = excitation.lower()
     with path('magnet.data', f'{material}_{excitation}.h5') as h5file:
         data, metadata = h5_load(h5file)
+
+        data['Frequency_kHz'] = data['Frequency'] / 1e3
+        data['Flux_Density_mT'] = data['Flux_Density'] * 1e3
+        data['Power_Loss_kW/m3'] = data['Power_Loss'] / 1e3
 
         if freq_min is None:
             freq_min = data['Frequency'].min()
@@ -33,12 +37,33 @@ def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=
             freq_min = data['Flux_Density'].min()
         if flux_max is None:
             flux_max = data['Flux_Density'].max()
+        if out_max is None:
+            out_max = data['Outlier_Factor'].max()
+        if duty_1 is None:
+            d1_max = data['Duty_1'].max()
+            d1_min = data['Duty_1'].min()
+        else:
+            d1_max = duty_1 + duty_margin
+            d1_min = duty_1 - duty_margin
+        if duty_3 is None:
+            d3_max = data['Duty_3'].max()
+            d3_min = data['Duty_3'].min()
+        else:
+            d3_max = duty_3 + duty_margin
+            d3_min = duty_3 - duty_margin
 
-        query = f'({freq_min} <= Frequency <= {freq_max}) & ({flux_min} <= Flux_Density <= {flux_max})'
-        if duty_ratios is not None:
-            query += '& (' + \
-                     '|'.join([f'({d - duty_ratio_margin} <= Duty_Ratio <= {d + duty_ratio_margin})' for d in duty_ratios]) + \
-                     ')'
+        query = f'({freq_min} <= Frequency <= {freq_max}) & ' \
+                f'({flux_min} <= Flux_Density <= {flux_max}) & ' \
+                f'({d1_min} <= Duty_1 <= {d1_max}) & ' \
+                f'({d3_min} <= Duty_3 <= {d3_max}) & ' \
+                f'({-out_max} <= Outlier_Factor <= {out_max})'
 
         data = data.query(query)
     return data
+
+
+def load_metadata(material, excitation):
+    excitation = excitation.lower()
+    with path('magnet.data', f'{material}_{excitation}.h5') as h5file:
+        data, metadata = h5_load(h5file)
+    return metadata

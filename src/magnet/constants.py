@@ -1,10 +1,30 @@
 materials = {
     # material => (k_i, alpha, beta)
-    'N27': (4.88e-10, 1.09, 2.44),
-    'N87': (5.77e-12, 1.43, 2.49),
-    'N49': (1.18e-12, 1.27, 3.17)
+    'N27': (0.066924, 1.5158, 2.5254),
+    'N87': (0.15178, 1.4722, 2.6147),
+    'N49': (0.13263, 1.4987, 3.2337),
+    '3C90': (0.042177, 1.5424, 2.6152),
+    '3C94': (0.012263, 1.6159, 2.4982),
+    '3E6': (0.00015324, 1.9098, 2.0903),
+    '3F4': (0.75798, 1.4146, 3.1455),
+    '77': (0.053696, 1.5269, 2.519),
+    '78': (0.016878, 1.609, 2.5432),
+    'N30': (0.0001319, 1.9629, 2.3541),
+}
+
+material_manufacturers = {
+    '3C90': 'Ferroxcube',
+    '3C94': 'Ferroxcube',
+    '3E6': 'Ferroxcube',
+    '3F4': 'Ferroxcube',
+    '77': 'Fair-Rite',
+    '78': 'Fair-Rite',
+    'N27': 'TDK',
+    'N30': 'TDK',
+    'N49': 'TDK',
+    'N87': 'TDK',
 }
 
 material_names = list(materials.keys())
-excitations = ('Datasheet', 'Sinusoidal', 'Triangle', 'Trapezoidal')
+excitations = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
 prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')

@@ -12,28 +12,39 @@ OUTPUT_H5_DIR = '../src/magnet/data'
 if __name__ == '__main__':
 
     cols = {
-        'Core_Shape': str,
-        'Current': type(None),  # placeholder since no valid values encountered
-        'Duty_Ratio': list,
-        'Effective_Area': float,
-        'Effective_Length': float,
-        'Effective_Volume': float,
-        'Excitation_Type': str,
-        'Flux_Density': list,
-        'Frequency': list,
         'Material': str,
-        'Power_Loss': list,
+        'Core_Shape': str,
+        'Effective_Area': float,
+        'Effective_Volume': float,
+        'Effective_Length': float,
         'Primary_Turns': int,
-        'Sampling_Time': float,
         'Secondary_Turns': int,
-        'Time': type(None),  # placeholder since no valid values encountered
-        'Voltage': type(None),  # placeholder since no valid values encountered
+        'Excitation_Type': str,
+        'Duty_1': list,
+        'Duty_2': list,
+        'Duty_3': list,
+        'Duty_4': list,
+        'Frequency': list,
+        'Flux_Density': list,
+        'Power_Loss': list,
+        'Outlier_Factor': list,
+        'Info_Date': str,
+        'Info_Excitation': str,
+        'Info_Core': str,
+        'Info_Setup': str,
+        'Info_Scope': str,
+        'Info_Volt_Meas': str,
+        'Info_Curr_Meas': str,
     }
 
     df_cols = {
         'Frequency': float,
         'Flux_Density': float,
-        'Duty_Ratio': float,
+        'Duty_1': float,
+        'Duty_2': float,
+        'Duty_3': float,
+        'Duty_4': float,
+        'Outlier_Factor': float,
         'Power_Loss': float
     }
 
@@ -57,8 +68,8 @@ if __name__ == '__main__':
                     assert isinstance(d[k], list) and len(d[k]) == 0
 
             material = d['Material'].lower()
-            excitation = (d['Excitation_Type'] or 'Datasheet').lower()
-            assert filename.lower().endswith(f'{material}_{excitation}_light.json')
+            excitation = (d['Excitation_Type']).lower()
+            assert filename.lower().endswith(f'{material}_{excitation}_webpage.json')
             # -------------------------
             # DATA VALIDATION
             # -------------------------
@@ -74,8 +85,14 @@ if __name__ == '__main__':
                 effective_volume=d['Effective_Volume'] or None,
                 excitation_type=excitation,
                 primary_turns=d['Primary_Turns'] or None,
-                sampling_time=d['Sampling_Time'] or None,
                 secondary_turns=d['Secondary_Turns'] or None,
+                info_date=d['Info_Date'] or None,
+                info_excitation=d['Info_Excitation'] or None,
+                info_core=d['Info_Core'] or None,
+                info_setup=d['Info_Setup'] or None,
+                info_scope=d['Info_Scope'] or None,
+                info_volt_meas=d['Info_Volt_Meas'] or None,
+                info_curr_meas=d['Info_Curr_Meas'] or None,
             )
 
             df = pd.DataFrame({k: d[k] for k in df_cols}).astype(df_cols)
