@@ -5,7 +5,7 @@ import pandas as pd
 
 from magnet.io import h5_store
 
-INPUT_JSON_DIR = '../src/magnet/data'
+INPUT_JSON_DIR = '../src/magnet/data/datasheet'
 OUTPUT_H5_DIR = '../src/magnet/data'
 
 
@@ -13,38 +13,17 @@ if __name__ == '__main__':
 
     cols = {
         'Material': str,
-        'Core_Shape': str,
-        'Effective_Area': float,
-        'Effective_Volume': float,
-        'Effective_Length': float,
-        'Primary_Turns': int,
-        'Secondary_Turns': int,
-        'Excitation_Type': str,
-        'Duty_1': list,
-        'Duty_2': list,
-        'Duty_3': list,
-        'Duty_4': list,
+        'Excitation': str,
         'Frequency': list,
         'Flux_Density': list,
+        'Temperature': list,
         'Power_Loss': list,
-        'Outlier_Factor': list,
-        'Info_Date': str,
-        'Info_Excitation': str,
-        'Info_Core': str,
-        'Info_Setup': str,
-        'Info_Scope': str,
-        'Info_Volt_Meas': str,
-        'Info_Curr_Meas': str,
     }
 
     df_cols = {
         'Frequency': float,
         'Flux_Density': float,
-        'Duty_1': float,
-        'Duty_2': float,
-        'Duty_3': float,
-        'Duty_4': float,
-        'Outlier_Factor': float,
+        'Temperature': float,
         'Power_Loss': float
     }
 
@@ -68,8 +47,8 @@ if __name__ == '__main__':
                     assert isinstance(d[k], list) and len(d[k]) == 0
 
             material = d['Material'].lower()
-            excitation = (d['Excitation_Type']).lower()
-            assert filename.lower().endswith(f'{material}_{excitation}_webpage.json')
+            excitation = (d['Excitation']).lower()
+            assert filename.lower().endswith(f'{material}_{excitation}.json')
             # -------------------------
             # DATA VALIDATION
             # -------------------------
@@ -79,20 +58,7 @@ if __name__ == '__main__':
             # ----------
             m = dict(
                 material=material,
-                core_shape=d['Core_Shape'] or None,
-                effective_area=d['Effective_Area'] or None,
-                effective_length=d['Effective_Length'] or None,
-                effective_volume=d['Effective_Volume'] or None,
                 excitation_type=excitation,
-                primary_turns=d['Primary_Turns'] or None,
-                secondary_turns=d['Secondary_Turns'] or None,
-                info_date=d['Info_Date'] or None,
-                info_excitation=d['Info_Excitation'] or None,
-                info_core=d['Info_Core'] or None,
-                info_setup=d['Info_Setup'] or None,
-                info_scope=d['Info_Scope'] or None,
-                info_volt_meas=d['Info_Volt_Meas'] or None,
-                info_curr_meas=d['Info_Curr_Meas'] or None,
             )
 
             df = pd.DataFrame({k: d[k] for k in df_cols}).astype(df_cols)

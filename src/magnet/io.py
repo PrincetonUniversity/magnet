@@ -61,6 +61,39 @@ def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=
         data = data.query(query)
     return data
 
+@st.cache
+def load_dataframe_datasheet(material, freq_min=None, freq_max=None, flux_min=None, flux_max=None,
+                   temp=None):
+    temp_margin = 1.0
+    with path('magnet.data', f'{material}_datasheet.h5') as h5file:
+        data, metadata = h5_load(h5file)
+
+        data['Frequency_kHz'] = data['Frequency'] / 1e3
+        data['Flux_Density_mT'] = data['Flux_Density'] * 1e3
+        data['Power_Loss_kW/m3'] = data['Power_Loss'] / 1e3
+
+        if freq_min is None:
+            freq_min = data['Frequency'].min()
+        if freq_max is None:
+            freq_max = data['Frequency'].max()
+        if flux_min is None:
+            freq_min = data['Flux_Density'].min()
+        if flux_max is None:
+            flux_max = data['Flux_Density'].max()
+        if temp is None:
+            temp_max = data['Temperature'].max()
+            temp_min = data['Temperature'].min()
+        else:
+            temp_max = temp + temp_margin
+            temp_min = temp - temp_margin
+
+        query = f'({freq_min} <= Frequency <= {freq_max}) & ' \
+                f'({flux_min} <= Flux_Density <= {flux_max}) & ' \
+                f'({temp_min} <= Temperature <= {temp_max})'
+
+        data = data.query(query)
+    return data
+
 
 def load_metadata(material, excitation):
     excitation = excitation.lower()
