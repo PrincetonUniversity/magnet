@@ -42,7 +42,8 @@ def plot_title(prop):
     }[prop]
 
 
-def core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=None, alpha=None, beta=None, material=None, n_interval=10_000):
+def core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=None, alpha=None, beta=None, material=None,
+                             n_interval=10_000):
 
     """
     Calculate magnetic core loss using iGSE
@@ -79,11 +80,12 @@ def core_loss_iGSE_sine(freq, flux, k_i=None, alpha=None, beta=None, material=No
     frac_time = np.linspace(0, 1, n_interval)
     flux_list = dc_bias + flux * np.sin(2 * np.pi * frac_time)
 
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material, n_interval=n_interval)
+    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material,
+                                    n_interval=n_interval)
 
 
 def core_loss_ML_sine(freq, flux, material):
-    nn = model(material=material,waveform='Sinusoidal')
+    nn = model(material=material, waveform='Sinusoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
@@ -108,7 +110,7 @@ def core_loss_iGSE_triangle(freq, flux, duty_ratio, k_i=None, alpha=None, beta=N
 
 
 def core_loss_ML_triangle(freq, flux, duty_ratio, material):
-    nn = model(material=material,waveform='Trapezoidal')
+    nn = model(material=material, waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
             np.array([
@@ -133,13 +135,17 @@ def core_loss_iGSE_trapezoid(freq, flux, duty_ratios, k_i=None, alpha=None, beta
     assert np.all((0 <= np.array(duty_ratios)) & (np.array(duty_ratios) <= 1)), 'Duty ratios should be between 0 and 1'
 
     frac_time = np.array([0, duty_ratios[0], duty_ratios[0]+duty_ratios[2], 1-duty_ratios[2], 1])
-    if duty_ratios[0]>duty_ratios[1]:
-        BPplot = flux  # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
+
+    if duty_ratios[0] > duty_ratios[1]:
+        # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
+        BPplot = flux
         BNplot = -BPplot*((-1-duty_ratios[0]+duty_ratios[1])*duty_ratios[1])/((1-duty_ratios[0]+duty_ratios[1])*duty_ratios[0]) # proportional to (-1-dp+dN)*dn
     else:
         BNplot = flux  # proportional to (-1-dP+dN)*dN
         BPplot = -BNplot*((1-duty_ratios[0]+duty_ratios[1])*duty_ratios[0])/((-1-duty_ratios[0]+duty_ratios[1])*duty_ratios[1]) # proportional to (1-dP+dN)*dP
-    flux_list = dc_bias + np.array([-BPplot,BPplot,BNplot,-BNplot,-BPplot])
+    
+    flux_list = dc_bias + np.array([-BPplot, BPplot, BNplot, -BNplot, -BPplot])
+
     
     return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
 
@@ -167,7 +173,7 @@ def core_loss_ML_arbitrary(material, freq, flux_list, frac_time):
     Num = 5000
     time = np.linspace(start=Ts, stop=Ts*Num, num=Num)
     period = 1/freq
-    flux = np.interp(np.remainder(time,period),np.multiply(frac_time,period),flux_list)
+    flux = np.interp(np.remainder(time, period), np.multiply(frac_time, period), flux_list)
     flux = torch.from_numpy(flux).view(-1, 5000, 1)
     core_loss = 10.0 ** nn(flux).item()
     return core_loss
