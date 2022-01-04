@@ -49,9 +49,10 @@ if __name__ == '__main__':
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    clicked = st.sidebar.button("Add another material")
-    if clicked:
-        st.session_state.n_material += 1
+    if function_select!= 'Frequently Asked Questions':
+        clicked = st.sidebar.button("Add another material")
+        if clicked:
+            st.session_state.n_material += 1
 
     if function_select == 'Core Loss Database':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
