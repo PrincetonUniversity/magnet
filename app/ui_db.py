@@ -29,9 +29,14 @@ def ui_core_loss_dbs(n=1):
 
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
-    material = st.sidebar.selectbox(f'Material:', material_names, key="material"+m)
-    excitation = st.sidebar.selectbox(f'Excitation:', excitations, key="excitation"+m, index=1)
-    c_axis = st.sidebar.selectbox(f'Select color-axis for Plotting:', ['Flux Density', 'Frequency', 'Power Loss'], key="c_axis"+m)
+    excitation = st.sidebar.selectbox(f'Excitation:', excitations, key="excitation" + m, index=1)
+    if excitation == 'Datasheet':  # No datasheet info for 3E6 or N30
+        material = st.sidebar.selectbox(f'Material:', [elem for elem in material_names if elem not in {'N30', '3E6'}],
+                                        key="material"+m)
+    else:
+        material = st.sidebar.selectbox(f'Material:', material_names, key="material" + m)
+    c_axis = st.sidebar.selectbox(f'Select color-axis for Plotting:', ['Flux Density', 'Frequency', 'Power Loss'],
+                                  key="c_axis"+m)
 
     [Fmin_kHz, Fmax_kHz] = st.sidebar.slider(
         f'Frequency Range (kHz)',
