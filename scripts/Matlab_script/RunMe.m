@@ -671,8 +671,6 @@ if display==1
     drawnow();
 end
 
-% Interpolation of the datasheet
-
 % Range of the interpolation
 F_min = 50e3;
 F_max = 500e3;
@@ -684,6 +682,7 @@ T_min = 0;
 T_max = 125;
 T_step = 5;
 
+% Interpolation of the datasheet
 linspace_T = (T_min:T_step:T_max)';
 logspace_B = 10.^(linspace(log10(B_min),log10(B_max),B_log_poins)');
 logspace_F = 10.^(linspace(log10(F_min),log10(F_max),F_log_poins)');
@@ -691,111 +690,44 @@ logspace_F = 10.^(linspace(log10(F_min),log10(F_max),F_log_poins)');
 vecspace_F = 0; vecspace_B = 0; vecspace_T = 0; vecspace_P = 0; % Initialization
 
 if datasheet_B>0 % Just checking that the datasheet info is not empty
-    interpolated_data = scatteredInterpolant(log10(datasheet_B'), log10(datasheet_F'), datasheet_T', log10(datasheet_P'));
+    interpolated_data = scatteredInterpolant(log10(datasheet_B'), log10(datasheet_F'), datasheet_T', log10(datasheet_P'),'linear','none');
 
-    vecspace_B = repmat(logspace_B, length(logspace_F)*length(linspace_T), 1);
+    interpolated_B = repmat(logspace_B, length(logspace_F)*length(linspace_T), 1);
 
-    vecspace_F = repelem(logspace_F, length(logspace_B)); 
-    vecspace_F = repmat(vecspace_F, length(linspace_T), 1);
+    interpolated_F = repelem(logspace_F, length(logspace_B));
+    interpolated_F = repmat(interpolated_F, length(linspace_T), 1);
 
-    vecspace_T = repelem(linspace_T, length(logspace_B)*length(logspace_F));
+    interpolated_T = repelem(linspace_T, length(logspace_B)*length(logspace_F));
 
-    vecspace_P = 10.^interpolated_data(log10(vecspace_B), log10(vecspace_F), vecspace_T);
+    interpolated_P = 10.^interpolated_data(log10(interpolated_B), log10(interpolated_F), interpolated_T);
 else
+    interpolated_B = [0 0];
+    interpolated_F = [0 0];
+    interpolated_T = [0 0];
+    interpolated_P = [0 0];
+
     disp('The datasheet information is empty')
 end
+
+interpolated_B(isnan(interpolated_P)) = [];
+interpolated_F(isnan(interpolated_P)) = [];
+interpolated_T(isnan(interpolated_P)) = [];
+interpolated_P(isnan(interpolated_P)) = [];
+
 if display==1
     figure; hold on;
-    scatter3(vecspace_B*1e3, vecspace_F/1e3, vecspace_T, 1, log10(vecspace_P/1e3), 'filled');
+    scatter3(interpolated_B*1e3, interpolated_F/1e3, interpolated_T, 5, log10(interpolated_P/1e3), 'filled');
     c = colorbar; c.Label.Interpreter = 'latex'; c.TickLabelInterpreter = 'latex';
     c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
     xlabel('AC flux density amplitude [mT]');
     ylabel('Frequency [kHz]');
     zlabel('Temperature [C]');
-    title([Material, ' Datasheet (extrapolated data)']);
+    title([Material, ' Datasheet (interpolated data)']);
     set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log');
     drawnow();
 end
 
-%% Deleting extrapolated data
-
-% Any datapoint not fully surrounded by a measured point is eliminated,
-% this is, there should be a point in each of the octants
-keep_mat = zeros(length(vecspace_P),8);
-for i = 1:length(vecspace_P)
-    for j = 1:length(datasheet_T)
-        if vecspace_F(i)>=datasheet_F(j) && vecspace_B(i)>=datasheet_B(j) && vecspace_T(i)>=datasheet_T(j) 
-            keep_mat(i,1) = 1;
-        end % --- octant ok
-        if vecspace_F(i)>=datasheet_F(j) && vecspace_B(i)>=datasheet_B(j) && vecspace_T(i)<=datasheet_T(j)
-            keep_mat(i,2) = 1;
-        end % --+ octant ok
-        if vecspace_F(i)>=datasheet_F(j) && vecspace_B(i)<=datasheet_B(j) && vecspace_T(i)>=datasheet_T(j)
-            keep_mat(i,3) = 1;
-        end % -+- octant ok
-        if vecspace_F(i)>=datasheet_F(j) && vecspace_B(i)<=datasheet_B(j) && vecspace_T(i)<=datasheet_T(j)
-            keep_mat(i,4) = 1;
-        end % -++ octant ok
-        if vecspace_F(i)<=datasheet_F(j) && vecspace_B(i)>=datasheet_B(j) && vecspace_T(i)>=datasheet_T(j)
-            keep_mat(i,5) = 1;
-        end % +-- octant ok
-        if vecspace_F(i)<=datasheet_F(j) && vecspace_B(i)>=datasheet_B(j) && vecspace_T(i)<=datasheet_T(j)
-            keep_mat(i,6) = 1;
-        end % +-+ octant ok
-        if vecspace_F(i)<=datasheet_F(j) && vecspace_B(i)<=datasheet_B(j) && vecspace_T(i)>=datasheet_T(j)
-            keep_mat(i,7)=1;
-        end % ++- octant ok
-        if vecspace_F(i)<=datasheet_F(j) && vecspace_B(i)<=datasheet_B(j) && vecspace_T(i)<=datasheet_T(j)
-            keep_mat(i,8)=1;
-        end % +++ octant ok
-    end
-end
-index_keep = keep_mat(:,1).*keep_mat(:,2).*keep_mat(:,3).*keep_mat(:,4).*keep_mat(:,5).*keep_mat(:,6).*keep_mat(:,7).*keep_mat(:,8);
-
-if display==1
-    figure;
-    for i=1:8
-        subplot(3,3,i)
-        scatter3(vecspace_B*1e3, vecspace_F/1e3, vecspace_T, 1, keep_mat(:,i), 'filled');
-        xlabel('$B_{pk}$ [mT]');
-        ylabel('$f$ [kHz]');
-        zlabel('$T$ [C]');
-        title(['Octant ', num2str(i)])
-        set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log');
-    end
-    subplot(3,3,9)
-    scatter3(vecspace_B*1e3, vecspace_F/1e3, vecspace_T, 1, index_keep, 'filled');
-    xlabel('$B_{pk}$ [mT]');
-    ylabel('$f$ [kHz]');
-    zlabel('$T$ [C]');
-    title('All')
-    set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log');
-    sgtitle([Material,' Datasheet (blue = extrapolated)']);
-    drawnow();
-end
-
-interpolated_F = vecspace_F;
-interpolated_B = vecspace_B;
-interpolated_T = vecspace_T;
-interpolated_P = vecspace_P;
-interpolated_F(index_keep==0) = [];
-interpolated_B(index_keep==0) = [];
-interpolated_T(index_keep==0) = [];
-interpolated_P(index_keep==0) = [];
-
-figure; hold on;
-scatter3(interpolated_B*1e3, interpolated_F/1e3, interpolated_T, 15, log10(interpolated_P/1e3), 'filled');
-c = colorbar; c.Label.Interpreter = 'latex'; c.TickLabelInterpreter = 'latex';
-c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
-xlabel('AC flux density amplitude [mT]');
-ylabel('Frequency [kHz]');
-zlabel('Temperature [C]');
-title([Material, ' Datasheet (interpolated data)']);
-set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log');
-drawnow();
- 
-%% Saving the datasheet points in a .json file
-
+% Saving the datasheet points in a .json file
 DataDatasheet=struct(...
     'Material', Material,...
     'Excitation', Excitation,...
@@ -808,6 +740,5 @@ JSON = jsonencode(DataDatasheet);
 fprintf(fopen([path_output, Material, '_Datasheet.json'], 'w'), JSON); fclose('all');
 disp([Material, '_Datasheet.json file saved, with ', num2str(length(interpolated_P)), ' datapoints'])
 
-    
 %% End   
 disp(' '); disp('The script has been executed successfully'); disp(' ');
