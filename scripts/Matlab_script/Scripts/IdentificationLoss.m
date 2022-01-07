@@ -27,33 +27,33 @@ for n = 1:Ndata
     loss_no_avgs = volt_no_avg.*curr_no_avg;
 
     samples_per_cycle = round(f_sampling/Freq(n)); % Number of samples in a switching cycle, rounded
-    Ncycles_round = round(t_sample*Freq(n)); % Number of switching cycles in the sample, rounded
-    % Removing the first and last switching cycles
-    volt_no_avg_integer = volt_sample(samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1)-mean(volt_sample(samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1));
-    curr_no_avg_integer = curr_sample(samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1)-mean(curr_sample(samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1));
+    Ncycles_round = floor(t_sample*Freq(n)); % Number of switching cycles in the sample, floored
+    % Removing the last switching cycle if not complete
+    volt_no_avg_integer = volt_sample(1:Ncycles_round*samples_per_cycle)-mean(volt_sample(1:Ncycles_round*samples_per_cycle));
+    curr_no_avg_integer = curr_sample(1:Ncycles_round*samples_per_cycle)-mean(curr_sample(1:Ncycles_round*samples_per_cycle));
     loss_integer = volt_no_avg_integer.*curr_no_avg_integer;
 
     if n==round(Ndata/2) && display==1
         figure
         subplot(3,1,1); hold on;
-            plot((1:Nsamples)*Ts*1e6, volt_sample, 'r');
-            plot((1:Nsamples)*Ts*1e6, volt_no_avg, 'b');
-            plot((samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1)*Ts*1e6, volt_no_avg_integer, 'k');
-            xlabel('Time [us]');
-            ylabel('Voltage [V]');
+        plot((1:Nsamples)*Ts*1e6, volt_sample, 'r');
+        plot((1:Nsamples)*Ts*1e6, volt_no_avg, 'b');
+        plot((1:Ncycles_round*samples_per_cycle)*Ts*1e6, volt_no_avg_integer, 'k');
+        xlabel('Time [us]');
+        ylabel('Voltage [V]');
         subplot(3,1,2); hold on;
-            plot((1:Nsamples)*Ts*1e6, curr_sample, 'r');
-            plot((1:Nsamples)*Ts*1e6, curr_no_avg, 'b');
-            plot((samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1)*Ts*1e6, curr_no_avg_integer, 'k');
-            xlabel('Time [us]');
-            ylabel('Current [A]');
+        plot((1:Nsamples)*Ts*1e6, curr_sample, 'r');
+        plot((1:Nsamples)*Ts*1e6, curr_no_avg, 'b');
+        plot((1:Ncycles_round*samples_per_cycle)*Ts*1e6, curr_no_avg_integer, 'k');
+        xlabel('Time [us]');
+        ylabel('Current [A]');
         subplot(3,1,3); hold on;
-            plot((1:Nsamples)*Ts*1e6, loss_product, 'r');
-            plot((1:Nsamples)*Ts*1e6, loss_no_avgs, 'b');
-            plot((samples_per_cycle:(Ncycles_round-1)*samples_per_cycle-1)*Ts*1e6, loss_integer, 'k');
-            xlabel('Time [us]');
-            ylabel('Power [W]');
-            legend('Direct product', 'Product without averages', 'Only for an integer number of cycles')
+        plot((1:Nsamples)*Ts*1e6, loss_product, 'r');
+        plot((1:Nsamples)*Ts*1e6, loss_no_avgs, 'b');
+        plot((1:Ncycles_round*samples_per_cycle)*Ts*1e6, loss_integer, 'k');
+        xlabel('Time [us]');
+        ylabel('Power [W]');
+        legend('Direct product', 'Product without averages', 'Only for an integer number of cycles')
         sgtitle(['Datapoint=', num2str(n)]);
         drawnow();
     end
