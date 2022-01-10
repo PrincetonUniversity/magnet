@@ -25,11 +25,10 @@ for n=1:Ndata
         xlabel('Time [us]');
         ylabel('Amplitude');
         subplot(1,2,2);hold on;
-        plot((1:fn_max)/Ts/Nsamples*1e-3, fft_sample, '.k');
+        plot((1:fn_max)/Ts/Nsamples*1e-3, fft_sample, 'k');
         plot(fn/Ts/Nsamples*1e-3, fft_sample(fn), 'ok');
         xlabel('Frequency [kHz]');
         ylabel('Amplitude');
-        set(gca, 'YScale', 'log');
         sgtitle(['Datapoint=', num2str(n)]);
         drawnow();
     end
