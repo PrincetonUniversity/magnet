@@ -12,7 +12,6 @@ function inaccurate_vector = FindInaccurateData(volt, curr, v_min, i_min, accura
 %   Deleting innacurate data for various reasons:
 %   1) Peak voltage or current below a minimum value
 %   2) Average voltage or current above the accuracy of the scope
-%   2) Average voltage or current above the accuracy of the scope
 %   3) Power below the voltage times current accuracy of the scope
 %   4) Clipped data
 

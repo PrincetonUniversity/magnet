@@ -56,7 +56,6 @@ Ndata_raw = length(Volt_raw(:,1)); % Number of datapoints in the whole run
 Nsamples = length(Volt_raw(1,:)); % Number of samples per datapoint
 disp([num2str(Ndata_raw), ' datapoints with ', num2str(Nsamples), ' samples per datapoint for ', Excitation, ' ', Material, ' read'])
 
-
 %% Save the raw measurements as a .mat file
 DataRaw = struct(...
     'Date_Test', Date_Test,...
@@ -120,7 +119,7 @@ Duty2 = Duty0;
 Duty3 = DutyN;
 Duty4 = Duty0;
 
-% Loss Density amplitude identification
+% Loss density amplitude identification
 Loss = IdentificationLoss(Volt, Curr, Freq, Tsampling, display)/Ve; % Volumetric loss in W/m3
 
 % Plot specific datapoints
@@ -148,6 +147,7 @@ end
 disp(['Main parameters extracted for ', Excitation, ' ', Material])
 
 %% Saving the .mat data with the conventional information and the voltage and current, all in SI units
+
 Discard_Algorithm = ['Data discarded: Voltage below ', num2str(Vmin_absolute), ' V; Current below ', num2str(Imin_absolute), ' A; Average values above ', num2str(Relative_accuracy*100), ' percent of the peak value of the sample; Clipped signals for more than ', num2str(Clipping_fraction*100), ' percent of the sample length in a row'];
 Freq_Algorithm = ['Frequency estimation based on FFT of the current with a frequency resolution of ', num2str(1/(Nsamples*Tsampling)/1000), ' kHz'];
 Flux_Algorithm = 'Flux estimated based on the integral of the voltage minus the switching cycle length moving average and discarding the first and last cycles';
@@ -294,7 +294,7 @@ if display==1
     end
 end
 
-%% Saving the reduced data as .mat with the outlier factor
+%% Saving the light data as .mat with the outlier factor
 Info_Outliers = ['Outlier factor: Mismatch between losses and estimated losses based on the local Steinmetz parameters of nearby datapoints in terms of frequency and flux density up to ', num2str(Closeness_max), ' decades far (weighted based on log distance)'];
 
 DataLight = struct(...
