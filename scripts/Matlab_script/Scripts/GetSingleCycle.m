@@ -56,14 +56,14 @@ for n = 1:Ndata
      subplot(2,2,3); hold on
         plot((0:Nsamples-1)*Ts*1e6, sample_volt, 'r')
         plot((0:Ncycle-1)*Ts_cycle*1e6, volt_cycle_shifted, '.b');
-        xlabel('$t$ [us]');
-        ylabel('$v$ [V]');
+        xlabel('Time [us]');
+        ylabel('Voltage [V]');
         legend('Measured', 'Single Cycle');
     subplot(2,2,4); hold on
         plot((0:Nsamples-1)*Ts*1e6, sample_curr, 'r')
         plot((0:Ncycle-1)*Ts_cycle*1e6, curr_cycle_shifted, '.b');
-        xlabel('$t$ [us]');
-        ylabel('$i$ [A]');
+        xlabel('Time [us]');
+        ylabel('Current [A]');
         legend('Measured', 'Single Cycle');
     sgtitle(['Datapoint=', num2str(n)]);
     drawnow();
