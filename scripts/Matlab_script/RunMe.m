@@ -104,13 +104,13 @@ Freq = IdentificationFrequency(Curr, Tsampling, display); % in Hz, current as th
 Flux = IdentificationFlux(Volt/N2/Ae, Freq, Tsampling, display);
 
 % Duty cycle identification for Trapezoidal excitation. d2=d4 only.
+Duty_resolution = 0.1; % Duty cycle resolution, this is a critical parameter
+Duty_Nthresholds = 3/Duty_resolution; % Rounding and the number of points will determine how accurately the duty detection works (assuming the noise is as large as DeltaV, three times 1/res should be fine)
 if Excitation(1)=='S' % Sinusoidal, no duty cycle, --> -1
     DutyP = -ones(Ndata,1); DutyN = -ones(Ndata,1); Duty0 = -ones(Ndata,1);
 end
 if Excitation(1)=='T' % Trapezoidal
     % Parameters for the estimation of the duty cycle
-    Duty_resolution = 0.1; % Duty cycle resolution, this is a critical parameter
-    Duty_Nthresholds = 3/Duty_resolution; % Rounding and the number of points will determine how accurately the duty detection works (assuming the noise is as large as DeltaV, three times 1/res should be fine)
     [DutyP, DutyN] = IdentificationDutyCycles(Volt, Freq, Tsampling, Duty_resolution, Duty_Nthresholds, display);
     Duty0 = (1-DutyP-DutyN)/2;
 end
@@ -121,28 +121,6 @@ Duty4 = Duty0;
 
 % Loss density amplitude identification
 Loss = IdentificationLoss(Volt, Curr, Freq, Tsampling, display)/Ve; % Volumetric loss in W/m3
-
-% Plot specific datapoints
-if display==1 % Plot a specific voltage, current and power
-    nvector=[1 round(Ndata/2) Ndata]; % Specific points to plot
-    figure;
-    for n=nvector
-    subplot(3,1,1); hold on;
-    plot(Time(n,:)*1e6, Volt(n,:));
-    xlabel('Time [us]');
-    ylabel('Voltage [V]');
-    subplot(3,1,2); hold on;
-    plot(Time(n,:)*1e6, Curr(n,:));
-    xlabel('Time [us]');
-    ylabel('Current [A]');
-    subplot(3,1,3); hold on;
-    plot(Time(n,:)*1e6, Volt(n,:).*Curr(n,:));
-    xlabel('Time [us]');
-    ylabel('Power [W]');
-    sgtitle([Material, ', ', Excitation, ', Datapoint(s) = ', num2str(nvector)]);
-    drawnow();
-    end
-end
 
 disp(['Main parameters extracted for ', Excitation, ' ', Material])
 
