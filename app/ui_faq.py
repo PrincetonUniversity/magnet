@@ -76,12 +76,16 @@ def ui_faq(m):
         The gate signals are controller by a DSP commanded by the computer and voltage of the power supplies is also controlled by the computer.
         By controlling the gate signals in the inverter, the load can be connected to the positive power supply, the negative power supply or to ground,
         so the amplitude, frequency and shape of the output waveform can be controlled.
+        For these type of waveform, four duty cycles are defined, d1 to d4, corresponding to different parts of the switching cycle.
+        In the following figure...
+
         """)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.png')), width=500)
 
     st.write('Data Processing:')
     with st.expander("1. How are the frequency, flux and losses obtained from the measured waveforms?"):
         st.write("""
-            First, the voltage, current and time sequences for each test are collected with the oscilloscope (Tektronix DPO4054 in our setup) and saved as .cvs files.
+            First, the voltage, current and time sequences (with 10.000 samples for each test) are collected with the oscilloscope (Tektronix DPO4054 in our setup) and saved as .cvs files.
             Each test is conducted with a different core and waveform (shape, flux density and frequency), and a few switching cycles are saved.
             Then, these files are processed using Matlab. The Matlab scrips used can be found at https://github.com/PrincetonUniversity/magnet/tree/main/scripts
             The figure below shows an example of the voltage and current recorded in a Trapezoidal test for N87 material.
@@ -113,8 +117,13 @@ def ui_faq(m):
             This effect can be removed by filtering the flux density (in blue) and removing it from the original signal.
             For this purpose a moving mean filter at the fundamental frequency is employed, and the first and last switching cycles are removed.
             The amplitude then is calculated as the maximum (or minimum) of the resulting flux density waveform (in black).
+            
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.png')), width=500)
+        st.write("""
+            Additionally, the different duty cycles for Trapezoidal and Triangular waveforms are identified (d1 to d4).
+            For Sinusoidal waveforms, since there is no duty cycle, d1 to d4 are set to -1.
+        """)
 #    with st.expander("1. How is the duty cycle obtained?"):
 #        st.write("""
 #            Finally, for Triangular and Trapezoidal waveforms, the waveforms are divided in four segments with duty cycles d1, d2 ,d3 and d4, where d1 (or dP) is the rising part of the waveform and d3 (or DN) is the falling part.
@@ -146,6 +155,11 @@ def ui_faq(m):
             The datasheet datapoints are interpolated from the manufacturer's datasheet for each specific material.
             Plase note that the datasheets for materials 3E6(3E10) and N30 do not contain power loss plots, so no these materials are not selectable.
             
+        """)
+    with st.expander("2. How is the Matlab code structured"):
+        st.write("""
+            The Matlab script takes the test and core under test information, the measurement from the oscilloscope and the points from the datasheet as input and generate all the files for the webpage among others.
+            First, the raw data is saved as a mat file to ease  
         """)
     st.write('Core Loss Prediction:')
     with st.expander("3. What's the algorithm that used in the core loss analysis?"):
