@@ -3,7 +3,7 @@ import numpy as np
 
 from magnet import config as c
 from magnet.constants import material_names, material_manufacturers, excitations
-from magnet.io import load_dataframe, load_metadata
+from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_2axes
 
 
@@ -29,9 +29,14 @@ def ui_core_loss_dbs(n=1):
 
 def ui_core_loss_db(m):
     st.sidebar.header(f'Information for Material {m}')
-    material = st.sidebar.selectbox(f'Material:', material_names, key="material"+m)
-    excitation = st.sidebar.selectbox(f'Excitation:', excitations, key="excitation"+m, index=1)
-    c_axis = st.sidebar.selectbox(f'Select color-axis for Plotting:', ['Flux Density', 'Frequency', 'Power Loss'], key="c_axis"+m)
+    excitation = st.sidebar.selectbox(f'Excitation:', excitations, key="excitation" + m, index=1)
+    if excitation == 'Datasheet':  # No datasheet info for 3E6 or N30
+        material = st.sidebar.selectbox(f'Material:', [elem for elem in material_names if elem not in {'N30', '3E6'}],
+                                        key="material"+m)
+    else:
+        material = st.sidebar.selectbox(f'Material:', material_names, key="material" + m)
+    c_axis = st.sidebar.selectbox(f'Select color-axis for Plotting:', ['Flux Density', 'Frequency', 'Power Loss'],
+                                  key="c_axis"+m)
 
     [Fmin_kHz, Fmax_kHz] = st.sidebar.slider(
         f'Frequency Range (kHz)',
@@ -66,16 +71,14 @@ def ui_core_loss_db(m):
         key="Bbias"+m,
         help="Fixed at 0 mT for now")  # 1e9 step to fix it
 
-    # TODO: add the temperature filter for the datasheet plot
     if excitation == 'Datasheet':
         Temp = st.sidebar.slider(
-            f'Temperature (C) (coming soon)',
+            f'Temperature (C)',
             c.streamlit.temp_min,
             c.streamlit.temp_max,
-            c.streamlit.temp_step,
-            step=1e9,
-            key="temp"+m,
-            help="Fixed at 25 C for now")  # 1e9 step to fix it
+            25.0,
+            step=c.streamlit.temp_step,
+            key="temp"+m)
 
     if excitation == 'Triangular':
         DutyP = st.sidebar.slider(
@@ -144,7 +147,7 @@ def ui_core_loss_db(m):
         read_excitation = excitation
 
     if read_excitation == 'Datasheet':
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, None, None, None)
+        df = load_dataframe_datasheet(material, Fmin, Fmax, Bmin, Bmax, Temp)
     if read_excitation == 'Sinusoidal':
         df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, None, None, Outmax)
     if read_excitation == 'Trapezoidal':
@@ -166,12 +169,13 @@ def ui_core_loss_db(m):
             st.write("Warning: no data in range, please change the range")
         else:
 
-            with st.expander("Measurement details"):
-                metadata = load_metadata(material, read_excitation)
-                st.write(metadata['info_date'])
-                st.write(metadata['info_excitation'])
-                if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
-                    st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
+            if excitation != 'Datasheet':
+                with st.expander("Measurement details"):
+                    metadata = load_metadata(material, read_excitation)
+                    st.write(metadata['info_date'])
+                    st.write(metadata['info_excitation'])
+                    if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
+                        st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
             st.header(f"Download data:")
             file = df.to_csv().encode('utf-8')
             st.download_button(
