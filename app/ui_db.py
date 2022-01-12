@@ -4,7 +4,7 @@ import numpy as np
 from magnet import config as c
 from magnet.constants import material_names, material_manufacturers, excitations
 from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
-from magnet.plots import scatter_plot, waveform_visualization_db
+from magnet.plots import scatter_plot, waveform_visualization_2axes
 
 
 def header(material, excitation, f_min, f_max, b_min, b_max, Bbias=None, Temp=None, DutyP=None, DutyN=None):
@@ -146,10 +146,6 @@ def ui_core_loss_db(m):
     else:
         read_excitation = excitation
 
-    if excitation in ['Datasheet', 'Sinusoidal']:
-        cycle_list = np.linspace(0, 1, 101)
-        flux_list = np.add(np.multiply(np.sin(np.multiply(cycle_list, np.pi * 2)), Bavg), Bbias)
-
     if read_excitation == 'Datasheet':
         df = load_dataframe_datasheet(material, Fmin, Fmax, Bmin, Bmax, Temp)
     if read_excitation == 'Sinusoidal':
@@ -159,7 +155,7 @@ def ui_core_loss_db(m):
 
     col1, col2 = st.columns([3, 3])
     with col1:
-        st.title(f"Core Loss Database {m}:")
+        st.title(f"Core Loss Database (for Material {m}):")
         if excitation == 'Datasheet':
             header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, Temp, None, None)
         if excitation == 'Sinusoidal':
@@ -192,24 +188,38 @@ def ui_core_loss_db(m):
                      'power loss and outlier factor for the depicted datapoints')
 
     with col2:
+        if excitation in ['Datasheet', 'Sinusoidal']:
+            cycle_list = np.linspace(0, 1, 101)
+            flux_list = np.sin(np.multiply(cycle_list, np.pi * 2))
+            volt_list = np.cos(np.multiply(cycle_list, np.pi * 2))
+
         if excitation in ['Triangular', 'Trapezoidal']:
-            cycle_list = [0, DutyP, DutyP + Duty0, 1 - Duty0, 1]
             if DutyP > DutyN:
+                volt_P = (1 - (DutyP - DutyN)) / -(-1 - (DutyP - DutyN))
+                volt_0 = - (DutyP - DutyN) / -(-1 - (DutyP - DutyN))
+                volt_N = -1  # The negative voltage is maximum
                 BPplot = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
                 BNplot = -(-1 - DutyP + DutyN) * DutyN / ((1 - DutyP + DutyN) * DutyP)  # Proportional to (-1-dp+dN)*dn
             else:
+                volt_P = 1  # The positive voltage is maximum
+                volt_0 = - (DutyP - DutyN) / (1 - (DutyP - DutyN) )
+                volt_N = (-1 - (DutyP - DutyN)) / (1 - (DutyP - DutyN) )
                 BNplot = 1  # Proportional to (-1-dP+dN)*dN
                 BPplot = -(1 - DutyP + DutyN) * DutyP / ((-1 - DutyP + DutyN) * DutyN)  # Proportional to (1-dP+dN)*dP
-            flux_list = [-BPplot, BPplot, BNplot, -BNplot, -BPplot]
+            cycle_list = [0, 0, DutyP, DutyP, DutyP + Duty0, DutyP + Duty0, 1 - Duty0, 1 - Duty0, 1]
+            flux_list = [-BPplot, -BPplot, BPplot, BPplot, BNplot, BNplot, -BNplot, -BNplot, -BPplot]
+            volt_list = [volt_0, volt_P, volt_P, volt_0, volt_0, volt_N, volt_N, volt_0, volt_0]
 
-        x_vector = np.multiply(cycle_list, 1e6 / Favg)  # In us
         flux_vector = np.add(np.multiply(flux_list, Bavg), Bbias)
-        y_vector = np.multiply(flux_vector, 1e3)  # In mT
-        waveform_visualization_db(
+        waveform_visualization_2axes(
             st,
-            x=x_vector,
-            y=y_vector,
-            title=f"Waveform visualization: <br> f={format(Favg / 1e3, '.0f')} kHz, B={format(Bavg * 1e3, '.0f')} mT")
+            x1=np.multiply(cycle_list, 1e6/Favg),  # In us
+            x2=cycle_list,  # Percentage
+            y1=np.multiply(flux_vector, 1e3),  # In mT
+            y2=volt_list,  # Per unit
+            x1_aux=cycle_list,  # Percentage
+            y1_aux=flux_list,
+            title=f"<b>Waveform visualization:</b> <br> f={format(Favg/1e3,'.0f')} kHz, B={format(Bavg*1e3,'.0f')} mT")
 
     if df.empty or excitation == 'Datasheet':  # Second column not required
         col1, col2 = st.columns([5, 1])

@@ -4,7 +4,7 @@ import streamlit as st
 
 from magnet import config
 from magnet.constants import material_names, excitations
-from magnet.plots import waveform_visualization, core_loss_multiple
+from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes
 from magnet.core import loss
 from magnet.simplecs.simfunctions import SimulationPLECS
 
@@ -24,41 +24,43 @@ def ui_core_loss_predict(m):
     if excitation == "Sinusoidal":
         header(material, excitation)
                 
-        st.header(f'Waveform Information (for Material {m})')      
+
         
         col1, col2 = st.columns(2)
         with col1:
-            Freq = st.slider("Frequency (kHz)", # Use kHz for front-end demonstration while Hz for underlying calculation
-                          config.streamlit.freq_min/1e3, 
-                          config.streamlit.freq_max/1e3, 
-                          config.streamlit.freq_max/2/1e3, 
-                          step=config.streamlit.freq_step/1e3,key = f'Freq {m}')   *1e3        
-            
-        col1, col2 = st.columns(2)
-        with col1:
-            Flux = st.slider("AC Flux Density Amplitude (mT)", # Use mT for front-end demonstration while T for underlying calculation
-                          config.streamlit.flux_min*1e3,  
-                          config.streamlit.flux_max*1e3, 
-                          config.streamlit.flux_max/2*1e3, 
-                          step=config.streamlit.flux_step*1e3,key = f'Flux {m}')   /1e3
+            st.header(f'Waveform Information (for Material {m})')
+            Freq = st.slider("Frequency (kHz)",  # Use kHz for front-end demonstration while Hz for underlying calculation
+                             config.streamlit.freq_min/1e3,
+                             config.streamlit.freq_max/1e3,
+                             config.streamlit.freq_max/2/1e3,
+                             step=config.streamlit.freq_step/1e3,
+                             key=f'Freq {m}')*1e3
+            Flux = st.slider("AC Flux Density Amplitude (mT)",  # Use mT for front-end demonstration while T for underlying calculation
+                             config.streamlit.flux_min*1e3,
+                             config.streamlit.flux_max*1e3,
+                             config.streamlit.flux_max/2*1e3,
+                             step=config.streamlit.flux_step*1e3,
+                             key=f'Flux {m}')/1e3
+            Bias = st.slider("DC Bias (mT) (Coming Soon, Default as 0mT)",
+                             -300,
+                             300,
+                             0,
+                             step=int(1e7),
+                             key=f'Bias {m}')
         with col2:
-            Bias = st.slider("DC Bias (mT)   (Coming Soon, Default as 0mT)", -300, 300, 0, 
-                             step=int(1e7),key = f'Bias {m}') 
-            
-        duty_list = np.linspace(0, 1, 101)
-        flux_read = np.multiply(np.sin(np.multiply(duty_list, np.pi * 2)), Flux)
-        flux_list = np.multiply(np.add(flux_read, Bias),1e3)
-        volt_read = np.multiply(np.cos(np.multiply(duty_list, np.pi * 2)), 1)
-        volt_list = np.multiply(np.add(volt_read, Bias),1) #TBD
-        
-            
-        st.header(f'Waveform Visualization (for Material {m})')
-        col1, col2 = st.columns(2)
-        with col1:
-            waveform_visualization(st, x=duty_list, y=volt_list, y_title = "Excitation Voltage  [p.u.]")
-        with col2:
-            waveform_visualization(st, x=duty_list, y=flux_list, y_title = "Flux Density  [mT]")
-            
+            cycle_list = np.linspace(0, 1, 101)
+            flux_list = np.sin(np.multiply(cycle_list, np.pi * 2))
+            volt_list = np.cos(np.multiply(cycle_list, np.pi * 2))
+            flux_vector = np.add(np.multiply(flux_list, Flux), Bias)
+            waveform_visualization_2axes(
+                st,
+                x1=np.multiply(cycle_list, 1e6 / Freq),  # In us
+                x2=cycle_list,  # Percentage
+                y1=np.multiply(flux_vector, 1e3),  # In mT
+                y2=volt_list,  # Per unit
+                x1_aux=cycle_list,  # Percentage
+                y1_aux=flux_list,
+                title=f"<b>Waveform visualization:</b>")
 
         core_loss_iGSE = loss(waveform='sine', algorithm='iGSE', material=material, freq=Freq, flux=Flux)/1e3
         core_loss_ML = loss(waveform='sine', algorithm='ML', material=material, freq=Freq, flux=Flux)/1e3      
@@ -95,50 +97,63 @@ def ui_core_loss_predict(m):
 
     if excitation == "Triangular":
         header(material, excitation)
-        
-        st.header(f'Waveform Information (for Material {m})')
-        
+
         col1, col2 = st.columns(2)
         with col1:
+            st.header(f'Waveform Information (for Material {m})')
             Freq = st.slider("Frequency (kHz)", 
                              config.streamlit.freq_min/1e3, 
                              config.streamlit.freq_max/1e3, 
                              config.streamlit.freq_max/2/1e3, 
-                             step=config.streamlit.freq_step/1e3,key = f'Freq {m}')   *1e3
-        with col2:
+                             step=config.streamlit.freq_step/1e3,
+                             key=f'Freq {m}')*1e3
             Duty = st.slider("Duty Ratio", 
                              config.streamlit.duty_min,
                              config.streamlit.duty_max, 
                              (config.streamlit.duty_min+config.streamlit.duty_max)/2,
-                             step=config.streamlit.duty_step,key = f'Duty {m}')
-        
-        col1, col2 = st.columns(2)
-        with col1:
+                             step=config.streamlit.duty_step,
+                             key=f'Duty {m}')
             Flux = st.slider("AC Flux Density Amplitude (mT)", 
                              config.streamlit.flux_min*1e3,  
                              config.streamlit.flux_max*1e3, 
                              config.streamlit.flux_max/2*1e3, 
-                             step=config.streamlit.flux_step*1e3,key = f'Flux {m}')   /1e3
-        with col2:   
-            Bias = st.slider("DC Bias (mT) (Coming Soon, Default as 0mT)", -300, 300, 0, 
-                             step=int(1e7),key = f'Bias {m}')
-            
-        duty_list = [0, Duty, 1]
-        flux_read = [0, 2*Flux, 0]
-        flux_mean = Flux
-        flux_diff = Bias - flux_mean
-        flux_list = np.multiply(np.add(flux_read, flux_diff),1e3)
-        dt = 1e-3
-        duty_list2 = [0, dt,  Duty-dt, Duty+dt,  1-dt, 1]
-        volt_read = [0, 1-Duty, 1-Duty, -Duty, -Duty, 0]
-        volt_list = np.multiply(np.add(volt_read, Bias),1) #TBD
-        
-        st.header(f'Waveform Visualization (for Material {m})')
-        col1, col2 = st.columns(2)
-        with col1:
-            waveform_visualization(st, x=duty_list2, y=volt_list, y_title = "Excitation Voltage  [p.u.]")
+                             step=config.streamlit.flux_step*1e3,
+                             key=f'Flux {m}')/1e3
+            Bias = st.slider("DC Bias (mT) (Coming Soon, Default as 0mT)",
+                             -300,
+                             300,
+                             0,
+                             step=int(1e7),
+                             key=f'Bias {m}')
         with col2:
-            waveform_visualization(st, x=duty_list, y=flux_list, y_title = "Flux Density  [mT]")
+            DutyP = Duty
+            DutyN = 1-DutyP
+            Duty0 = 0
+            if DutyP > DutyN:
+                volt_P = (1 - (DutyP - DutyN)) / -(-1 - (DutyP - DutyN))
+                volt_0 = - (DutyP - DutyN) / -(-1 - (DutyP - DutyN))
+                volt_N = -1  # The negative voltage is maximum
+                BPplot = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
+                BNplot = -(-1 - DutyP + DutyN) * DutyN / ((1 - DutyP + DutyN) * DutyP)  # Proportional to (-1-dp+dN)*dn
+            else:
+                volt_P = 1  # The positive voltage is maximum
+                volt_0 = - (DutyP - DutyN) / (1 - (DutyP - DutyN) )
+                volt_N = (-1 - (DutyP - DutyN)) / (1 - (DutyP - DutyN) )
+                BNplot = 1  # Proportional to (-1-dP+dN)*dN
+                BPplot = -(1 - DutyP + DutyN) * DutyP / ((-1 - DutyP + DutyN) * DutyN)  # Proportional to (1-dP+dN)*dP
+            cycle_list = [0, 0, DutyP, DutyP, DutyP + Duty0, DutyP + Duty0, 1 - Duty0, 1 - Duty0, 1]
+            flux_list = [-BPplot, -BPplot, BPplot, BPplot, BNplot, BNplot, -BNplot, -BNplot, -BPplot]
+            volt_list = [volt_0, volt_P, volt_P, volt_0, volt_0, volt_N, volt_N, volt_0, volt_0]
+            flux_vector = np.add(np.multiply(flux_list, Flux), Bias)
+            waveform_visualization_2axes(
+                st,
+                x1=np.multiply(cycle_list, 1e6 / Freq),  # In us
+                x2=cycle_list,  # Percentage
+                y1=np.multiply(flux_vector, 1e3),  # In mT
+                y2=volt_list,  # Per unit
+                x1_aux=cycle_list,  # Percentage
+                y1_aux=flux_list,
+                title=f"<b>Waveform visualization:</b>")
             
         core_loss_iGSE = loss(waveform='triangle', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratio=Duty)/1e3
         core_loss_ML = loss(waveform='triangle', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratio=Duty)/1e3
@@ -200,69 +215,72 @@ def ui_core_loss_predict(m):
         
         col1, col2 = st.columns(2)
         with col1:
+            # TODO: limits are outside the testing range, extrapolation for extreme duty cycles, check
             Freq = st.slider("Frequency (kHz)", 
                              config.streamlit.freq_min/1e3, 
                              config.streamlit.freq_max/1e3, 
                              config.streamlit.freq_max/2/1e3, 
-                             step=config.streamlit.freq_step/1e3,key = f'Freq {m}')   *1e3
-            
-        col1, col2 = st.columns(2)
-        with col1:
+                             step=config.streamlit.freq_step/1e3,
+                             key=f'Freq {m}')*1e3
             Flux = st.slider("AC Flux Density Amplitude (mT)",
                              config.streamlit.flux_min*1e3,  
                              config.streamlit.flux_max*1e3, 
                              config.streamlit.flux_max/2*1e3, 
-                             step=config.streamlit.flux_step*1e3,key = f'Flux {m}')   /1e3
-        with col2:
-            Bias = st.slider("DC Bias (mT) (Coming Soon, Default as 0mT)", -300, 300, 0, 
-                             step=int(1e7),key = f'Bias {m}')  #TBD
-            
-        col1, col2, col3 = st.columns(3)
-        with col1:
+                             step=config.streamlit.flux_step*1e3,
+                             key=f'Flux {m}')/1e3
+            Bias = st.slider("DC Bias (mT) (Coming Soon, Default as 0mT)",
+                             -300,
+                             300,
+                             0,
+                             step=int(1e7),
+                             key=f'Bias {m}')  # TBD
             DutyP = st.slider("Duty Ratio (Rising)", 
-                             config.streamlit.duty_step,
-                             1-config.streamlit.duty_step*3,
-                             (config.streamlit.duty_min+config.streamlit.duty_max)/2,
-                             step=config.streamlit.flux_step,key = f'DutyP {m}')
-        with col2:
+                              config.streamlit.duty_step,
+                              1-config.streamlit.duty_step*3,
+                              (config.streamlit.duty_min+config.streamlit.duty_max)/2,
+                              step=config.streamlit.flux_step,
+                              key=f'DutyP {m}')
             DutyN = st.slider("Duty Ratio (Falling)", 
-                             config.streamlit.duty_step, 
-                             1-DutyP-config.streamlit.duty_step*2, 
-                             round((1-DutyP)/3,2), 
-                             step=config.streamlit.duty_step,key = f'DutyN {m}')
-        with col3:
-            Duty0 = st.slider("Duty Ratio (Flat) (Asymmetric Flat Duty Ratio Coming Soon)",  #TBD
-                             config.streamlit.duty_step, 
-                             1-config.streamlit.duty_step*3, 
-                             (1-DutyP-DutyN)/2, 
-                             step=1e7,key = f'Duty0 {m}')
-            
-        duty_list = [0, DutyP, DutyP+Duty0, 1-Duty0, 1]
-        if DutyP>DutyN :
-            BPplot=Flux # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
-            BNplot=-BPplot*((-1-DutyP+DutyN)*DutyN)/((1-DutyP+DutyN)*DutyP) # proportional to (-1-dp+dN)*dn
-        else :
-            BNplot=Flux # proportional to (-1-dP+dN)*dN
-            BPplot=-BNplot*((1-DutyP+DutyN)*DutyP)/((-1-DutyP+DutyN)*DutyN) # proportional to (1-dP+dN)*dP
-        flux_read = [-BPplot,BPplot,BNplot,-BNplot,-BPplot]
-        flux_list = np.multiply(np.add(flux_read, Bias),1e3)
-        duty_ratios = [DutyP,DutyN,Duty0]
-
-        volt_P = (1-DutyP+DutyN)/2
-        volt_0 = -(1-DutyP-DutyN)*(DutyP-DutyN)/2/Duty0
-        volt_N = (-1-DutyP+DutyN)/2
-        dt = 1e-3
-        duty_list2 = [0, dt, DutyP-dt, DutyP+dt, DutyP+Duty0-dt, DutyP+Duty0+dt, 1-Duty0-dt, 1-Duty0+dt, 1-dt, 1]
-        volt_read = [0, volt_P, volt_P, volt_0, volt_0, volt_N, volt_N, volt_0, volt_0, 0]
-        volt_list = np.multiply(np.add(volt_read, Bias),1) #TBD
-        
-        st.header(f'Waveform Visualization (for Material {m})')
-        col1, col2 = st.columns(2)
-        with col1:
-            waveform_visualization(st, x=duty_list2, y=volt_list, y_title = "Excitation Voltage  [p.u.]")
+                              config.streamlit.duty_step,
+                              1-DutyP-config.streamlit.duty_step*2,
+                              round((1-DutyP)/3,2),
+                              step=config.streamlit.duty_step,
+                              key=f'DutyN {m}')
+            Duty0 = st.slider("Duty Ratio (Flat) (Asymmetric Flat Duty Ratio Coming Soon)",  # TBD
+                              config.streamlit.duty_step,
+                              1-config.streamlit.duty_step*3,
+                              (1-DutyP-DutyN)/2,
+                              step=1e7,
+                              key=f'Duty0 {m}')
         with col2:
-            waveform_visualization(st, x=duty_list, y=flux_list, y_title = "Flux Density  [mT]")
-            
+            if DutyP > DutyN:
+                volt_P = (1 - (DutyP - DutyN)) / -(-1 - (DutyP - DutyN))
+                volt_0 = - (DutyP - DutyN) / -(-1 - (DutyP - DutyN))
+                volt_N = -1  # The negative voltage is maximum
+                BPplot = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
+                BNplot = -(-1 - DutyP + DutyN) * DutyN / ((1 - DutyP + DutyN) * DutyP)  # Proportional to (-1-dp+dN)*dn
+            else:
+                volt_P = 1  # The positive voltage is maximum
+                volt_0 = - (DutyP - DutyN) / (1 - (DutyP - DutyN))
+                volt_N = (-1 - (DutyP - DutyN)) / (1 - (DutyP - DutyN))
+                BNplot = 1  # Proportional to (-1-dP+dN)*dN
+                BPplot = -(1 - DutyP + DutyN) * DutyP / ((-1 - DutyP + DutyN) * DutyN)  # Proportional to (1-dP+dN)*dP
+            cycle_list = [0, 0, DutyP, DutyP, DutyP + Duty0, DutyP + Duty0, 1 - Duty0, 1 - Duty0, 1]
+            flux_list = [-BPplot, -BPplot, BPplot, BPplot, BNplot, BNplot, -BNplot, -BNplot, -BPplot]
+            volt_list = [volt_0, volt_P, volt_P, volt_0, volt_0, volt_N, volt_N, volt_0, volt_0]
+            flux_vector = np.add(np.multiply(flux_list, Flux), Bias)
+            waveform_visualization_2axes(
+                st,
+                x1=np.multiply(cycle_list, 1e6 / Freq),  # In us
+                x2=cycle_list,  # Percentage
+                y1=np.multiply(flux_vector, 1e3),  # In mT
+                y2=volt_list,  # Per unit
+                x1_aux=cycle_list,  # Percentage
+                y1_aux=flux_list,
+                title=f"<b>Waveform visualization:</b>")
+
+        duty_ratios = [DutyP, DutyN, Duty0]
+
         core_loss_iGSE = loss(waveform='trapezoid', algorithm='iGSE', material=material, freq=Freq, flux=Flux, duty_ratios=duty_ratios)/1e3
         core_loss_ML = loss(waveform='trapezoid', algorithm='ML', material=material, freq=Freq, flux=Flux, duty_ratios=duty_ratios)/1e3
 
