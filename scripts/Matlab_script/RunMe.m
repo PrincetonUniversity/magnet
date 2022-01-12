@@ -10,10 +10,12 @@
 % The outputs will be automatically saved in the Output folder
 % Contact: Diego Serrano, ds9056@princeton.edu, Princeton University
 
-%% Clear previous varaibles
+%% Clear previous varaibles and add the scripts path
 clear % Clear variable in the workspace
 clc % Clear command window
 close all % Close all open figures
+
+addpath('Scripts')
 
 %% Set the style for the plots
 set(groot, 'defaultFigureColor', [1 1 1]); % White background for pictures
@@ -42,7 +44,6 @@ display = 0; % 1 to plot additional figures and messages, for debugging, 0 to av
 path_root = pwd; % Path of this file
 path_input = [path_root, '\Inputs\'];
 path_output = [path_root, '\Outputs\'];
-addpath('Scripts')
 
 %% Data of the core, and test (MKS system used)
 Date_File = datestr(datetime('Today'), 'yyyy-mm-dd'); % Day when the output files are generated
@@ -174,7 +175,7 @@ if Excitation(1)=='S' % Sinusoidal
     figure; % Losses in color in the 3-D plot
     scatter3(Flux*1e3, Freq/1e3, Loss/1e3, 15, log10(Loss/1e3), 'filled');
     c = colorbar; c.TickLabelInterpreter = 'latex'; c.Label.Interpreter = 'latex';
-    c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
+    c.Label.String = '$log_{10}(P_V$~[kW/m$^3$]$)$';
     xlabel('AC flux density amplitude [mT]');
     ylabel('Frequency [kHz]');
     zlabel('Loss density [kW/m$^3$]');
@@ -188,10 +189,10 @@ if Excitation(1)=='T' % Trapezoidal
             figure;
             scatter3(Flux(Run==n)*1e3, Freq(Run==n)/1e3, Loss(Run==n)/1e3, 15, log10(Loss(Run==n)/1e3), 'filled');
             c = colorbar; c.TickLabelInterpreter = 'latex'; c.Label.Interpreter = 'latex';
-            c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
+            c.Label.String = '$log_{10}(P_V$~[kW/m$^3$]$)$';
             xlabel('$B_{pk}$ [mT]');
             ylabel('$f$ [kHz]');
-            zlabel('$P_{loss}$ [kW/m$^3$]');
+            zlabel('$P_V$ [kW/m$^3$]');
             title([Material, ', ', Excitation, ' $d_0$= ', num2str(round(mean(Duty0(Run==n)),1)), '~$d_P$= ', num2str(round(mean(DutyP(Run==n)),1))])
             set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log'); set(gca, 'ZScale', 'log'); view(2);
             drawnow();
@@ -263,7 +264,7 @@ if display==1
                 c.Label.String="Outlier factor [\%]"; caxis([-5 5])
                 xlabel('$B_{pk}$ [mT]');
                 ylabel('$f$ [kHz]');
-                zlabel('$P_{loss}$ [kW/m$^3$]');
+                zlabel('$P_V$ [kW/m$^3$]');
                 title([Material, ', ', Excitation, ' $d_0$= ', num2str(round(mean(Duty0(Run==n)),1)), '~$d_P$= ', num2str(round(mean(DutyP(Run==n)),1))])
                 set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log'); set(gca, 'ZScale', 'log'); view(2);
                 drawnow();
@@ -390,10 +391,10 @@ disp(['The average error in losses is ', num2str(round(mean(abs(Error_Loss))*100
 Ndata = length(Volt_Processed(:,1));
 Ncycle = length(Volt_Processed(1,:));
 B_Processed = zeros(Ndata,Ncycle);
-for n=1:Ndata
-    Ts_cycle = 1/Freq_Processed(n)/Ncycle; % Sampling time of the switching cycle
-    Volt_Int = cumtrapz(Volt_Processed(n,:));
-    B_Raw = Volt_Int/N2/Ae*Ts_cycle;
+for n=1:Ndata % For each specific datapoint
+    Ts_cycle = 1/Freq_Processed(n)/Ncycle; % Sampling time
+    Volt_Int = cumtrapz(Volt_Processed(n,:))*Ts_cycle; % Integral of the voltage
+    B_Raw = Volt_Int/N2/Ae;
     B_Processed(n,:) = B_Raw-mean(B_Raw); 
 end
 H_Processed = Curr_Processed*N1/Le;
@@ -504,7 +505,7 @@ if display==1
             c.Label.String="Outlier factor [\%]"; caxis([-5 5])
             xlabel('$B_{pk}$ [mT]');
             ylabel('$f$ [kHz]');
-            zlabel('$P_{loss}$ [kW/m$^3$]');
+            zlabel('$P_V$ [kW/m$^3$]');
             title([Material, ', ', Excitation, ' $d_0$= ', num2str(round(mean(DutyN_Cycle(Run_Cycle==n)),1)), '~$d_P$= ', num2str(round(mean(DutyP_Cycle(Run_Cycle==n)),1))])
             set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log'); set(gca, 'ZScale', 'log'); view(2);
             drawnow();
@@ -598,7 +599,7 @@ if display==1
     figure; % Losses in color in the 3-D plot
     scatter3(Flux_Amplitude_Training*1e3, Freq_Training/1e3, Loss_Training/1e3, 15, log10(Loss_Training/1e3), 'filled');
     c = colorbar; c.TickLabelInterpreter = 'latex'; c.Label.Interpreter = 'latex';
-    c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
+    c.Label.String = '$log_{10}(P_V$~[kW/m$^3$]$)$';
     xlabel('AC flux density amplitude [mT]');
     ylabel('Frequency [kHz]');
     zlabel('Loss density [kW/m$^3$]');
@@ -640,7 +641,7 @@ if display==1
     figure; hold on;
     scatter3(datasheet_B*1e3, datasheet_F/1e3, datasheet_T, 15, log10(datasheet_P/1e3), 'filled');
     c = colorbar; c.Label.Interpreter = 'latex'; c.TickLabelInterpreter = 'latex';
-    c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
+    c.Label.String = '$log_{10}(P_V$~[kW/m$^3$]$)$';
     xlabel('AC flux density amplitude [mT]');
     ylabel('Frequency [kHz]');
     zlabel('Temperature [C]');
@@ -696,7 +697,7 @@ if display==1
     figure; hold on;
     scatter3(interpolated_B*1e3, interpolated_F/1e3, interpolated_T, 5, log10(interpolated_P/1e3), 'filled');
     c = colorbar; c.Label.Interpreter = 'latex'; c.TickLabelInterpreter = 'latex';
-    c.Label.String = '$log_{10}(P_{loss}$~[kW/m$^3$]$)$';
+    c.Label.String = '$log_{10}(P_V$~[kW/m$^3$]$)$';
     xlabel('AC flux density amplitude [mT]');
     ylabel('Frequency [kHz]');
     zlabel('Temperature [C]');

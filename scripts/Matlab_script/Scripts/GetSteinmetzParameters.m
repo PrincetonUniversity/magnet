@@ -21,17 +21,17 @@ function [k, alpha, beta] = GetSteinmetzParameters(Freq, Flux, Loss, display)
     parameters_min = [1e-6,1,1.5];
     parameters_max = [1000,2.5,3.5];
     
-    parameters = lsqcurvefit(@WeightedLog10SE, parameters_0, [Freq Flux ones(length(Freq),1)], log10(Loss), parameters_min, parameters_max, opts);
-    % ones(length(Freq),1) as the weight is equal for all points
-    disp(['Steinmetz parameters: k=', num2str(parameters(1)), ', alpha=', num2str(parameters(2)), ', beta=', num2str(parameters(3))])
-     
-    Loss_SE = 10.^WeightedLog10SE(parameters, [Freq Flux ones(length(Freq),1)]);
+    parameters = lsqcurvefit(@Log10SE, parameters_0, [Freq Flux], log10(Loss), parameters_min, parameters_max, opts);
+    
+    Loss_SE = 10.^Log10SE(parameters, [Freq Flux]);
     mismatch_loss = (Loss-Loss_SE)./Loss; % Error with this method
 
     k = parameters(1);
     alpha = parameters(2);
     beta = parameters(3);
 
+    disp(['Steinmetz parameters: k=', num2str(k), ', alpha=', num2str(alpha), ', beta=', num2str(beta)])
+  
     if sum((parameters_min>parameters)+(parameters>parameters_max))>0
         disp('Careful, one of the Steinmetz parameters has saturated to the max or min value')
     end
