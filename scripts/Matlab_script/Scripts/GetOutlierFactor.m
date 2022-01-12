@@ -69,10 +69,10 @@ for n = min(Run):max(Run)
         figure;
         scatter3(Flux_run*1e3, Freq_run/1e3, Closeness_run, 15, Closeness_run, 'filled');
         c = colorbar; c.Label.Interpreter = 'latex'; c.TickLabelInterpreter = 'latex';
-        c.Label.String = "Closeness";
+        c.Label.String = "Weight";
         xlabel('AC flux density amplitude [mT]');
         ylabel('Frequency [kHz]');
-        zlabel('Closeness');
+        zlabel('Weight');
         title(['Run = ',num2str(n), ', Datapoint = ', num2str(i)]);
         set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log'); view(2);
         drawnow();
