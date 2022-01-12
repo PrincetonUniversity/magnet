@@ -2,6 +2,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from magnet.core import plot_label, plot_title
 from plotly.subplots import make_subplots
+import numpy as np
 
 
 import pandas as pd
@@ -35,7 +36,8 @@ def waveform_visualization_2axes(st, x1, x2, y1, y2, x1_aux, y1_aux, title='Wave
         xaxis1=XAxis(dict(
             overlaying='x',
             side='bottom',
-            title_text=x1_title
+            title_text=x1_title,
+            range=[0, np.amax(x1)]
         )),
         yaxis1=YAxis(dict(
             overlaying='y',
@@ -46,7 +48,8 @@ def waveform_visualization_2axes(st, x1, x2, y1, y2, x1_aux, y1_aux, title='Wave
         xaxis2=XAxis(dict(
             overlaying='x',
             side='top',
-            title_text=x2_title
+            title_text=x2_title,
+            range=[0, 1]
         )),
         yaxis2=YAxis(dict(
             overlaying='y',
