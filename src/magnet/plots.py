@@ -1,11 +1,8 @@
 import plotly.express as px
 import plotly.graph_objects as go
 from magnet.core import plot_label, plot_title
-from plotly.subplots import make_subplots
 import numpy as np
 
-
-import pandas as pd
 from plotly.graph_objs.layout import YAxis, XAxis
 
 
@@ -23,14 +20,15 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
             y: f' {plot_label(y)}',
             c: f' {plot_label(c)}'
         },
-        title=f' {plot_title(c)} vs {plot_title(x)} and {plot_title(y)}',
+        title=f'<b>{plot_title(c)} vs {plot_title(x)} and {plot_title(y)}</b>',
     )
 
 
 # From https://stackoverflow.com/questions/67589451/how-to-add-secondary-xaxis-in-plotly-using-plotly-express
-def waveform_visualization_2axes(st, x1, x2, y1, y2, x1_aux, y1_aux, title='Waveform Visualization',
-                                 x1_title='Time [us]', x2_title='Fraction of the cycle',
-                                 y1_title='Flux Density [mT]', y2_title='Normalized Voltage', width=4):
+def waveform_visualization_2axes(
+        st, x1, x2, y1, y2, x1_aux, y1_aux,
+        title='Waveform Visualization', x1_title='Time [us]', x2_title='Fraction of the cycle',
+        y1_title='Flux Density [mT]', y2_title='Normalized Voltage', width=4):
     fig = go.Figure()
     fig.layout = go.Layout(dict(
         xaxis1=XAxis(dict(
@@ -114,7 +112,8 @@ def waveform_visualization_2axes(st, x1, x2, y1, y2, x1_aux, y1_aux, title='Wave
     st.plotly_chart(fig, use_container_width=True)
 
 
-def waveform_visualization(st, x, y, x_title='Duty in a Cycle', y_title=None, color='firebrick', width=4):
+def waveform_visualization(
+        st, x, y, x_title='Fraction of the cycle', y_title='Flux Density [mT]', color='mediumslateblue', width=4):
   
     fig = go.Figure()
     fig.add_trace(
@@ -132,8 +131,8 @@ def waveform_visualization(st, x, y, x_title='Duty in a Cycle', y_title=None, co
     st.plotly_chart(fig, use_container_width=True)
 
 
-def core_loss_multiple(st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True,
-                       y_log=True):
+def core_loss_multiple(
+        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(

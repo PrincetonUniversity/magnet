@@ -74,7 +74,7 @@ def ui_faq(m):
             
             In the following figure, examples of different waveforms and their duty cycles are shown.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.jpg')), width=500)
 
     st.write('Data Processing:')
     with st.expander("1. What information is processed?"):
@@ -86,7 +86,7 @@ def ui_faq(m):
             
             The figure below shows an example of the voltage and current recorded in a Trapezoidal test for N87 material.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'volt-curr.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'volt-curr.jpg')), width=500)
         st.write("""
             Then, these files are processed using Matlab.
             The Matlab scripts can be found at https://github.com/PrincetonUniversity/magnet/tree/main/scripts/Matlab_scripts
@@ -103,7 +103,7 @@ def ui_faq(m):
             
             In the picture below the FFT of the current in the previous example is shown; for this example, the fundamental frequency is 50 kHz.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'fft.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'fft.jpg')), width=500)
     with st.expander("3. How are losses obtained?"):
         st.write("""
             The instantaneous power can be calculated directly as the product of the voltage and current.
@@ -116,7 +116,7 @@ def ui_faq(m):
             Additionally, only an entire number of switching cycles is used for this calculation, as losses may not be constant along the switching cycle.
             Finally, the loss density is calculated as the power divided by the effective volume specified in the datasheet.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'power.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'power.jpg')), width=500)
     with st.expander("4. How is the flux density calculated?"):
         st.write("""
             The instantaneous flux density is the integral of the voltage waveform divided by the number of turns of the secondary winding used to measure the voltage, and also divided by the effective area specified in the datasheet.
@@ -130,7 +130,7 @@ def ui_faq(m):
             Once the offset is removed, the corrected shape for the instantaneous flux density is obtained (in black)
             The flux density amplitude is calculated from the maximum (or minimum) of the corrected waveform.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.jpg')), width=500)
     with st.expander("5. How are the results plotted?"):
         st.write("""
             Besides the frequency, volumetric loss, and flux density amplitude, the different duty cycles for Trapezoidal and Triangular waveforms are identified too (d1 to d4).
@@ -161,7 +161,7 @@ def ui_faq(m):
             The Steinmetz parameters are calculated as described in the previous point, but the impact of each other point is weighted by the distance to the considered point.
             To clarify this concept, in the following figure the weight of the nearby points for a randomly considered point is shown.
          """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'outlier-weight.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'outlier-weight.jpg')), width=500)
         st.write("""
             And the outlier factor calculates the relative discrepancy between the estimated losses based on the local Steinmetz parameters and the measured losses.
             A data point whose measured core loss is far from its estimated value will get a high outlier factor,
@@ -179,7 +179,7 @@ def ui_faq(m):
             To generate the single-cycle waveforms, the raw voltage and current waveform are split into the different switching cycles, then, for each switching cycle, 100 samples are obtained by interpolation, and, finally, the 100 samples for each cycle are averaged into a single switching cycle waveform.
             The following simplified figure clarifies the process for obtaining a single voltage waveform; the same process is applied to the current waveform.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.jpg')), width=500)
         st.write("""   
             However, post-processing the data in this way has some limitations.
             First, if the frequency of the waveform is not accurately identified, some unwanted averaging effect will appear in the single-cycle waveform, leading to an inaccurate capture of the waveform.

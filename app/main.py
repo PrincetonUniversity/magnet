@@ -33,7 +33,6 @@ def contributor(name, email):
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-    st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
 
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
@@ -41,9 +40,14 @@ if __name__ == '__main__':
         ('Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data', 'Frequently Asked Questions')
     )
 
-    st.title('Princeton-Dartmouth-Plexim MagNet Project')
-    st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
-    st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.title('Princeton-Dartmouth-Plexim MagNet Project')
+        st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
+        st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
+    with col2:
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
+
     st.markdown('---')
 
     if 'n_material' not in st.session_state:
