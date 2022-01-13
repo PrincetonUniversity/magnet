@@ -331,7 +331,7 @@ disp([Material, '_', Excitation, '_Webpage.json file saved, with ', num2str(Ndat
 
 %% Saving the data for the scalar-to-scalar NN training, with the outliers removed 
 Outlier_Threshold = 5; % Data with an outlier factor above 5 percent is removed
-Outliers = (abs(Outlier_Factor)>Outlier_Threshold);
+Outliers = abs(Outlier_Factor)>Outlier_Threshold;
 
 DataScalar2Scalar = struct(...
     'Material', Material,...
@@ -363,7 +363,7 @@ Ncycle = 100; % Number of points per cycle for the single-cycle waveform
 % Power loss
 Loss_Processed=zeros(Ndata,1);
 for n=1:Ndata
-    Loss_Processed(n)=mean(Volt_Processed(n,:).*Curr_Processed(n,:))/Ve; % Obtain losses again, this time with the averaged waveforms
+    Loss_Processed(n)=mean(Volt_Processed(n,:).*Curr_Processed(n,:))/Ve; % Obtain losses again and divide by the effective volume, this time with the averaged waveforms
 end
 Error_Loss=(Loss-Loss_Processed)./Loss; % Error with respect to the standard method (in both cases without average current)
 
@@ -444,8 +444,8 @@ disp(['The average error in flux amplitude is ', num2str(round(mean(abs(Error_Fl
 %% Eliminating inaccurate data (error with respect to the previous methods)
 
 Error_max = 5/100; % Maximum error for any of the computed errors
-Discarded_vector = (Error_Flux>Error_max)+(Error_Loss>Error_max)+(Error_Volt>Error_max)+(Error_Curr>Error_max);
-Discarded_vector(Discarded_vector~=0) = 1;
+Discarded_vector = (Error_Freq>Error_max)+(Error_Flux>Error_max)+(Error_Loss>Error_max)+(Error_Volt>Error_max)+(Error_Curr>Error_max);
+Discarded_vector(Discarded_vector~=0) = 1;  % TODO: find a better way to implement this, is there an "or" funcion for vectors?
 if display==1
     figure;
     plot(Discarded_vector-1, '.k');
@@ -496,7 +496,7 @@ if display==1
         zlabel('Loss density [kW/m$^3$]');
         set(gca, 'XScale', 'log'); set(gca, 'YScale', 'log'); set(gca, 'ZScale', 'log'); view(2);
     end
-    if Excitation(1)=='T' % Trapzoidal
+    if Excitation(1)=='T' % Trapezoidal
         for n = min(Run_Cycle):max(Run_Cycle)
             if sum(Run==n)>1
             figure;
