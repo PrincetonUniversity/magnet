@@ -18,7 +18,7 @@ if isfile(path)
     T = cell2mat(datasheet(2:end,3))';
     P = cell2mat(datasheet(2:end,4))';
 else
-    disp(['the ',Material,'.xlsx file has not been generated yet'])
+    disp(['the .xlsx file has not been generated yet'])
 end
 
 end
