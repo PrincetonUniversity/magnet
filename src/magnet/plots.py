@@ -57,12 +57,8 @@ def waveform_visualization_2axes(
             range=[-1.1, 1.1]
         )),
         title=title,
-        legend=dict(
-            yanchor="bottom",
-            y=1.08,
-            xanchor="right",
-            x=1,
-        )
+        legend=dict(yanchor="bottom", y=0, xanchor="right", x=1)
+
     ))
     fig.add_trace(
         go.Scatter(
@@ -143,14 +139,14 @@ def core_loss_multiple(
         )
     )
     fig.add_trace(
-        go.Scatter(
+        go.Scatter(dict(
             marker_symbol="diamond",
             marker_size=13,
-            name="iGSE",
+            showlegend=False,
             x=x0,
             y=y01,
             line=dict(color='firebrick', width=4)
-        )
+        ))
     )
     fig.add_trace(
         go.Scatter(
@@ -161,22 +157,22 @@ def core_loss_multiple(
         )
     )
     fig.add_trace(
-        go.Scatter(
+        go.Scatter(dict(
             marker_symbol="diamond",
             marker_size=13,
-            name="ML",
+            showlegend=False,
             x=x0,
             y=y02,
             line=dict(color='darkslategrey', width=4)
-        )
+        ))
     )
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title,
         title=title,
-        title_x=0.5
+        title_x=0.5,
+        legend=dict(yanchor="bottom", y=0, xanchor="right", x=1)
     )
-
     if x_log:
         fig.update_xaxes(type='log')
     if y_log:

@@ -2,10 +2,11 @@ import streamlit as st
 import numpy as np
 
 from magnet import config as c
-from magnet.constants import material_names, material_manufacturers, excitations
+from magnet.constants import material_names, material_manufacturers, excitations_db
 from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_2axes
 from magnet.core import cycle_points_sine, cycle_points_trap
+
 
 def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
@@ -16,7 +17,7 @@ def ui_core_loss_db(m):
     st.sidebar.header(f'Information: Case {m}')
     excitation = st.sidebar.selectbox(
         f'Excitation:',
-        excitations,
+        excitations_db,
         key=f'excitation {m}',
         index=1)
 
@@ -33,10 +34,10 @@ def ui_core_loss_db(m):
 
     [freq_min_aux, freq_max_aux] = st.sidebar.slider(
         f'Frequency Range (kHz)',
-        c.streamlit.freq_min / 1e3,
-        c.streamlit.freq_max / 1e3,
-        (c.streamlit.freq_min / 1e3, c.streamlit.freq_max / 1e3),
-        step=c.streamlit.freq_step / 1e3,
+        round(c.streamlit.freq_min / 1e3),
+        round(c.streamlit.freq_max / 1e3),
+        (round(c.streamlit.freq_min / 1e3), round(c.streamlit.freq_max / 1e3)),
+        step=round(c.streamlit.freq_step_db / 1e3),
         key=f'freq {m}')
     freq_min = freq_min_aux * 1e3
     freq_max = freq_max_aux * 1e3
@@ -44,10 +45,10 @@ def ui_core_loss_db(m):
 
     [flux_min_aux, flux_max_aux] = st.sidebar.slider(
         f'AC Flux Density Range (mT)',
-        c.streamlit.flux_min * 1e3,
-        c.streamlit.flux_max * 1e3,
-        (c.streamlit.flux_min * 1e3, c.streamlit.flux_max * 1e3),
-        step=c.streamlit.flux_step * 1e3,
+        round(c.streamlit.flux_min * 1e3),
+        round(c.streamlit.flux_max * 1e3),
+        (round(c.streamlit.flux_min * 1e3), round(c.streamlit.flux_max * 1e3)),
+        step=round(c.streamlit.flux_step_db * 1e3),
         key=f'flux {m}')
     flux_min = flux_min_aux / 1e3
     flux_max = flux_max_aux / 1e3
@@ -55,19 +56,19 @@ def ui_core_loss_db(m):
 
     flux_bias = st.sidebar.slider(
         f'DC Flux Density (mT) coming soon!',
-        -c.streamlit.flux_max * 1e3,
-        c.streamlit.flux_max * 1e3,
-        0.0,
-        step=1e9,
+        round(-c.streamlit.flux_max * 1e3),
+        round(c.streamlit.flux_max * 1e3),
+        0,
+        step=round(1e9),
         key=f'bias {m}',
         help=f'Fixed at 0 mT for now') / 1e3  # 1e9 step to fix it
 
     if excitation == 'Triangular':
         duty_p = st.sidebar.slider(
             f'Duty Ratio',
-            c.streamlit.duty_min_db,
-            c.streamlit.duty_max_db,
-            c.streamlit.duty_default_db,
+            c.streamlit.duty_min,
+            c.streamlit.duty_max,
+            (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
             step=c.streamlit.duty_step_db,
             key=f'duty {m}')
         duty_n = 1.0 - duty_p  # For triangular excitation, there are no flat parts
@@ -75,9 +76,9 @@ def ui_core_loss_db(m):
     if excitation == 'Trapezoidal':
         duty_p = st.sidebar.slider(
             f'Duty Ratio (D1)',
-            c.streamlit.duty_min_db,
-            c.streamlit.duty_max_db - 2 * c.streamlit.duty_step_db,
-            c.streamlit.duty_default_db - c.streamlit.duty_step_db,
+            c.streamlit.duty_min,
+            c.streamlit.duty_max - 2 * c.streamlit.duty_step_db,
+            (c.streamlit.duty_min + c.streamlit.duty_max) / 2 - c.streamlit.duty_step_db,
             step=c.streamlit.duty_step_db,
             key=f'dutyP {m}',
             help=f'Rising part with the highest slope')
@@ -117,17 +118,24 @@ def ui_core_loss_db(m):
     if excitation == 'Datasheet':
         temperature = st.sidebar.slider(
             f'Temperature (C)',
-            c.streamlit.temp_min,
-            c.streamlit.temp_max,
-            c.streamlit.temp_default,
-            step=c.streamlit.temp_step,
+            round(c.streamlit.temp_min),
+            round(c.streamlit.temp_max),
+            round(c.streamlit.temp_default),
+            step=round(c.streamlit.temp_step),
             key=f'temp {m}')
     else:
+        temperature = st.sidebar.slider(
+            f'Temperature (C) coming soon!',
+            round(c.streamlit.temp_min),
+            round(c.streamlit.temp_max),
+            round(c.streamlit.temp_default),
+            step=round(1e9),
+            key=f'temp {m}')
         out_max = st.sidebar.slider(
             f'Maximum Outlier Factor (%)',
-            c.streamlit.outlier_min,
-            c.streamlit.outlier_max,
-            c.streamlit.outlier_max,
+            round(c.streamlit.outlier_min),
+            round(c.streamlit.outlier_max),
+            round(c.streamlit.outlier_max),
             step=1,
             key=f'outlier {m}',
             help=f'Measures the similarity between the loss of a datapoint and their neighbours' 
@@ -156,7 +164,7 @@ def ui_core_loss_db(m):
     with col1:
         st.title(f'Core Loss Database: Case {m}')
         st.subheader(f'{material_manufacturers[material]} - {material}, '
-                     f'{excitation} Excitation')
+                     f'{excitation} excitation')
         st.subheader(f'f=[{round(freq_min / 1e3)}~{round(freq_max / 1e3)}] kHz, '
                      f'B=[{round(flux_min * 1e3)}~{round(flux_max * 1e3)}] mT, '
                      f'Bias={round(flux_bias * 1e3)} mT')
@@ -208,7 +216,8 @@ def ui_core_loss_db(m):
             y2=volt_list,  # Per unit
             x1_aux=cycle_list,  # Percentage
             y1_aux=flux_list,
-            title=f"<b>Waveform visualization</b> <br> f={format(freq_avg / 1e3, '.0f')} kHz, B={format(flux_avg * 1e3, '.0f')} mT")
+            title=f"<b>Waveform visualization</b> <br>"
+                  f"f={format(freq_avg / 1e3, '.0f')} kHz, B={format(flux_avg * 1e3, '.0f')} mT")
 
     if df.empty or excitation == 'Datasheet':  # Second column not required
         col1, col2 = st.columns([5, 1])

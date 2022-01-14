@@ -1,28 +1,40 @@
 import os.path
 import streamlit as st
-from magnet import config
-from magnet.constants import material_names
+
+from magnet import config as c
+from magnet.constants import materials, material_names, material_manufacturers, excitations_raw
 from magnet.io import load_metadata
 
 
-def header(material, excitation):
-    s = f'Download Data - {material} - {excitation} '
-    return st.header(s)
-
-
 def ui_download_raw_data(m, streamlit_root):
-    st.sidebar.header(f'Information for Material {m}')
-    material = st.sidebar.selectbox(f'Material {m}:', material_names)
-    excitation = st.sidebar.selectbox(f'Excitation {m}:', ("Sinusoidal", "Triangular-Trapezoidal"))
-    # Changed as we don't have "Arbitrary-Periodic" or "Non-Periodic" yet
-    # It does not make sense to have "Datasheet", also, Triangular and Trapezoidal are saved into the same zip file
-
+    st.sidebar.header(f'Information: Case {m}')
+    excitation = st.sidebar.selectbox(
+        f'Excitation:',
+        excitations_raw,
+        key=f'excitation {m}')
+    excitation = st.sidebar.selectbox(
+        f'Excitation:',
+        excitations_intro,
+        key=f'excitation {m}',
+        index=1)
+    material = st.sidebar.selectbox(
+        f'Material:',
+        material_names,
+        key=f'material {m}')
     if excitation == "Triangular-Trapezoidal":
         read_excitation = 'Trapezoidal'
     if excitation == "Sinusoidal":
         read_excitation = 'Sinusoidal'
 
-    header(material, excitation)
+    st.title(f'Download Data: Case {m}')
+    st.subheader(f'{material_manufacturers[material]} - {material}, '
+                 f'{excitation} excitation')
+    if excitation == "Sinusoidal":
+        # TODO: find a better place for this
+        k_i, alpha, beta = materials[material]
+        st.write(f'iGSE parameters from the sinusoidal data: '
+                 f'ki={k_i}, alpha={alpha}, and beta={beta} '
+                 f'(with Pv, f, and B in W/m^3, Hz and T respectively)')
 
     metadata = load_metadata(material, read_excitation)
     with st.expander("Measurement details"):
@@ -34,18 +46,29 @@ def ui_download_raw_data(m, streamlit_root):
         st.write(metadata['info_volt_meas'])
         st.write(metadata['info_curr_meas'])
 
-    st.write('Raw data - 20us sample')
-    data_file_raw = os.path.join(streamlit_root,
-                            config.streamlit.raw_data_file.format(material=material, excitation=read_excitation))
-    with open(data_file_raw, 'rb') as file:
-        st.download_button(f'Download zip file', file, os.path.basename(data_file_raw), key=[m, 'Raw'])
+    st.subheader('Raw data - 20 us voltage and current')
+    if os.path.isfile(os.path.join(
+        streamlit_root,
+        c.streamlit.raw_data_file.format(material=material, excitation=read_excitation))):
 
-    st.write('Post-processed data - a single cycle')
+        data_file_raw = os.path.join(
+            streamlit_root,
+            c.streamlit.raw_data_file.format(material=material, excitation=read_excitation))
+        with open(data_file_raw, 'rb') as file:
+            st.download_button(f'Download zip file', file, os.path.basename(data_file_raw), key=[m, 'Raw'])
+    else:
+        st.write('Download data missing, please contact us')
 
-    data_file_cycle = os.path.join(streamlit_root,
-                             config.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))
-    with open(data_file_cycle, 'rb') as file:
-        st.download_button(f'Download zip file', file, os.path.basename(data_file_cycle), key=[m, 'Cycle'])
-
+    st.subheader('Post-processed data - B-H in a single cycle')
+    if os.path.isfile(os.path.join(
+        streamlit_root,
+        c.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))):
+        data_file_cycle = os.path.join(
+            streamlit_root,
+            c.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))
+        with open(data_file_cycle, 'rb') as file:
+            st.download_button(f'Download zip file', file, os.path.basename(data_file_cycle), key=[m, 'Cycle'])
+    else:
+        st.write('Download data missing, please contact us')
     st.sidebar.markdown("""---""")
     st.markdown("""---""")

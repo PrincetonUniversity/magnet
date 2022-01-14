@@ -6,41 +6,17 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 
 def ui_faq(m):
-    
-    st.subheader('Introduction of MagNet')
-    
-    st.write("""
-         MagNet is a large-scale dataset designed to enable researchers modeling 
-         magnetic core loss using machine learning to accelerate the design process 
-         of power electronics. The dataset contains a large amount of voltage and 
-         current data of different magnetic components with different shapes of 
-         waveforms and different properties measured in the real world. Researchers 
-         may use these data as pairs of excitations and responses to build up dynamic 
-         magnetic models or calculate the core loss to derive static models. MagNet 
-         is continuously being maintained and updated with new data.
-    """)
-     
-    st.subheader('How to Cite')
-    
-    st.write("""
-        If you used MagNet, please cite us with the following:
-            
-        [1] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
-        "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," 
-        IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
-        
-        [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
-        "Transfer Learning Methods for Magnetic Core Loss Modeling,” 
-        IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
-        
-        [3] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
-        "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
-        IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
-    """)
 
-    st.subheader('Frequently Asked Questions')
-
-    st.write('Data Acquisition System:')
+    st.title('Frequently Asked Questions')
+    st.write('')
+    st.write("""
+        This section includes some explanations regarding how data is captured, processed, and how losses are calculated.
+        
+        If you have any other questions, please let us know so we can add them to the list.
+        You can either write us to any of the e-mails listed on the left or open a new issue in our GitHub repository.
+    """)
+    st.write('')
+    st.subheader('Data Acquisition System:')
     with st.expander("1. How is the magnetic core loss data measured?"):
         st.write("""
             The magnetic core loss measurement is supported by an automated data acquisition system as shown in the figure.
@@ -76,7 +52,7 @@ def ui_faq(m):
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.jpg')), width=500)
 
-    st.write('Data Processing:')
+    st.subheader('Data Processing:')
     with st.expander("1. What information is processed?"):
         st.write("""
             The information processed is the voltage, current and time sequences collected with the oscilloscope (Tektronix DPO4054 in our setup).
@@ -192,7 +168,7 @@ def ui_faq(m):
             The datasheet data points are interpolated from the manufacturer's datasheet for each material.
             
             The loss density plots against flux density, frequency, and temperature are digitalized using the "GetData Graph Digitizer" tool (http://getdata-graph-digitizer.com/).
-            For instance, the digitalized data for the material N87 is shown in the following figure:
+            For instance, the digitalized data for the N87 datasheet is shown in the following figure:
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'datasheet-digitalized.jpg')), width=500)
         st.write("""
@@ -205,7 +181,7 @@ def ui_faq(m):
             Moreover, materials 3E6 and N30 are excluded from the webpage as their datasheets do not contain loss plots.
         """)
 
-    st.write('Core Loss Prediction:')
+    st.subheader('Core Loss Prediction:')
     with st.expander("1. What's the algorithm that used in the core loss analysis?"):
         st.write("""
             Two types of algorithms are currently used: the iGSE (improved Generalized Steinmetz Equation)  model and the ML (Machine Learning) based model.
