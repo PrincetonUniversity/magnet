@@ -12,11 +12,6 @@ def ui_download_raw_data(m, streamlit_root):
         f'Excitation:',
         excitations_raw,
         key=f'excitation {m}')
-    excitation = st.sidebar.selectbox(
-        f'Excitation:',
-        excitations_intro,
-        key=f'excitation {m}',
-        index=1)
     material = st.sidebar.selectbox(
         f'Material:',
         material_names,
