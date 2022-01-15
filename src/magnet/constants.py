@@ -26,5 +26,7 @@ material_manufacturers = {
 }
 
 material_names = list(materials.keys())
-excitations = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
-prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')
+excitations_db = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
+excitations_raw = ('Sinusoidal', 'Triangular-Trapezoidal')
+excitations_predict = ('Sinusoidal', 'Triangular', 'Trapezoidal', 'Arbitrary', 'Simulated')
+# prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')  # Not used, isn't it?

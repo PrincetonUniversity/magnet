@@ -6,41 +6,17 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 
 def ui_faq(m):
-    
-    st.subheader('Introduction of MagNet')
-    
-    st.write("""
-         MagNet is a large-scale dataset designed to enable researchers modeling 
-         magnetic core loss using machine learning to accelerate the design process 
-         of power electronics. The dataset contains a large amount of voltage and 
-         current data of different magnetic components with different shapes of 
-         waveforms and different properties measured in the real world. Researchers 
-         may use these data as pairs of excitations and responses to build up dynamic 
-         magnetic models or calculate the core loss to derive static models. MagNet 
-         is continuously being maintained and updated with new data.
-    """)
-     
-    st.subheader('How to Cite')
-    
-    st.write("""
-        If you used MagNet, please cite us with the following:
-            
-        [1] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
-        "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," 
-        IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
-        
-        [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
-        "Transfer Learning Methods for Magnetic Core Loss Modeling,” 
-        IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
-        
-        [3] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
-        "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
-        IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
-    """)
 
-    st.subheader('Frequently Asked Questions')
-
-    st.write('Data Acquisition System:')
+    st.title('Frequently Asked Questions')
+    st.write('')
+    st.write("""
+        This section includes some explanations regarding how data is captured, processed, and how losses are calculated.
+        
+        If you have any other questions, please let us know so we can add them to the list.
+        You can either write us to any of the e-mails listed on the left or open a new issue in our GitHub repository.
+    """)
+    st.write('')
+    st.subheader('Data Acquisition System:')
     with st.expander("1. How is the magnetic core loss data measured?"):
         st.write("""
             The magnetic core loss measurement is supported by an automated data acquisition system as shown in the figure.
@@ -74,9 +50,9 @@ def ui_faq(m):
             
             In the following figure, examples of different waveforms and their duty cycles are shown.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.jpg')), width=500)
 
-    st.write('Data Processing:')
+    st.subheader('Data Processing:')
     with st.expander("1. What information is processed?"):
         st.write("""
             The information processed is the voltage, current and time sequences collected with the oscilloscope (Tektronix DPO4054 in our setup).
@@ -86,7 +62,7 @@ def ui_faq(m):
             
             The figure below shows an example of the voltage and current recorded in a Trapezoidal test for N87 material.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'volt-curr.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'volt-curr.jpg')), width=500)
         st.write("""
             Then, these files are processed using Matlab.
             The Matlab scripts can be found at https://github.com/PrincetonUniversity/magnet/tree/main/scripts/Matlab_scripts
@@ -103,7 +79,7 @@ def ui_faq(m):
             
             In the picture below the FFT of the current in the previous example is shown; for this example, the fundamental frequency is 50 kHz.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'fft.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'fft.jpg')), width=500)
     with st.expander("3. How are losses obtained?"):
         st.write("""
             The instantaneous power can be calculated directly as the product of the voltage and current.
@@ -116,7 +92,7 @@ def ui_faq(m):
             Additionally, only an entire number of switching cycles is used for this calculation, as losses may not be constant along the switching cycle.
             Finally, the loss density is calculated as the power divided by the effective volume specified in the datasheet.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'power.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'power.jpg')), width=500)
     with st.expander("4. How is the flux density calculated?"):
         st.write("""
             The instantaneous flux density is the integral of the voltage waveform divided by the number of turns of the secondary winding used to measure the voltage, and also divided by the effective area specified in the datasheet.
@@ -130,7 +106,7 @@ def ui_faq(m):
             Once the offset is removed, the corrected shape for the instantaneous flux density is obtained (in black)
             The flux density amplitude is calculated from the maximum (or minimum) of the corrected waveform.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.jpg')), width=500)
     with st.expander("5. How are the results plotted?"):
         st.write("""
             Besides the frequency, volumetric loss, and flux density amplitude, the different duty cycles for Trapezoidal and Triangular waveforms are identified too (d1 to d4).
@@ -161,7 +137,7 @@ def ui_faq(m):
             The Steinmetz parameters are calculated as described in the previous point, but the impact of each other point is weighted by the distance to the considered point.
             To clarify this concept, in the following figure the weight of the nearby points for a randomly considered point is shown.
          """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'outlier-weight.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'outlier-weight.jpg')), width=500)
         st.write("""
             And the outlier factor calculates the relative discrepancy between the estimated losses based on the local Steinmetz parameters and the measured losses.
             A data point whose measured core loss is far from its estimated value will get a high outlier factor,
@@ -179,7 +155,7 @@ def ui_faq(m):
             To generate the single-cycle waveforms, the raw voltage and current waveform are split into the different switching cycles, then, for each switching cycle, 100 samples are obtained by interpolation, and, finally, the 100 samples for each cycle are averaged into a single switching cycle waveform.
             The following simplified figure clarifies the process for obtaining a single voltage waveform; the same process is applied to the current waveform.
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.png')), width=500)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.jpg')), width=500)
         st.write("""   
             However, post-processing the data in this way has some limitations.
             First, if the frequency of the waveform is not accurately identified, some unwanted averaging effect will appear in the single-cycle waveform, leading to an inaccurate capture of the waveform.
@@ -192,7 +168,7 @@ def ui_faq(m):
             The datasheet data points are interpolated from the manufacturer's datasheet for each material.
             
             The loss density plots against flux density, frequency, and temperature are digitalized using the "GetData Graph Digitizer" tool (http://getdata-graph-digitizer.com/).
-            For instance, the digitalized data for the material N87 is shown in the following figure:
+            For instance, the digitalized data for the N87 datasheet is shown in the following figure:
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'datasheet-digitalized.jpg')), width=500)
         st.write("""
@@ -205,7 +181,7 @@ def ui_faq(m):
             Moreover, materials 3E6 and N30 are excluded from the webpage as their datasheets do not contain loss plots.
         """)
 
-    st.write('Core Loss Prediction:')
+    st.subheader('Core Loss Prediction:')
     with st.expander("1. What's the algorithm that used in the core loss analysis?"):
         st.write("""
             Two types of algorithms are currently used: the iGSE (improved Generalized Steinmetz Equation)  model and the ML (Machine Learning) based model.

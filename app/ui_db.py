@@ -2,24 +2,10 @@ import streamlit as st
 import numpy as np
 
 from magnet import config as c
-from magnet.constants import material_names, material_manufacturers, excitations
+from magnet.constants import material_names, material_manufacturers, excitations_db
 from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_2axes
-
-
-def header(material, excitation, f_min, f_max, b_min, b_max, Bbias=None, Temp=None, DutyP=None, DutyN=None):
-    s = f"{material_manufacturers[material]} - {material}, {excitation} Data, f=[{format(f_min/1e3,'.0f')}~{format(f_max/1e3, '.0f')}] kHz, B=[{format(b_min*1e3, '.0f') }~{format(b_max*1e3, '.0f')}] mT"
-    if Bbias is not None:
-        s += f', Bdc={Bbias*1e3} mT'
-    if Temp is not None:
-        s += f', T={Temp} C'
-    if DutyP is not None:
-        if DutyN is None:
-            s += f", D={format(DutyP,'.1f')}"
-        if DutyN is not None:
-            Duty0 = (1.0-DutyP-DutyN)/2.0
-            s += f", D1={format(DutyP,'.1f')}, D2={format(Duty0,'.1f')}, D3={format(DutyN,'.1f')}, D4={format(Duty0,'.1f')}"
-    return st.subheader(s)
+from magnet.core import cycle_points_sine, cycle_points_trap
 
 
 def ui_core_loss_dbs(n=1):
@@ -28,118 +14,139 @@ def ui_core_loss_dbs(n=1):
 
 
 def ui_core_loss_db(m):
-    st.sidebar.header(f'Information for Material {m}')
-    excitation = st.sidebar.selectbox(f'Excitation:', excitations, key="excitation" + m, index=1)
+    st.sidebar.header(f'Information: Case {m}')
+    excitation = st.sidebar.selectbox(
+        f'Excitation:',
+        excitations_db,
+        key=f'excitation {m}',
+        index=1)
+
     if excitation == 'Datasheet':  # No datasheet info for 3E6 or N30
-        material = st.sidebar.selectbox(f'Material:', [elem for elem in material_names if elem not in {'N30', '3E6'}],
-                                        key="material"+m)
+        material = st.sidebar.selectbox(
+            f'Material:',
+            [elem for elem in material_names if elem not in {'N30', '3E6'}],
+            key=f'material {m}')
     else:
-        material = st.sidebar.selectbox(f'Material:', material_names, key="material" + m)
-    c_axis = st.sidebar.selectbox(f'Select color-axis for Plotting:', ['Flux Density', 'Frequency', 'Power Loss'],
-                                  key="c_axis"+m)
+        material = st.sidebar.selectbox(
+            f'Material:',
+            material_names,
+            key=f'material {m}')
 
-    [Fmin_kHz, Fmax_kHz] = st.sidebar.slider(
+    [freq_min_aux, freq_max_aux] = st.sidebar.slider(
         f'Frequency Range (kHz)',
-        c.streamlit.freq_min/1e3,
-        c.streamlit.freq_max/1e3,
-        (c.streamlit.freq_min/1e3, c.streamlit.freq_max/1e3),
-        step=c.streamlit.freq_step/1e3,
-        key="frequency"+m)
+        round(c.streamlit.freq_min / 1e3),
+        round(c.streamlit.freq_max / 1e3),
+        (round(c.streamlit.freq_min / 1e3), round(c.streamlit.freq_max / 1e3)),
+        step=round(c.streamlit.freq_step_db / 1e3),
+        key=f'freq {m}')
+    freq_min = freq_min_aux * 1e3
+    freq_max = freq_max_aux * 1e3
+    freq_avg = (freq_max + freq_min) / 2
 
-    Fmin = Fmin_kHz * 1e3
-    Fmax = Fmax_kHz * 1e3
-    Favg = (Fmax + Fmin) / 2
+    [flux_min_aux, flux_max_aux] = st.sidebar.slider(
+        f'AC Flux Density Range (mT)',
+        round(c.streamlit.flux_min * 1e3),
+        round(c.streamlit.flux_max * 1e3),
+        (round(c.streamlit.flux_min * 1e3), round(c.streamlit.flux_max * 1e3)),
+        step=round(c.streamlit.flux_step_db * 1e3),
+        key=f'flux {m}')
+    flux_min = flux_min_aux / 1e3
+    flux_max = flux_max_aux / 1e3
+    flux_avg = (flux_max + flux_min) / 2
 
-    [Bmin_mT, Bmax_mT] = st.sidebar.slider(
-        f'AC Flux Density Amplitude Range (mT)',
-        c.streamlit.flux_min*1e3,
-        c.streamlit.flux_max*1e3,
-        (c.streamlit.flux_min*1e3, c.streamlit.flux_max*1e3),
-        step=c.streamlit.flux_step*1e3,
-        key="flux"+m)
-
-    Bmin = Bmin_mT / 1e3
-    Bmax = Bmax_mT / 1e3
-    Bavg = (Bmax + Bmin) / 2
-
-    Bbias = st.sidebar.slider(
-        f'DC Flux Density (mT) (coming soon)',
-        -c.streamlit.flux_max*1e3,
-        c.streamlit.flux_max*1e3,
-        0.0,
-        step=1e9,
-        key="Bbias"+m,
-        help="Fixed at 0 mT for now")  # 1e9 step to fix it
-
-    if excitation == 'Datasheet':
-        Temp = st.sidebar.slider(
-            f'Temperature (C)',
-            c.streamlit.temp_min,
-            c.streamlit.temp_max,
-            25.0,
-            step=c.streamlit.temp_step,
-            key="temp"+m)
+    flux_bias = st.sidebar.slider(
+        f'DC Flux Density (mT) coming soon!',
+        round(-c.streamlit.flux_max * 1e3),
+        round(c.streamlit.flux_max * 1e3),
+        0,
+        step=round(1e9),
+        key=f'bias {m}',
+        help=f'Fixed at 0 mT for now') / 1e3  # 1e9 step to fix it
 
     if excitation == 'Triangular':
-        DutyP = st.sidebar.slider(
+        duty_p = st.sidebar.slider(
             f'Duty Ratio',
-            c.streamlit.duty_min_db,
-            c.streamlit.duty_max_db,
-            0.5,
+            c.streamlit.duty_min,
+            c.streamlit.duty_max,
+            (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
             step=c.streamlit.duty_step_db,
-            key="duty"+m)
-        DutyN = 1.0-DutyP  # For triangular excitation, there are no flat parts
-        Duty0 = 0.0
+            key=f'duty {m}')
+        duty_n = 1.0 - duty_p  # For triangular excitation, there are no flat parts
+        duty_0 = 0.0
     if excitation == 'Trapezoidal':
-        DutyP = st.sidebar.slider(f'Duty Ratio (Rising)',
-                                  c.streamlit.duty_min_db,
-                                  c.streamlit.duty_max_db-2*c.streamlit.duty_step_db,
-                                  0.4,
-                                  step=c.streamlit.duty_step_db,
-                                  key="dutyP"+m,
-                                  help="D1")
-        DutyNmax = 1.0-DutyP-0.2
-        if DutyP in [0.1, 0.3, 0.5, 0.7]:  # TODO: probably there is a more elegant way to implement this
-            DutyNmin = 0.1
-        elif DutyP in [0.2, 0.4, 0.6]:
-            DutyNmin = 0.2
-
-        if DutyNmax <= DutyNmin+0.01:  # In case they are equal but implemented for floats
-            DutyN = st.sidebar.slider(
-                f'Duty Ratio (Falling) Fixed',
-                DutyNmax-0.01,
-                DutyNmax+0.01,
-                DutyNmax,
-                step=1.0,
-                key="dutyN"+m,
-                help="D3, fixed by D1")  # Step outside the range to fix the variable
-        else:
-            DutyN = st.sidebar.slider(
-                f'Duty Ratio (Falling)',
-                DutyNmin,
-                DutyNmax,
-                DutyNmax,
-                step=2*c.streamlit.duty_step_db,
-                key="dutyN"+m,
-                help="D3, maximum imposed by D1")
-        Duty0 = st.sidebar.slider(
-            f'Duty Ratio (Flat) Fixed',
-            (1.0-DutyP-DutyN)/2.0-0.01,
-            (1.0-DutyP-DutyN)/2.0+0.01,
-            (1.0-DutyP-DutyN)/2.0,
+        duty_p = st.sidebar.slider(
+            f'Duty Ratio (D1)',
+            c.streamlit.duty_min,
+            c.streamlit.duty_max - 2 * c.streamlit.duty_step_db,
+            (c.streamlit.duty_min + c.streamlit.duty_max) / 2 - c.streamlit.duty_step_db,
             step=c.streamlit.duty_step_db,
-            key="duty0"+m,
-            help="D2=D4=(1-D1-D3)/2")  # Step outside the range to fix the variable
+            key=f'dutyP {m}',
+            help=f'Rising part with the highest slope')
+        duty_n_max = 1.0 - duty_p - 0.2
+        if duty_p in [0.1, 0.3, 0.5, 0.7]:  # TODO: probably there is a more elegant way to implement this
+            duty_n_min = 0.1
+        elif duty_p in [0.2, 0.4, 0.6]:
+            duty_n_min = 0.2
 
-    if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
-        Outmax = st.sidebar.slider(
+        if duty_n_max <= duty_n_min+0.01:  # In case they are equal but implemented for floats
+            duty_n = st.sidebar.slider(
+                f'Duty Ratio (D3) Fixed',
+                duty_n_max - 0.01,
+                duty_n_max + 0.01,
+                duty_n_max,
+                step=1.0,
+                key=f'dutyN {m}',
+                help=f'Falling part with the highest slope, fixed by D1')  # Step outside the range to fix the variable
+        else:
+            duty_n = st.sidebar.slider(
+                f'Duty Ratio (D3)',
+                duty_n_min,
+                duty_n_max,
+                duty_n_max,
+                step=2 * c.streamlit.duty_step_db,
+                key=f'dutyN {m}',
+                help=f'Falling part with the highest slope, maximum imposed by D1')
+        duty_0 = st.sidebar.slider(
+            f'Duty Ratio (D2=D4=(1-D1-D3)/2) Fixed',
+            0.0,
+            1.0,
+            (1-duty_p-duty_n)/2,
+            step=1e7,
+            key=f'duty0 {m}',
+            help=f'Low slope regions, fixed by D1 and D3')  # Step outside the range to fix the variable
+
+    if excitation == 'Datasheet':
+        temperature = st.sidebar.slider(
+            f'Temperature (C)',
+            round(c.streamlit.temp_min),
+            round(c.streamlit.temp_max),
+            round(c.streamlit.temp_default),
+            step=round(c.streamlit.temp_step),
+            key=f'temp {m}')
+    else:
+        temperature = st.sidebar.slider(
+            f'Temperature (C) coming soon!',
+            round(c.streamlit.temp_min),
+            round(c.streamlit.temp_max),
+            round(c.streamlit.temp_default),
+            step=round(1e9),
+            key=f'temp {m}')
+        out_max = st.sidebar.slider(
             f'Maximum Outlier Factor (%)',
-            1,
-            20,
-            20,
+            round(c.streamlit.outlier_min),
+            round(c.streamlit.outlier_max),
+            round(c.streamlit.outlier_max),
             step=1,
-            key="outlier" + m,
-            help="Measures the similarity between a datapoint and their neighbours (in terms of B and f) based on local Steinmetz parameters")
+            key=f'outlier {m}',
+            help=f'Measures the similarity between the loss of a datapoint and their neighbours' 
+                 f'(in terms of B and f) based on local Steinmetz parameters')
+
+    c_axis = st.sidebar.selectbox(
+        f'Select Color-Axis for the Plots:',
+        ['Flux Density', 'Frequency', 'Power Loss'],
+        key=f'c_axis {m}')
+
+    st.sidebar.markdown("""---""")
 
     if excitation == 'Triangular':
         read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
@@ -147,79 +154,70 @@ def ui_core_loss_db(m):
         read_excitation = excitation
 
     if read_excitation == 'Datasheet':
-        df = load_dataframe_datasheet(material, Fmin, Fmax, Bmin, Bmax, Temp)
+        df = load_dataframe_datasheet(material, freq_min, freq_max, flux_min, flux_max, temperature)
     if read_excitation == 'Sinusoidal':
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, None, None, Outmax)
+        df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, None, None, out_max)
     if read_excitation == 'Trapezoidal':
-        df = load_dataframe(material, read_excitation, Fmin, Fmax, Bmin, Bmax, DutyP, DutyN, Outmax)
+        df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
 
-    col1, col2 = st.columns([3, 3])
+    col1, col2 = st.columns(2)
     with col1:
-        st.title(f"Core Loss Database (for Material {m}):")
-        if excitation == 'Datasheet':
-            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, Temp, None, None)
-        if excitation == 'Sinusoidal':
-            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, None, None)
-        if excitation == 'Triangular':
-            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, DutyP, None)
-        if excitation == 'Trapezoidal':
-            header(material, excitation, Fmin, Fmax, Bmin, Bmax, None, None, DutyP, DutyN)
+        st.title(f'Core Loss Database: Case {m}')
+        st.subheader(f'{material_manufacturers[material]} - {material}, '
+                     f'{excitation} excitation')
+        st.subheader(f'f=[{round(freq_min / 1e3)}~{round(freq_max / 1e3)}] kHz, '
+                     f'B=[{round(flux_min * 1e3)}~{round(flux_max * 1e3)}] mT, '
+                     f'Bias={round(flux_bias * 1e3)} mT')
+        if excitation == "Datasheet":
+            st.subheader(f'T={round(temperature)} C')
+        else:
+            st.subheader(f'Max outlier factor={out_max} %')
+        if excitation == "Triangular":
+            st.subheader(f'D={round(duty_p, 2)}')
+        if excitation == "Trapezoidal":
+            st.subheader(f'D1={round(duty_p, 2)}, '
+                         f'D2={round(duty_0, 2)}, '
+                         f'D3={round(duty_n, 2)}, '
+                         f'D4={round(duty_0, 2)}')
 
         if df.empty:
-            st.write("Warning: no data in range, please change the range")
+            st.subheader("Warning: no data in range, please change the range")
         else:
-
             if excitation != 'Datasheet':
-                with st.expander("Measurement details"):
+                with st.expander('Measurement details'):
                     metadata = load_metadata(material, read_excitation)
                     st.write(metadata['info_date'])
                     st.write(metadata['info_excitation'])
                     if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
                         st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
-            st.header(f"Download data:")
+            st.subheader(f'Download data:')
             file = df.to_csv().encode('utf-8')
             st.download_button(
-                "Download CSV",
+                'Download CSV',
                 file,
-                material + "-" + excitation + ".csv",
-                "text/csv",
+                material + '-' + excitation + '.csv',
+                'text/csv',
                 key=m,
                 help='Download a CSV file containing the flux, frequency, duty cycle,'
-                     'power loss and outlier factor for the depicted datapoints')
+                     'power loss and outlier factor for the depicted data points')
 
     with col2:
         if excitation in ['Datasheet', 'Sinusoidal']:
-            cycle_list = np.linspace(0, 1, 101)
-            flux_list = np.sin(np.multiply(cycle_list, np.pi * 2))
-            volt_list = np.cos(np.multiply(cycle_list, np.pi * 2))
-
+            [cycle_list, flux_list, volt_list] = cycle_points_sine(c.streamlit.n_points_plot)
         if excitation in ['Triangular', 'Trapezoidal']:
-            if DutyP > DutyN:
-                volt_P = (1 - (DutyP - DutyN)) / -(-1 - (DutyP - DutyN))
-                volt_0 = - (DutyP - DutyN) / -(-1 - (DutyP - DutyN))
-                volt_N = -1  # The negative voltage is maximum
-                BPplot = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
-                BNplot = -(-1 - DutyP + DutyN) * DutyN / ((1 - DutyP + DutyN) * DutyP)  # Proportional to (-1-dp+dN)*dn
-            else:
-                volt_P = 1  # The positive voltage is maximum
-                volt_0 = - (DutyP - DutyN) / (1 - (DutyP - DutyN) )
-                volt_N = (-1 - (DutyP - DutyN)) / (1 - (DutyP - DutyN) )
-                BNplot = 1  # Proportional to (-1-dP+dN)*dN
-                BPplot = -(1 - DutyP + DutyN) * DutyP / ((-1 - DutyP + DutyN) * DutyN)  # Proportional to (1-dP+dN)*dP
-            cycle_list = [0, 0, DutyP, DutyP, DutyP + Duty0, DutyP + Duty0, 1 - Duty0, 1 - Duty0, 1]
-            flux_list = [-BPplot, -BPplot, BPplot, BPplot, BNplot, BNplot, -BNplot, -BNplot, -BPplot]
-            volt_list = [volt_0, volt_P, volt_P, volt_0, volt_0, volt_N, volt_N, volt_0, volt_0]
+            [cycle_list, flux_list, volt_list] = cycle_points_trap(duty_p, duty_n, duty_0)
+        flux_vector = np.add(np.multiply(flux_list, flux_avg), flux_bias)
 
-        flux_vector = np.add(np.multiply(flux_list, Bavg), Bbias)
         waveform_visualization_2axes(
             st,
-            x1=np.multiply(cycle_list, 1e6/Favg),  # In us
+            x1=np.multiply(cycle_list, 1e6 / freq_avg),  # In us
             x2=cycle_list,  # Percentage
             y1=np.multiply(flux_vector, 1e3),  # In mT
             y2=volt_list,  # Per unit
             x1_aux=cycle_list,  # Percentage
             y1_aux=flux_list,
-            title=f"<b>Waveform visualization:</b> <br> f={format(Favg/1e3,'.0f')} kHz, B={format(Bavg*1e3,'.0f')} mT")
+            title=f"<b>Waveform visualization</b> <br>"
+                  f"f={format(freq_avg / 1e3, '.0f')} kHz, B={format(flux_avg * 1e3, '.0f')} mT")
 
     if df.empty or excitation == 'Datasheet':  # Second column not required
         col1, col2 = st.columns([5, 1])
@@ -250,7 +248,7 @@ def ui_core_loss_db(m):
                     c='Power_Loss_kW/m3'),
                     use_container_width=True)
 
-        if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
+        if excitation != 'Datasheet':
             with col2:
                 if c_axis == 'Flux Density':
                     st.plotly_chart(scatter_plot(
@@ -268,10 +266,10 @@ def ui_core_loss_db(m):
                         use_container_width=True)
                 else:
                     st.plotly_chart(scatter_plot(
-                        df, x='Flux_Density_mT',
+                        df,
+                        x='Flux_Density_mT',
                         y='Frequency_kHz',
                         c='Outlier_Factor'),
                         use_container_width=True)
 
-    st.sidebar.markdown("""---""")
     st.markdown("""---""")

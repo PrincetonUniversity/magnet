@@ -19,10 +19,10 @@ def plot_label(prop):
     prop = prop.lower().strip()
     return {
         'frequency_khz': 'Frequency [kHz]',
-        'flux_density_mt': 'AC Flux Density Amplitude [mT]',
+        'flux_density_mt': 'AC Flux Density [mT]',
         'power_loss_kw/m3': 'Power Loss [kW/m^3]',
         'frequency': 'Frequency [Hz]',
-        'flux_density': 'AC Flux Density Amplitude [T]',
+        'flux_density': 'AC Flux Density [T]',
         'power_loss': 'Power Loss [W/m^3]',
         'duty_ratio': 'Duty Ratio',
         'outlier_factor': 'Outlier Factor [%]'
@@ -39,6 +39,17 @@ def plot_title(prop):
         'flux_density': 'Flux Density',
         'power_loss': 'Power Loss',
         'outlier_factor': 'Outlier Factor'
+    }[prop]
+
+
+def waveform_shorts(prop):
+    prop = prop.lower().strip()
+    return {
+        'sinusoidal': 'sine',
+        'triangular': 'triangle',
+        'trapezoidal': 'trapezoid',
+        'arbitrary': 'arbitrary',
+        'simulated': 'simulated'
     }[prop]
 
 
@@ -187,3 +198,29 @@ def loss(waveform, algorithm, **kwargs):
 
     fn = globals()[f'core_loss_{algorithm}_{waveform}']
     return fn(**kwargs)
+
+
+def cycle_points_sine(point):
+    cycle_list = np.linspace(0, 1, point)
+    flux_list = np.sin(np.multiply(cycle_list, np.pi * 2))
+    volt_list = np.cos(np.multiply(cycle_list, np.pi * 2))
+    return [cycle_list, flux_list, volt_list]
+
+
+def cycle_points_trap(duty_p, duty_n, duty_0):
+    if duty_p > duty_n:
+        volt_p = (1 - (duty_p - duty_n)) / -(-1 - (duty_p - duty_n))
+        volt_0 = - (duty_p - duty_n) / -(-1 - (duty_p - duty_n))
+        volt_n = -1  # The negative voltage is maximum
+        b_p = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
+        b_n = -(-1 - duty_p + duty_n) * duty_n / ((1 - duty_p + duty_n) * duty_p)  # Prop to (-1-dp+dN)*dn
+    else:
+        volt_p = 1  # The positive voltage is maximum
+        volt_0 = - (duty_p - duty_n) / (1 - (duty_p - duty_n))
+        volt_n = (-1 - (duty_p - duty_n)) / (1 - (duty_p - duty_n))
+        b_n = 1  # Proportional to (-1-dP+dN)*dN
+        b_p = -(1 - duty_p + duty_n) * duty_p / ((-1 - duty_p + duty_n) * duty_n)  # Prop to (1-dP+dN)*dP
+    cycle_list = [0, 0, duty_p, duty_p, duty_p + duty_0, duty_p + duty_0, 1 - duty_0, 1 - duty_0, 1]
+    flux_list = [-b_p, -b_p, b_p, b_p, b_n, b_n, -b_n, -b_n, -b_p]
+    volt_list = [volt_0, volt_p, volt_p, volt_0, volt_0, volt_n, volt_n, volt_0, volt_0]
+    return [cycle_list, flux_list, volt_list]
