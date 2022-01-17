@@ -128,7 +128,7 @@ def waveform_visualization(
 
 
 def core_loss_multiple(
-        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
+        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True, y3=None, y03=None, y4=None, y04=None):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -166,6 +166,47 @@ def core_loss_multiple(
             line=dict(color='darkslategrey', width=4)
         ))
     )
+    if (y3 is not None) and max(y3) > 0.0:
+        fig.add_trace(
+            go.Scatter(
+                name="Datasheet",
+                x=x,
+                y=y3,
+                line=dict(color='mediumslateblue', width=0)
+            )
+        )
+    if y03 is not None:
+        fig.add_trace(
+            go.Scatter(dict(
+                marker_symbol="diamond",
+                marker_size=13,
+                showlegend=False,
+                x=x0,
+                y=y03,
+                line=dict(color='mediumslateblue', width=4)
+            ))
+        )
+    if (y4 is not None) and max(y4) > 0.0:
+        fig.add_trace(
+            go.Scatter(
+                name="Measurement",
+                x=x,
+                y=y4,
+                line=dict(color='limegreen', width=0)
+            )
+        )
+    if y04 is not None:
+        fig.add_trace(
+            go.Scatter(dict(
+                marker_symbol="diamond",
+                marker_size=13,
+                showlegend=False,
+                x=x0,
+                y=y04,
+                line=dict(color='limegreen', width=4)
+            ))
+        )
+
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title,

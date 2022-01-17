@@ -1,9 +1,10 @@
 import numpy as np
 import torch
+import math
 
 from magnet.constants import materials
 from magnet.net import model, model_lstm
-
+from magnet.io import load_dataframe_nearby, load_dataframe_datasheet_nearby
 
 def default_units(prop):  # Probably we are not going to need the default units
     prop = prop.lower().strip()
@@ -108,6 +109,61 @@ def core_loss_ML_sine(freq, flux, material):
     return core_loss
 
 
+def core_loss_DI_sine(freq, flux, material):
+    df = load_dataframe_datasheet_nearby(material, freq, flux, 25.0)
+    if df['Power_Loss'].size == 4:  # Only calculate the losses if the point is interpolable (surrounded by 4 points)
+        # log interpolation (linear) of the four points.
+        log_flux = math.log10(flux)
+        log_freq = math.log10(freq)
+        power_loss = df['Power_Loss']
+        index_freq_min = df[df['Frequency'] < freq].index.tolist()
+        index_flux_min = df[df['Flux_Density'] < flux].index.tolist()
+        index_freq_max = df[df['Frequency'] > freq].index.tolist()
+        index_flux_max = df[df['Flux_Density'] > flux].index.tolist()
+        log_loss_f_max_b_max = math.log10(float(power_loss[np.intersect1d(index_freq_max, index_flux_max)]))
+        log_loss_f_max_b_min = math.log10(float(power_loss[np.intersect1d(index_freq_max, index_flux_min)]))
+        log_loss_f_min_b_max = math.log10(float(power_loss[np.intersect1d(index_freq_min, index_flux_max)]))
+        log_loss_f_min_b_min = math.log10(float(power_loss[np.intersect1d(index_freq_min, index_flux_min)]))
+        log_flux_max = math.log10(df['Flux_Density'].max())
+        log_flux_min = math.log10(df['Flux_Density'].min())
+        log_freq_max = math.log10(df['Frequency'].max())
+        log_freq_min = math.log10(df['Frequency'].min())
+        log_loss_f_max = log_loss_f_max_b_min + (log_loss_f_max_b_max - log_loss_f_max_b_min) / (log_flux_max - log_flux_min) * (log_flux - log_flux_min)
+        log_loss_f_min = log_loss_f_min_b_min + (log_loss_f_min_b_max - log_loss_f_min_b_min) / (log_flux_max - log_flux_min) * (log_flux - log_flux_min)
+        log_loss = log_loss_f_min + (log_loss_f_max - log_loss_f_min) / (log_freq_max - log_freq_min) * (log_freq - log_freq_min)
+        core_loss = 10 ** log_loss
+    else:
+        core_loss = 0.0  # Not interpolable
+    return core_loss
+
+def core_loss_SI_sine(freq, flux, material):
+    df = load_dataframe_nearby(material, freq, flux)
+    if df['Power_Loss'].size == 4:  # Only calculate the losses if the point is interpolable (surrounded by 4 points)
+        # log interpolation (linear) of the four points.
+        log_flux = math.log10(flux)
+        log_freq = math.log10(freq)
+        power_loss = df['Power_Loss']
+        index_freq_min = df[df['Frequency'] < freq].index.tolist()
+        index_flux_min = df[df['Flux_Density'] < flux].index.tolist()
+        index_freq_max = df[df['Frequency'] > freq].index.tolist()
+        index_flux_max = df[df['Flux_Density'] > flux].index.tolist()
+        log_loss_f_max_b_max = math.log10(float(power_loss[np.intersect1d(index_freq_max, index_flux_max)]))
+        log_loss_f_max_b_min = math.log10(float(power_loss[np.intersect1d(index_freq_max, index_flux_min)]))
+        log_loss_f_min_b_max = math.log10(float(power_loss[np.intersect1d(index_freq_min, index_flux_max)]))
+        log_loss_f_min_b_min = math.log10(float(power_loss[np.intersect1d(index_freq_min, index_flux_min)]))
+        log_flux_max = math.log10(df['Flux_Density'].max())
+        log_flux_min = math.log10(df['Flux_Density'].min())
+        log_freq_max = math.log10(df['Frequency'].max())
+        log_freq_min = math.log10(df['Frequency'].min())
+        log_loss_f_max = log_loss_f_max_b_min + (log_loss_f_max_b_max - log_loss_f_max_b_min) / (log_flux_max - log_flux_min) * (log_flux - log_flux_min)
+        log_loss_f_min = log_loss_f_min_b_min + (log_loss_f_min_b_max - log_loss_f_min_b_min) / (log_flux_max - log_flux_min) * (log_flux - log_flux_min)
+        log_loss = log_loss_f_min + (log_loss_f_max - log_loss_f_min) / (log_freq_max - log_freq_min) * (log_freq - log_freq_min)
+        core_loss = 10 ** log_loss
+    else:
+        core_loss = 0.0  # Not interpolable
+    return core_loss
+
+
 def core_loss_iGSE_triangle(freq, flux, duty_ratio, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
     if material is not None:
         assert material in materials, f'Material {material} not found'
@@ -194,7 +250,7 @@ def loss(waveform, algorithm, **kwargs):
     if algorithm == 'Machine Learning':
         algorithm = 'ML'
     assert waveform in ('sine', 'triangle', 'trapezoid', 'arbitrary'), f'Unknown waveform {waveform}'
-    assert algorithm in ('iGSE', 'ML', 'Ref'), f'Unknown algorithm {algorithm}'
+    assert algorithm in ('iGSE', 'ML', 'DI', 'SI'), f'Unknown algorithm {algorithm}'
 
     fn = globals()[f'core_loss_{algorithm}_{waveform}']
     return fn(**kwargs)

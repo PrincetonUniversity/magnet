@@ -3,7 +3,7 @@ import numpy as np
 
 from magnet import config as c
 from magnet.constants import material_names, material_manufacturers, excitations_db
-from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
+from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata, load_dataframe_short, load_dataframe_datasheet_short
 from magnet.plots import scatter_plot, waveform_visualization_2axes
 from magnet.core import cycle_points_sine, cycle_points_trap
 
@@ -155,10 +155,13 @@ def ui_core_loss_db(m):
 
     if read_excitation == 'Datasheet':
         df = load_dataframe_datasheet(material, freq_min, freq_max, flux_min, flux_max, temperature)
+        df_short = load_dataframe_datasheet_short(material, freq_min, freq_max, flux_min, flux_max, temperature)
     if read_excitation == 'Sinusoidal':
         df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, None, None, out_max)
+        df_short = load_dataframe_short(material, read_excitation, freq_min, freq_max, flux_min, flux_max, None, None, out_max)
     if read_excitation == 'Trapezoidal':
         df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
+        df_short = load_dataframe_short(material, read_excitation, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -191,7 +194,12 @@ def ui_core_loss_db(m):
                     if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
                         st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
             st.subheader(f'Download data:')
-            file = df.to_csv().encode('utf-8')
+            if excitation == 'Sinusoidal':
+                del df_short["Duty_1"]
+                del df_short["Duty_2"]
+                del df_short["Duty_3"]
+                del df_short["Duty_4"]
+            file = df_short.to_csv().encode('utf-8')
             st.download_button(
                 'Download CSV',
                 file,

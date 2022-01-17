@@ -106,6 +106,18 @@ def ui_core_loss_predict(m):
             material=material,
             freq=freq,
             flux=flux) / 1e3
+        core_loss_DI = loss(
+            waveform=excitation_short,
+            algorithm='DI',  # Datasheet Interpolation
+            material=material,
+            freq=freq,
+            flux=flux) / 1e3
+        core_loss_SI = loss(  # Sinusoidal Interpolation
+            waveform=excitation_short,
+            algorithm='SI',
+            material=material,
+            freq=freq,
+            flux=flux) / 1e3
     if excitation == "Triangular":
         core_loss_iGSE = loss(
             waveform=excitation_short,
@@ -180,8 +192,18 @@ def ui_core_loss_predict(m):
                                  f'D4={round(duty_0, 2)}')
             st.write("")
             st.subheader(f'Core Loss:')
-            st.subheader(f'iGSE --- {round(core_loss_iGSE,2)} kW/m^3')
-            st.subheader(f'ML ----- {round(core_loss_ML,2)} kW/m^3')
+            st.subheader(f'{round(core_loss_iGSE,2)} kW/m^3 - iGSE')
+            st.subheader(f'{round(core_loss_ML,2)} kW/m^3 - Machine Learning (ML)')
+
+            if excitation == "Sinusoidal" and core_loss_SI != 0.0:
+                st.subheader(f'{round(core_loss_SI, 2)} kW/m^3 - Interpolated from Measurements')
+            else:
+                st.write('No measured data available for interpolation')
+
+            if excitation == "Sinusoidal" and core_loss_DI != 0.0:
+                st.subheader(f'{round(core_loss_DI, 2)} kW/m^3 - Interpolated from Datasheet')
+            else:
+                st.write('No datasheet information available for interpolation')
 
         with col2:
             if excitation == "Arbitrary":
@@ -215,15 +237,35 @@ def ui_core_loss_predict(m):
                         waveform=excitation_short,
                         algorithm='iGSE',
                         material=material,
-                        freq=i, flux=flux) for i in c.streamlit.core_loss_freq],
+                        freq=i,
+                        flux=flux)
+                        for i in c.streamlit.core_loss_freq],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
-                        freq=i, flux=flux) for i in c.streamlit.core_loss_freq],
+                        freq=i,
+                        flux=flux)
+                        for i in c.streamlit.core_loss_freq],
+                    y3=[1e-3 * loss(
+                        waveform=excitation_short,
+                        algorithm='DI',
+                        material=material,
+                        freq=i,
+                        flux=flux)
+                        for i in c.streamlit.core_loss_freq],
+                    y4=[1e-3 * loss(
+                        waveform=excitation_short,
+                        algorithm='SI',
+                        material=material,
+                        freq=i,
+                        flux=flux)
+                        for i in c.streamlit.core_loss_freq],
                     x0=list([freq / 1e3]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
+                    y03=list([core_loss_DI]),
+                    y04=list([core_loss_SI]),
                     title=f'<b> Core Loss Sweeping Frequency </b>'
                           f'<br> at a fixed Flux Density ({round(flux * 1e3)} mT)',
                     x_title='Frequency [kHz]'
@@ -236,15 +278,35 @@ def ui_core_loss_predict(m):
                         waveform=excitation_short,
                         algorithm='iGSE',
                         material=material,
-                        freq=freq, flux=i) for i in c.streamlit.core_loss_flux],
+                        freq=freq,
+                        flux=i)
+                        for i in c.streamlit.core_loss_flux],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
-                        freq=freq, flux=i) for i in c.streamlit.core_loss_flux],
+                        freq=freq,
+                        flux=i)
+                        for i in c.streamlit.core_loss_flux],
+                    y3=[1e-3 * loss(
+                        waveform=excitation_short,
+                        algorithm='DI',
+                        material=material,
+                        freq=freq,
+                        flux=i)
+                        for i in c.streamlit.core_loss_flux],
+                    y4=[1e-3 * loss(
+                        waveform=excitation_short,
+                        algorithm='SI',
+                        material=material,
+                        freq=freq,
+                        flux=i)
+                        for i in c.streamlit.core_loss_flux],
                     x0=list([flux * 1e3]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
+                    y03=list([core_loss_DI]),
+                    y04=list([core_loss_SI]),
                     title=f'<b> Core Loss Sweeping Flux Density </b>'
                           f'<br> at a fixed Frequency ({round(freq / 1e3)} kHz)',
                     x_title='AC Flux Density [mT]'
@@ -261,13 +323,15 @@ def ui_core_loss_predict(m):
                         algorithm='iGSE',
                         material=material,
                         freq=i,
-                        flux=flux, duty_ratio=duty_p) for i in c.streamlit.core_loss_freq],
+                        flux=flux, duty_ratio=duty_p)
+                        for i in c.streamlit.core_loss_freq],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
                         freq=i,
-                        flux=flux, duty_ratio=duty_p) for i in c.streamlit.core_loss_freq],
+                        flux=flux, duty_ratio=duty_p)
+                        for i in c.streamlit.core_loss_freq],
                     x0=list([freq / 1e3]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
@@ -287,13 +351,15 @@ def ui_core_loss_predict(m):
                         algorithm='iGSE',
                         material=material,
                         freq=freq,
-                        flux=i, duty_ratio=duty_p) for i in c.streamlit.core_loss_flux],
+                        flux=i, duty_ratio=duty_p)
+                        for i in c.streamlit.core_loss_flux],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
                         freq=freq,
-                        flux=i, duty_ratio=duty_p) for i in c.streamlit.core_loss_flux],
+                        flux=i, duty_ratio=duty_p)
+                        for i in c.streamlit.core_loss_flux],
                     x0=list([flux * 1e3]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
@@ -314,14 +380,16 @@ def ui_core_loss_predict(m):
                         material=material,
                         freq=freq,
                         flux=flux,
-                        duty_ratio=i) for i in c.streamlit.core_loss_duty],
+                        duty_ratio=i)
+                        for i in c.streamlit.core_loss_duty],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
                         freq=freq,
                         flux=flux,
-                        duty_ratio=i) for i in c.streamlit.core_loss_duty],
+                        duty_ratio=i)
+                        for i in c.streamlit.core_loss_duty],
                     x0=list([duty_p]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
@@ -344,14 +412,16 @@ def ui_core_loss_predict(m):
                         material=material,
                         freq=i,
                         flux=flux,
-                        duty_ratios=duty_ratios) for i in c.streamlit.core_loss_freq],
+                        duty_ratios=duty_ratios)
+                        for i in c.streamlit.core_loss_freq],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
                         freq=i,
                         flux=flux,
-                        duty_ratios=duty_ratios) for i in c.streamlit.core_loss_freq],
+                        duty_ratios=duty_ratios)
+                        for i in c.streamlit.core_loss_freq],
                     x0=list([freq / 1e3]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
@@ -370,14 +440,16 @@ def ui_core_loss_predict(m):
                         material=material,
                         freq=freq,
                         flux=i,
-                        duty_ratios=duty_ratios) for i in c.streamlit.core_loss_flux],
+                        duty_ratios=duty_ratios)
+                        for i in c.streamlit.core_loss_flux],
                     y2=[1e-3 * loss(
                         waveform=excitation_short,
                         algorithm='ML',
                         material=material,
                         freq=freq,
                         flux=i,
-                        duty_ratios=duty_ratios) for i in c.streamlit.core_loss_flux],
+                        duty_ratios=duty_ratios)
+                        for i in c.streamlit.core_loss_flux],
                     x0=list([flux * 1e3]),
                     y01=list([core_loss_iGSE]),
                     y02=list([core_loss_ML]),
