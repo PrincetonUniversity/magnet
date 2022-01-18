@@ -3,9 +3,9 @@ import numpy as np
 
 from magnet import config as c
 from magnet.constants import material_names, material_manufacturers, excitations_db
-from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata, load_dataframe_short, load_dataframe_datasheet_short
+from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_2axes
-from magnet.core import cycle_points_sine, cycle_points_trap
+from magnet.core import cycle_points_sinusoidal, cycle_points_trapezoidal
 
 
 def ui_core_loss_dbs(n=1):
@@ -49,7 +49,8 @@ def ui_core_loss_db(m):
         round(c.streamlit.flux_max * 1e3),
         (round(c.streamlit.flux_min * 1e3), round(c.streamlit.flux_max * 1e3)),
         step=round(c.streamlit.flux_step_db * 1e3),
-        key=f'flux {m}')
+        key=f'flux {m}',
+        help=f'Amplitude of the AC signal, not peak to peak')
     flux_min = flux_min_aux / 1e3
     flux_max = flux_max_aux / 1e3
     flux_avg = (flux_max + flux_min) / 2
@@ -130,7 +131,8 @@ def ui_core_loss_db(m):
             round(c.streamlit.temp_max),
             round(c.streamlit.temp_default),
             step=round(1e9),
-            key=f'temp {m}')
+            key=f'temp {m}',
+            help=f'Fixed at 25 C for now')
         out_max = st.sidebar.slider(
             f'Maximum Outlier Factor (%)',
             round(c.streamlit.outlier_min),
@@ -138,7 +140,7 @@ def ui_core_loss_db(m):
             round(c.streamlit.outlier_max),
             step=1,
             key=f'outlier {m}',
-            help=f'Measures the similarity between the loss of a datapoint and their neighbours' 
+            help=f'Measures the similarity between the loss of a datapoint and their neighbours ' 
                  f'(in terms of B and f) based on local Steinmetz parameters')
 
     c_axis = st.sidebar.selectbox(
@@ -155,13 +157,10 @@ def ui_core_loss_db(m):
 
     if read_excitation == 'Datasheet':
         df = load_dataframe_datasheet(material, freq_min, freq_max, flux_min, flux_max, temperature)
-        df_short = load_dataframe_datasheet_short(material, freq_min, freq_max, flux_min, flux_max, temperature)
     if read_excitation == 'Sinusoidal':
         df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, None, None, out_max)
-        df_short = load_dataframe_short(material, read_excitation, freq_min, freq_max, flux_min, flux_max, None, None, out_max)
     if read_excitation == 'Trapezoidal':
         df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
-        df_short = load_dataframe_short(material, read_excitation, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -194,12 +193,14 @@ def ui_core_loss_db(m):
                     if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
                         st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
             st.subheader(f'Download data:')
-            if excitation == 'Sinusoidal':
-                del df_short["Duty_1"]
-                del df_short["Duty_2"]
-                del df_short["Duty_3"]
-                del df_short["Duty_4"]
-            file = df_short.to_csv().encode('utf-8')
+
+            if read_excitation == 'Datasheet':
+                df_csv = df[['Frequency', 'Flux_Density', 'Temperature', 'Power_Loss']]
+            if read_excitation == 'Sinusoidal':
+                df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Outlier_Factor']]
+            if read_excitation == 'Trapezoidal':
+                df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Duty_1', 'Duty_2', 'Duty_3', 'Duty_4','Outlier_Factor']]
+            file = df_csv.to_csv().encode('utf-8')
             st.download_button(
                 'Download CSV',
                 file,
@@ -211,9 +212,9 @@ def ui_core_loss_db(m):
 
     with col2:
         if excitation in ['Datasheet', 'Sinusoidal']:
-            [cycle_list, flux_list, volt_list] = cycle_points_sine(c.streamlit.n_points_plot)
+            [cycle_list, flux_list, volt_list] = cycle_points_sinusoidal(c.streamlit.n_points_plot)
         if excitation in ['Triangular', 'Trapezoidal']:
-            [cycle_list, flux_list, volt_list] = cycle_points_trap(duty_p, duty_n, duty_0)
+            [cycle_list, flux_list, volt_list] = cycle_points_trapezoidal(duty_p, duty_n, duty_0)
         flux_vector = np.add(np.multiply(flux_list, flux_avg), flux_bias)
 
         waveform_visualization_2axes(
@@ -234,50 +235,25 @@ def ui_core_loss_db(m):
 
     if not df.empty:
         with col1:
-            if c_axis == 'Flux Density':
-                st.plotly_chart(scatter_plot(
-                    df,
-                    x='Frequency_kHz',
-                    y='Power_Loss_kW/m3',
-                    c='Flux_Density_mT'),
-                    use_container_width=True,)
-            elif c_axis == 'Frequency':
-                st.plotly_chart(scatter_plot(
-                    df,
-                    x='Flux_Density_mT',
-                    y='Power_Loss_kW/m3',
-                    c='Frequency_kHz'),
-                    use_container_width=True)
-            else:
-                st.plotly_chart(scatter_plot(
-                    df,
-                    x='Flux_Density_mT',
-                    y='Frequency_kHz',
-                    c='Power_Loss_kW/m3'),
-                    use_container_width=True)
-
+            st.plotly_chart(scatter_plot(
+                df,
+                x='Frequency_kHz' if c_axis == 'Flux Density' else
+                'Flux_Density_mT',
+                y='Frequency_kHz' if c_axis == 'Power Loss' else
+                'Power_Loss_kW/m3',
+                c='Flux_Density_mT' if c_axis == 'Flux Density' else
+                'Frequency_kHz' if c_axis == 'Frequency' else
+                'Power_Loss_kW/m3'),
+                use_container_width=True,)
         if excitation != 'Datasheet':
             with col2:
-                if c_axis == 'Flux Density':
-                    st.plotly_chart(scatter_plot(
-                        df,
-                        x='Frequency_kHz',
-                        y='Power_Loss_kW/m3',
-                        c='Outlier_Factor'),
-                        use_container_width=True)
-                elif c_axis == 'Frequency':
-                    st.plotly_chart(scatter_plot(
-                        df,
-                        x='Flux_Density_mT',
-                        y='Power_Loss_kW/m3',
-                        c='Outlier_Factor'),
-                        use_container_width=True)
-                else:
-                    st.plotly_chart(scatter_plot(
-                        df,
-                        x='Flux_Density_mT',
-                        y='Frequency_kHz',
-                        c='Outlier_Factor'),
-                        use_container_width=True)
+                st.plotly_chart(scatter_plot(
+                    df,
+                    x='Frequency_kHz' if c_axis == 'Flux Density' else
+                    'Flux_Density_mT',
+                    y='Frequency_kHz' if c_axis == 'Power Loss' else
+                    'Power_Loss_kW/m3',
+                    c='Outlier_Factor'),
+                    use_container_width=True)
 
     st.markdown("""---""")
