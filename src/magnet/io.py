@@ -99,87 +99,13 @@ def load_dataframe_datasheet(material, freq_min=None, freq_max=None, flux_min=No
 
 
 @st.cache
-
-
-def load_dataframe_datasheet_nearby(material, freq, flux, temp):
-    temp_margin = 1.0
-    with path('magnet.data', f'{material}_datasheet.h5') as h5file:
+def load_dataframe_point(material, excitation, freq, flux):
+    freq_margin = 500.0
+    flux_margin = 5e-4
+    with path('magnet.data', f'{material}_{excitation}_interpolated.h5') as h5file:
         data, metadata = h5_load(h5file)
-        temp_max = temp + temp_margin
-        temp_min = temp - temp_margin
-        query = f'({temp_min} <= Temperature <= {temp_max})'
-        data = data.query(query)
-
-        query = f'(Frequency <= {freq})'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            freq_min = freq
-        else:
-            freq_min = data_aux['Frequency'].max()
-
-        query = f'({freq} <=Frequency)'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            freq_max = freq
-        else:
-            freq_max = data_aux['Frequency'].min()
-
-        query = f'(Flux_Density <= {flux})'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            flux_min = freq
-        else:
-            flux_min = data_aux['Flux_Density'].max()
-
-        query = f'({flux} <=Flux_Density)'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            flux_max = flux
-        else:
-            flux_max = data_aux['Flux_Density'].min()
-
-        query = f'({freq_min} <= Frequency <= {freq_max}) & ' \
-                f'({flux_min} <= Flux_Density <= {flux_max})'
-
-        data = data.query(query)
-    return data
-
-def load_dataframe_nearby(material, freq, flux):
-    temp_margin = 1.0
-    with path('magnet.data', f'{material}_interpolated.h5') as h5file:
-        data, metadata = h5_load(h5file)
-
-        query = f'(Frequency <= {freq})'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            freq_min = freq
-        else:
-            freq_min = data_aux['Frequency'].max()
-
-        query = f'({freq} <=Frequency)'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            freq_max = freq
-        else:
-            freq_max = data_aux['Frequency'].min()
-
-        query = f'(Flux_Density <= {flux})'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            flux_min = freq
-        else:
-            flux_min = data_aux['Flux_Density'].max()
-
-        query = f'({flux} <=Flux_Density)'
-        data_aux = data.query(query)
-        if data_aux.empty:
-            flux_max = flux
-        else:
-            flux_max = data_aux['Flux_Density'].min()
-
-        query = f'({freq_min} <= Frequency <= {freq_max}) & ' \
-                f'({flux_min} <= Flux_Density <= {flux_max})'
-
+        query = f'({freq-freq_margin} <= Frequency <= {freq+freq_margin}) & ' \
+                f'({flux-flux_margin} <= Flux_Density <= {flux+flux_margin})'
         data = data.query(query)
     return data
 

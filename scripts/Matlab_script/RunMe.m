@@ -654,8 +654,8 @@ end
 F_min = 50e3;
 F_max = 500e3;
 F_log_poins = 100;
-B_max = 10e-3;
-B_min = 300e-3;
+B_min = 10e-3;
+B_max = 300e-3;
 B_log_poins = 100;
 T_min = 0;
 T_max = 125;
@@ -665,8 +665,6 @@ T_step = 5;
 linspace_T = (T_min:T_step:T_max)';
 logspace_B = 10.^(linspace(log10(B_min),log10(B_max),B_log_poins)');
 logspace_F = 10.^(linspace(log10(F_min),log10(F_max),F_log_poins)');
-
-vecspace_F = 0; vecspace_B = 0; vecspace_T = 0; vecspace_P = 0; % Initialization
 
 if datasheet_B>0 % Just checking that the datasheet info is not empty
     interpolated_data = scatteredInterpolant(log10(datasheet_B'), log10(datasheet_F'), datasheet_T', log10(datasheet_P'),'linear','none');

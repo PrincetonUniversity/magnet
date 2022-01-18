@@ -140,6 +140,7 @@ def core_loss_multiple(
     )
     fig.add_trace(
         go.Scatter(dict(
+            name="iGSE",
             marker_symbol="diamond",
             marker_size=13,
             showlegend=False,
@@ -158,6 +159,7 @@ def core_loss_multiple(
     )
     fig.add_trace(
         go.Scatter(dict(
+            name="ML",
             marker_symbol="diamond",
             marker_size=13,
             showlegend=False,
@@ -178,6 +180,7 @@ def core_loss_multiple(
     if y03 is not None:
         fig.add_trace(
             go.Scatter(dict(
+                name="Datasheet",
                 marker_symbol="diamond",
                 marker_size=13,
                 showlegend=False,
@@ -198,6 +201,7 @@ def core_loss_multiple(
     if y04 is not None:
         fig.add_trace(
             go.Scatter(dict(
+                name="Measurement",
                 marker_symbol="diamond",
                 marker_size=13,
                 showlegend=False,

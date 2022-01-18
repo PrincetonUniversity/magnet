@@ -35,6 +35,8 @@ def ui_core_loss_predict(m):
                 f'Waveform Pattern - Duty Cycle (%)',
                 [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
                 key=f'duty {m}')
+            if len(flux_string) != len(duty_string):
+                st.subheader('The Flux and Duty vectors should have the same number of points, please fix it to proceed')
         else:
             flux = st.sidebar.slider(
                 f'AC Flux Density (mT)',

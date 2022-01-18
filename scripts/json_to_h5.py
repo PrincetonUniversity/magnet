@@ -46,6 +46,7 @@ if __name__ == '__main__':
         'Outlier_Factor': float,
         'Power_Loss': float
     }
+
     cols_datasheet = {
         'Material': str,
         'Excitation': str,
@@ -78,6 +79,14 @@ if __name__ == '__main__':
         'Frequency': float,
         'Flux_Density': float,
         'Power_Loss': float
+    }
+
+    cols_datasheet_interpolated = {
+        'Material': str,
+        'Excitation': str,
+        'Frequency': list,
+        'Flux_Density': list,
+        'Power_Loss': list,
     }
 
     for filename in glob.glob(f'{INPUT_JSON_DIR}/*Webpage.json'):
@@ -171,7 +180,7 @@ if __name__ == '__main__':
             output_filename = f'{material.upper()}_{excitation}.h5'
             h5_store(os.path.join(OUTPUT_H5_DIR, output_filename), df, **m)
 
-    for filename in glob.glob(f'{INPUT_JSON_DIR}/*Interpolated.json'):
+    for filename in glob.glob(f'{INPUT_JSON_DIR}/*Sinusoidal_Interpolated.json'):
         with open(filename) as f:
             d = json.load(f)
 
@@ -192,7 +201,7 @@ if __name__ == '__main__':
 
             material = d['Material'].lower()
             excitation = (d['Excitation']).lower()
-            assert filename.lower().endswith(f'{material}_interpolated.json')
+            assert filename.lower().endswith(f'{material}_{excitation}_interpolated.json')
             # -------------------------
             # DATA VALIDATION
             # -------------------------
@@ -207,5 +216,44 @@ if __name__ == '__main__':
 
             df = pd.DataFrame({k: d[k] for k in df_cols_interpolated}).astype(df_cols_interpolated)
 
-            output_filename = f'{material.upper()}_interpolated.h5'
+            output_filename = f'{material.upper()}_{excitation}_interpolated.h5'
+            h5_store(os.path.join(OUTPUT_H5_DIR, output_filename), df, **m)
+
+    for filename in glob.glob(f'{INPUT_JSON_DIR}/*Datasheet_Interpolated.json'):
+        with open(filename) as f:
+            d = json.load(f)
+
+            # -------------------------
+            # DATA VALIDATION
+            # -------------------------
+            # For any values that are lists of non-zero length, they should be the same size
+            unique_lengths = set([len(d[k]) for k in d.keys() if isinstance(d[k], list)])
+            if 0 in unique_lengths:
+                unique_lengths.remove(0)
+            assert len(unique_lengths) == 1
+
+            for k in d.keys():
+                assert k in cols_datasheet_interpolated
+                if not isinstance(d[k], cols_datasheet_interpolated[k]):
+                    # Any values that don't conform to our expected data types are being stored as 0-length lists
+                    assert isinstance(d[k], list) and len(d[k]) == 0
+
+            material = d['Material'].lower()
+            excitation = (d['Excitation']).lower()
+            assert filename.lower().endswith(f'{material}_{excitation}_interpolated.json')
+            # -------------------------
+            # DATA VALIDATION
+            # -------------------------
+
+            # ----------
+            # Metadata
+            # ----------
+            m = dict(
+                material=material,
+                excitation_type=excitation,
+            )
+
+            df = pd.DataFrame({k: d[k] for k in df_cols_interpolated}).astype(df_cols_interpolated)
+
+            output_filename = f'{material.upper()}_{excitation}_interpolated.h5'
             h5_store(os.path.join(OUTPUT_H5_DIR, output_filename), df, **m)
