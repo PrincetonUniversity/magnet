@@ -4,8 +4,7 @@ import numpy as np
 from magnet import config as c
 from magnet.constants import material_names, material_manufacturers, excitations_db
 from magnet.io import load_dataframe, load_dataframe_datasheet, load_metadata
-from magnet.plots import scatter_plot, waveform_visualization_2axes
-from magnet.core import cycle_points_sinusoidal, cycle_points_trapezoidal
+from magnet.plots import scatter_plot, waveform_visualization_2axes, cycle_points_sinusoidal, cycle_points_trapezoidal
 
 
 def ui_core_loss_dbs(n=1):

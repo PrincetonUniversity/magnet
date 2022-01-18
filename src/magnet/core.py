@@ -1,10 +1,7 @@
 import numpy as np
 import torch
-import math
-
 from magnet.constants import materials
 from magnet.net import model, model_lstm
-from magnet.io import load_dataframe_point
 
 
 def default_units(prop):  # Probably we are not going to need the default units
@@ -185,59 +182,11 @@ def core_loss_ML_arbitrary(material, freq, flux, duty):
     return core_loss
 
 
-def core_loss_DI_sinusoidal(freq, flux, material):
-    excitation_read = 'datasheet'
-    df = load_dataframe_point(material, excitation_read, freq, flux)
-    if not df.empty:
-        core_loss = float(df['Power_Loss'])
-
-    else:
-        core_loss = 0.0  # Not interpolable
-    return core_loss
-
-
-def core_loss_SI_sinusoidal(freq, flux, material):
-    excitation_read = 'sinusoidal'
-    df = load_dataframe_point(material, excitation_read, freq, flux)
-    if not df.empty:
-        core_loss = float(df['Power_Loss'])
-
-    else:
-        core_loss = 0.0  # Not interpolable
-    return core_loss
-
-
 def loss(waveform, algorithm, **kwargs):
     if algorithm == 'Machine Learning':
         algorithm = 'ML'
     assert waveform.lower() in ('sinusoidal', 'triangular', 'trapezoidal', 'arbitrary'), f'Unknown waveform {waveform}'
-    assert algorithm in ('iGSE', 'ML', 'DI', 'SI'), f'Unknown algorithm {algorithm}'
+    assert algorithm in ('iGSE', 'ML'), f'Unknown algorithm {algorithm}'
 
     fn = globals()[f'core_loss_{algorithm}_{waveform.lower()}']
     return fn(**kwargs)
-
-
-def cycle_points_sinusoidal(point):
-    cycle_list = np.linspace(0, 1, point)
-    flux_list = np.sin(np.multiply(cycle_list, np.pi * 2))
-    volt_list = np.cos(np.multiply(cycle_list, np.pi * 2))
-    return [cycle_list, flux_list, volt_list]
-
-
-def cycle_points_trapezoidal(duty_p, duty_n, duty_0):
-    if duty_p > duty_n:
-        volt_p = (1 - (duty_p - duty_n)) / -(-1 - (duty_p - duty_n))
-        volt_0 = - (duty_p - duty_n) / -(-1 - (duty_p - duty_n))
-        volt_n = -1  # The negative voltage is maximum
-        b_p = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
-        b_n = -(-1 - duty_p + duty_n) * duty_n / ((1 - duty_p + duty_n) * duty_p)  # Prop to (-1-dp+dN)*dn
-    else:
-        volt_p = 1  # The positive voltage is maximum
-        volt_0 = - (duty_p - duty_n) / (1 - (duty_p - duty_n))
-        volt_n = (-1 - (duty_p - duty_n)) / (1 - (duty_p - duty_n))
-        b_n = 1  # Proportional to (-1-dP+dN)*dN
-        b_p = -(1 - duty_p + duty_n) * duty_p / ((-1 - duty_p + duty_n) * duty_n)  # Prop to (1-dP+dN)*dP
-    cycle_list = [0, 0, duty_p, duty_p, duty_p + duty_0, duty_p + duty_0, 1 - duty_0, 1 - duty_0, 1]
-    flux_list = [-b_p, -b_p, b_p, b_p, b_n, b_n, -b_n, -b_n, -b_p]
-    volt_list = [volt_0, volt_p, volt_p, volt_0, volt_0, volt_n, volt_n, volt_0, volt_0]
-    return [cycle_list, flux_list, volt_list]

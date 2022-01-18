@@ -4,9 +4,10 @@ import streamlit as st
 
 from magnet import config as c
 from magnet.constants import material_names, excitations_predict, material_manufacturers
-from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes
-from magnet.core import loss, cycle_points_sinusoidal, cycle_points_trapezoidal
-
+from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes, \
+    cycle_points_sinusoidal, cycle_points_trapezoidal
+from magnet.core import loss
+from magnet.io import loss_interpolated
 
 def ui_core_loss_predict(m):
     # Sidebar: input for all calculations
@@ -108,9 +109,9 @@ def ui_core_loss_predict(m):
         waveform=excitation, algorithm='iGSE', material=material, freq=freq, flux=flux, duty=duty) / 1e3
     core_loss_ML = 0.0 if excitation == 'Arbitrary' else loss(  # ML disabled for Arbitrary
         waveform=excitation, algorithm='ML', material=material, freq=freq, flux=flux, duty=duty) / 1e3
-    core_loss_DI = 0.0 if excitation != 'Sinusoidal' else loss(  # Comparison only available for Sinusoidal so far
+    core_loss_DI = 0.0 if excitation != 'Sinusoidal' else loss_interpolated(  # Comparison only available for Sinusoidal
         waveform=excitation, algorithm='DI', material=material, freq=freq, flux=flux) / 1e3
-    core_loss_SI = 0.0 if excitation != 'Sinusoidal' else loss(  # Comparison only available for Sinusoidal so far
+    core_loss_SI = 0.0 if excitation != 'Sinusoidal' else loss_interpolated(  # Comparison only available for Sinusoidal
         waveform=excitation, algorithm='SI', material=material, freq=freq, flux=flux) / 1e3
 
     # Results summary and waveform
@@ -186,10 +187,10 @@ def ui_core_loss_predict(m):
                     loss(waveform=excitation, algorithm='ML', material=material, freq=i, flux=flux)
                     for i in c.streamlit.core_loss_freq],
                 y3=[1e-3 *
-                    loss(waveform=excitation, algorithm='DI', material=material, freq=i, flux=flux)
+                    loss_interpolated(waveform=excitation, algorithm='DI', material=material, freq=i, flux=flux)
                     for i in c.streamlit.core_loss_freq],
                 y4=[1e-3 *
-                    loss(waveform=excitation, algorithm='SI', material=material, freq=i, flux=flux)
+                    loss_interpolated(waveform=excitation, algorithm='SI', material=material, freq=i, flux=flux)
                     for i in c.streamlit.core_loss_freq],
                 x0=list([freq / 1e3]),
                 y01=list([core_loss_iGSE]),
@@ -211,10 +212,10 @@ def ui_core_loss_predict(m):
                     loss(waveform=excitation, algorithm='ML', material=material, freq=freq, flux=i)
                     for i in c.streamlit.core_loss_flux],
                 y3=[1e-3 *
-                    loss(waveform=excitation, algorithm='DI', material=material, freq=freq, flux=i)
+                    loss_interpolated(waveform=excitation, algorithm='DI', material=material, freq=freq, flux=i)
                     for i in c.streamlit.core_loss_flux],
                 y4=[1e-3 *
-                    loss(waveform=excitation, algorithm='SI', material=material, freq=freq, flux=i)
+                    loss_interpolated(waveform=excitation, algorithm='SI', material=material, freq=freq, flux=i)
                     for i in c.streamlit.core_loss_flux],
                 x0=list([flux * 1e3]),
                 y01=list([core_loss_iGSE]),
