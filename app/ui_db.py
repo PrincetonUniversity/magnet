@@ -198,7 +198,7 @@ def ui_core_loss_db(m):
             if read_excitation == 'Sinusoidal':
                 df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Outlier_Factor']]
             if read_excitation == 'Trapezoidal':
-                df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Duty_1', 'Duty_2', 'Duty_3', 'Duty_4','Outlier_Factor']]
+                df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Duty_1', 'Duty_2', 'Duty_3', 'Duty_4', 'Outlier_Factor']]
             file = df_csv.to_csv().encode('utf-8')
             st.download_button(
                 'Download CSV',

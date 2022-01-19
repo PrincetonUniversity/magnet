@@ -2,7 +2,7 @@ import os.path
 import streamlit as st
 
 from magnet import config as c
-from magnet.constants import materials, material_names, material_manufacturers, excitations_raw
+from magnet.constants import material_names, material_manufacturers, excitations_raw
 from magnet.io import load_metadata
 
 
@@ -24,12 +24,6 @@ def ui_download_raw_data(m, streamlit_root):
     st.title(f'Download Data: Case {m}')
     st.subheader(f'{material_manufacturers[material]} - {material}, '
                  f'{excitation} excitation')
-    if excitation == "Sinusoidal":
-        # TODO: find a better place for this
-        k_i, alpha, beta = materials[material]
-        st.write(f'iGSE parameters from the sinusoidal data: '
-                 f'ki={k_i}, alpha={alpha}, and beta={beta} '
-                 f'(with Pv, f, and B in W/m^3, Hz and T respectively)')
 
     metadata = load_metadata(material, read_excitation)
     with st.expander("Measurement details"):

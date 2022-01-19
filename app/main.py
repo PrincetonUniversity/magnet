@@ -87,6 +87,8 @@ if __name__ == '__main__':
     contributor('Haoran Li', 'haoranli@princeton.edu')
     contributor('Diego Serrano', 'ds9056@princeton.edu')
     contributor('Evan Dogariu', 'edogariu@princeton.edu')
+    contributor('Arielle Rivera', 'aerivera@princeton.edu')
+    contributor('Yuxin Chen', 'yuxinc@wharton.upenn.edu')
     contributor('Thomas Guillod', 'Thomas.Paul.Henri.Guillod@dartmouth.edu')
     contributor('Vineet Bansal', 'vineetb@princeton.edu')
     contributor('Niraj Jha', 'jha@princeton.edu')

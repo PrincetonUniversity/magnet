@@ -12,6 +12,20 @@ materials = {
     'N87': (0.15178, 1.4722, 2.6147),
 }
 
+materials_extra = {
+    # material => (mu_r_0, f_min, f_max)
+    '3C90': (2_300, 25_000, 200_000),
+    '3C94': (2_300, 25_000, 300_000),
+    '3E6': (10_000, float('nan'), float('nan')),
+    '3F4': (900, 25_000, 2_000_000),
+    '77': (2_000, 10_000, 100_000),
+    '78': (2_300, 25_000, 500_000),
+    'N27': (2_000, 25_000, 150_000),
+    'N30': (4_300, 10_000, 400_000),
+    'N49': (1_500, 300_000, 1_000_000),
+    'N87': (2_200, 25_000, 500_000),
+}
+
 material_manufacturers = {
     '3C90': 'Ferroxcube',
     '3C94': 'Ferroxcube',
@@ -23,6 +37,19 @@ material_manufacturers = {
     'N30': 'TDK',
     'N49': 'TDK',
     'N87': 'TDK',
+}
+
+material_applications = {
+    '3C90': 'Power and general purpose transformers',
+    '3C94': 'Power and general purpose transformers',
+    '3E6': 'Wideband transformers and EMI-suppression filters',
+    '3F4': 'Power and general purpose transformers',
+    '77': 'High and low flux density inductive designs',
+    '78': 'Power applications and low loss inductive applications',
+    'N27': 'Power transformers',
+    'N30': 'Broadband transformers',
+    'N49': 'Power transformers',
+    'N87': 'Power transformers',
 }
 
 material_names = list(materials.keys())
