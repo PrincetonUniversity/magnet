@@ -128,7 +128,7 @@ def waveform_visualization(
 
 
 def core_loss_multiple(
-        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True):
+        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True, y3=None, y03=None, y4=None, y04=None):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -140,6 +140,7 @@ def core_loss_multiple(
     )
     fig.add_trace(
         go.Scatter(dict(
+            name="iGSE",
             marker_symbol="diamond",
             marker_size=13,
             showlegend=False,
@@ -158,6 +159,7 @@ def core_loss_multiple(
     )
     fig.add_trace(
         go.Scatter(dict(
+            name="ML",
             marker_symbol="diamond",
             marker_size=13,
             showlegend=False,
@@ -166,6 +168,49 @@ def core_loss_multiple(
             line=dict(color='darkslategrey', width=4)
         ))
     )
+    if (y3 is not None) and max(y3) > 0.0:
+        fig.add_trace(
+            go.Scatter(
+                name="Datasheet",
+                x=x,
+                y=y3,
+                line=dict(color='mediumslateblue', width=0)
+            )
+        )
+    if y03 is not None:
+        fig.add_trace(
+            go.Scatter(dict(
+                name="Datasheet",
+                marker_symbol="diamond",
+                marker_size=13,
+                showlegend=False,
+                x=x0,
+                y=y03,
+                line=dict(color='mediumslateblue', width=4)
+            ))
+        )
+    if (y4 is not None) and max(y4) > 0.0:
+        fig.add_trace(
+            go.Scatter(
+                name="Measurement",
+                x=x,
+                y=y4,
+                line=dict(color='limegreen', width=0)
+            )
+        )
+    if y04 is not None:
+        fig.add_trace(
+            go.Scatter(dict(
+                name="Measurement",
+                marker_symbol="diamond",
+                marker_size=13,
+                showlegend=False,
+                x=x0,
+                y=y04,
+                line=dict(color='limegreen', width=4)
+            ))
+        )
+
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title,
@@ -179,3 +224,30 @@ def core_loss_multiple(
         fig.update_yaxes(type='log')
 
     st.plotly_chart(fig, use_container_width=True)
+
+
+# Points for the representation of the plots
+def cycle_points_sinusoidal(point):
+    cycle_list = np.linspace(0, 1, point)
+    flux_list = np.sin(np.multiply(cycle_list, np.pi * 2))
+    volt_list = np.cos(np.multiply(cycle_list, np.pi * 2))
+    return [cycle_list, flux_list, volt_list]
+
+
+def cycle_points_trapezoidal(duty_p, duty_n, duty_0):
+    if duty_p > duty_n:
+        volt_p = (1 - (duty_p - duty_n)) / -(-1 - (duty_p - duty_n))
+        volt_0 = - (duty_p - duty_n) / -(-1 - (duty_p - duty_n))
+        volt_n = -1  # The negative voltage is maximum
+        b_p = 1  # Bpk is proportional to the voltage, which is is proportional to (1-dp+dN) times the dp
+        b_n = -(-1 - duty_p + duty_n) * duty_n / ((1 - duty_p + duty_n) * duty_p)  # Prop to (-1-dp+dN)*dn
+    else:
+        volt_p = 1  # The positive voltage is maximum
+        volt_0 = - (duty_p - duty_n) / (1 - (duty_p - duty_n))
+        volt_n = (-1 - (duty_p - duty_n)) / (1 - (duty_p - duty_n))
+        b_n = 1  # Proportional to (-1-dP+dN)*dN
+        b_p = -(1 - duty_p + duty_n) * duty_p / ((-1 - duty_p + duty_n) * duty_n)  # Prop to (1-dP+dN)*dP
+    cycle_list = [0, 0, duty_p, duty_p, duty_p + duty_0, duty_p + duty_0, 1 - duty_0, 1 - duty_0, 1]
+    flux_list = [-b_p, -b_p, b_p, b_p, b_n, b_n, -b_n, -b_n, -b_p]
+    volt_list = [volt_0, volt_p, volt_p, volt_0, volt_0, volt_n, volt_n, volt_0, volt_0]
+    return [cycle_list, flux_list, volt_list]
