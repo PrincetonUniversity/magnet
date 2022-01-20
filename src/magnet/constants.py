@@ -51,7 +51,18 @@ material_applications = {
     'N49': 'Power transformers',
     'N87': 'Power transformers',
 }
-
+material_core_tested = {
+    '3C90': 'TX-25-15-10',
+    '3C94': 'TX-20-10-7',
+    '3E6': 'TX-22-14-6.4',
+    '3F4': 'E-32-6-20-R',
+    '77': '5977001401',
+    '78': '5978007601',
+    'N27': 'R20.0X10.0X7.0',
+    'N30': 'R22.1X13.7X6.35',
+    'N49': 'R16.0X9.6X6.3',
+    'N87': 'R22.1X13.7X7.9',
+}
 material_names = list(materials.keys())
 excitations_db = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
 excitations_raw = ('Sinusoidal', 'Triangular-Trapezoidal')
