@@ -118,16 +118,10 @@ def ui_intro(m):
             "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
             IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
         """)
-    col1, col2 = st.columns([1, 6])
+    col1, col2 = st.columns([1, 5])
     with col1:   # There must be a better way to automatically do this from the manufacturer list
         st.write("")
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_blank_half.png')), width=200)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_ferroxcube.png')), width=200)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_blank_half.png')), width=200)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_fair-rite.png')), width=200)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_blank_half.png')), width=200)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_tdk.png')), width=200)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logo_blank_half.png')), width=200)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logos_manufacturer.png')), width=225)
     with col2:
         df = pd.DataFrame({'Manufacturer': material_manufacturers})
         df['Material'] = materials.keys()
@@ -154,8 +148,5 @@ def ui_intro(m):
     st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C and data '
              f'between 50 kHz and 500 kHz and 10 mT and 300mT; '
              f'with Pv, f, and B in W/m^3, Hz and T respectively')
-
-
-
 
     st.markdown("""---""")
