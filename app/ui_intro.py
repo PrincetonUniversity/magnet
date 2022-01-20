@@ -152,7 +152,7 @@ def ui_intro(m):
         st.table(df)
 
     st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C and data '
-             f'between 50 kHz and 500 kHz and 10 mT and 300mT; '
+             f'between 50 kHz and 500 kHz and 10 mT and 300 mT; '
              f'with Pv, f, and B in W/m^3, Hz and T respectively')
 
 
