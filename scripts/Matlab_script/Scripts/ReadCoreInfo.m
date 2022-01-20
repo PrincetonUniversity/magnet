@@ -1,6 +1,6 @@
-function [Waveform, Material, Shape, N1, N2, Le, Ae, Ve, Date_Test, Setup] = ReadCoreInfo(path)
+function [Excitation, Material, Shape, N1, N2, Le, Ae, Ve, Date_Test, Setup] = ReadCoreInfo(path)
 %IdentificationLoss Find the power losses
-%   Waveform - type of excitation, either Sinusoidal or Trapezoidal
+%   Excitation - type of excitation, either Sinusoidal or Trapezoidal
 %   Material - name of the material of the core
 %   Shape - name of the shape of the core
 %   N1 - number of turns of the primary winding
@@ -14,7 +14,7 @@ function [Waveform, Material, Shape, N1, N2, Le, Ae, Ve, Date_Test, Setup] = Rea
 % Read the file
 if isfile(path)
     info = readcell(path);
-    Waveform = char(info(2,2));
+    Excitation = char(info(2,2));
     Material = char(info(3,2));
     Shape = char(info(4,2));
     N1 = cell2mat(info(5,2));

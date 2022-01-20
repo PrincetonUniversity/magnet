@@ -1,7 +1,9 @@
 import os.path
 from PIL import Image
+import pandas as pd
 import streamlit as st
-from magnet.constants import material_names
+from magnet.constants import material_names, materials, materials_extra, material_manufacturers, \
+    material_applications, material_core_tested
 from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
@@ -80,23 +82,25 @@ def ui_intro(m):
             A .txt with information on the test is also incldued.
             
             These files are intended for researchers to build their own core loss models.
-            
-            On this section, the Steinmetz parameters used for the iGSE for the selected material are also listed when Sinusoidal excitation is selected.
         """)
 
     st.markdown("""---""")
     col1, col2 = st.columns([1, 2])
     with col1:
         st.header('Webpage Status')
+        st.write("")
+        st.write("")
         n_sine = 0
         n_trap = 0
         for material in material_names:
             n_sine = n_sine + len(load_dataframe(material, 'Sinusoidal'))
             n_trap = n_trap + len(load_dataframe(material, 'Trapezoidal'))
-        st.subheader(f'Number of materials added: {len(material_names)}')
-        st.write(f'Tested for 25 C and no DC bias so far.')
         st.subheader(f'Total number of data points: {n_sine + n_trap}')
         st.write(f'{n_sine} Sinusoidal points and {n_trap} Triangular-Trapezoidal points.')
+        st.write("")
+        st.write("")
+        st.subheader(f'Number of materials added: {len(material_names)}')
+        st.write(f'Tested for 25 C and no DC bias so far.')
     with col2:
         st.header('How to Cite')
         st.write("""
@@ -114,5 +118,35 @@ def ui_intro(m):
             "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
             IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
         """)
+    col1, col2 = st.columns([1, 5])
+    with col1:   # There must be a better way to automatically do this from the manufacturer list
+        st.write("")
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logos_manufacturer.png')), width=225)
+    with col2:
+        df = pd.DataFrame({'Manufacturer': material_manufacturers})
+        df['Material'] = materials.keys()
+        df['Applications'] = pd.DataFrame({'Applications': material_applications})
+        df_extra = pd.DataFrame(materials_extra)
+        df['mu_i_0'] = df_extra.iloc[0]
+        df['f_min'] = df_extra.iloc[1]
+        df['f_max'] = df_extra.iloc[2]
+        df_params = pd.DataFrame(materials)
+        df['k_i*'] = df_params.iloc[0]
+        df['alpha*'] = df_params.iloc[1]
+        df['beta*'] = df_params.iloc[2]
+        df['Tested Core'] = pd.DataFrame({'Tested Core': material_core_tested})
+        # Hide the index column
+        hide_table_row_index = """
+                    <style>
+                    tbody th {display:none}
+                    .blank {display:none}
+                    </style>
+                    """  # CSS to inject contained in a string
+        st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
+        st.table(df)
+
+    st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C and data '
+             f'between 50 kHz and 500 kHz and 10 mT and 300 mT; '
+             f'with Pv, f, and B in W/m^3, Hz and T respectively')
 
     st.markdown("""---""")
