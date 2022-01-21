@@ -35,8 +35,6 @@ def ui_core_loss_predict(m):
             f'Waveform Pattern - Duty Cycle (%)',
             [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
             key=f'duty {m}')
-        if len(flux_string) != len(duty_string):
-            st.subheader('The Flux and Duty vectors should have the same number of points, please fix it to proceed')
     else:
         flux = st.sidebar.slider(
             f'AC Flux Density (mT)',
@@ -103,6 +101,8 @@ def ui_core_loss_predict(m):
         duty = [float(i) / 100 for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", duty_string)]
         flux_read = [float(i) for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", flux_string)]
         flux = np.multiply(np.add(flux_read, flux_bias), 1e-3)  # TBD
+        if len(duty) != len(flux):
+            st.subheader('The Flux and Duty vectors should have the same number of points, please fix it to proceed')
 
     # Core loss based on iGSE, ML and interpolation of the data (DI = Datasheet SI = Sinusoidal Interpolation)
     core_loss_iGSE = loss(

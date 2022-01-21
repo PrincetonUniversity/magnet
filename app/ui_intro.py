@@ -118,32 +118,28 @@ def ui_intro(m):
             "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
             IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
         """)
-    col1, col2 = st.columns([1, 5])
-    with col1:   # There must be a better way to automatically do this from the manufacturer list
-        st.write("")
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'logos_manufacturer.png')), width=225)
-    with col2:
-        df = pd.DataFrame({'Manufacturer': material_manufacturers})
-        df['Material'] = materials.keys()
-        df['Applications'] = pd.DataFrame({'Applications': material_applications})
-        df_extra = pd.DataFrame(materials_extra)
-        df['mu_i_0'] = df_extra.iloc[0]
-        df['f_min'] = df_extra.iloc[1]
-        df['f_max'] = df_extra.iloc[2]
-        df_params = pd.DataFrame(materials)
-        df['k_i*'] = df_params.iloc[0]
-        df['alpha*'] = df_params.iloc[1]
-        df['beta*'] = df_params.iloc[2]
-        df['Tested Core'] = pd.DataFrame({'Tested Core': material_core_tested})
-        # Hide the index column
-        hide_table_row_index = """
-                    <style>
-                    tbody th {display:none}
-                    .blank {display:none}
-                    </style>
-                    """  # CSS to inject contained in a string
-        st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
-        st.table(df)
+
+    df = pd.DataFrame({'Manufacturer': material_manufacturers})
+    df['Material'] = materials.keys()
+    df['Applications'] = pd.DataFrame({'Applications': material_applications})
+    df_extra = pd.DataFrame(materials_extra)
+    df['mu_i_0'] = df_extra.iloc[0]
+    df['f_min'] = df_extra.iloc[1]
+    df['f_max'] = df_extra.iloc[2]
+    df_params = pd.DataFrame(materials)
+    df['k_i*'] = df_params.iloc[0]
+    df['alpha*'] = df_params.iloc[1]
+    df['beta*'] = df_params.iloc[2]
+    df['Tested Core'] = pd.DataFrame({'Tested Core': material_core_tested})
+    # Hide the index column
+    hide_table_row_index = """
+                <style>
+                tbody th {display:none}
+                .blank {display:none}
+                </style>
+                """  # CSS to inject contained in a string
+    st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
+    st.table(df)
 
     st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C and data '
              f'between 50 kHz and 500 kHz and 10 mT and 300 mT; '

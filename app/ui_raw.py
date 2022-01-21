@@ -35,29 +35,52 @@ def ui_download_raw_data(m, streamlit_root):
         st.write(metadata['info_volt_meas'])
         st.write(metadata['info_curr_meas'])
 
-    st.subheader('Raw data - 20 us voltage and current')
-    if os.path.isfile(os.path.join(
-        streamlit_root,
-        c.streamlit.raw_data_file.format(material=material, excitation=read_excitation))):
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader('Voltage and current data from the oscilloscope ')
+        if os.path.isfile(os.path.join(
+                streamlit_root, c.streamlit.raw_data_file.format(material=material, excitation=read_excitation))):
 
-        data_file_raw = os.path.join(
-            streamlit_root,
-            c.streamlit.raw_data_file.format(material=material, excitation=read_excitation))
-        with open(data_file_raw, 'rb') as file:
-            st.download_button(f'Download zip file', file, os.path.basename(data_file_raw), key=[m, 'Raw'])
-    else:
-        st.write('Download data missing, please contact us')
+            data_file_raw = os.path.join(
+                streamlit_root,
+                c.streamlit.raw_data_file.format(material=material, excitation=read_excitation))
+            with open(data_file_raw, 'rb') as file:
+                st.download_button(f'Download zip file', file, os.path.basename(data_file_raw), key=[m, 'Raw'])
+            st.write("""
+                This .zip file contains a .txt file with information regarding the setup and core under test and two .csv files, one for the current and the other for the voltage.
+                These files contain the samples measured from the oscilloscope.
 
-    st.subheader('Post-processed data - B-H in a single cycle')
-    if os.path.isfile(os.path.join(
-        streamlit_root,
-        c.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))):
-        data_file_cycle = os.path.join(
-            streamlit_root,
-            c.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))
-        with open(data_file_cycle, 'rb') as file:
-            st.download_button(f'Download zip file', file, os.path.basename(data_file_cycle), key=[m, 'Cycle'])
-    else:
-        st.write('Download data missing, please contact us')
+                Each row is a different measurement (i.e. a data point with a different frequency, flux density, etc.)
+                and each column is a sample; there are 2.000 samples per data-point.
+                The sampling time is 10 ns, so the total waveform last 20 us.
+
+                We are working to add a .cvs file with the commanded duty cycles and frequency of each data point.
+            """)
+        else:
+            st.write('Download data missing, please contact us')
+
+    with col2:
+        st.subheader('Single switching cycle post-processed B-H data')
+        if os.path.isfile(os.path.join(
+                streamlit_root, c.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))):
+            data_file_cycle = os.path.join(
+                streamlit_root, c.streamlit.single_cycle_file.format(material=material, excitation=read_excitation))
+            with open(data_file_cycle, 'rb') as file:
+                st.download_button(f'Download zip file', file, os.path.basename(data_file_cycle), key=[m, 'Cycle'])
+            st.write("""
+                This .zip file contains 4 files.
+        
+                A .txt file with information regarding the setup, core under test, and post-processing information.
+        
+                A .cvs file for the B waveform, where each row is a data point, and each column is a sample.
+                100 samples are saved per data point.
+        
+                A .csv file for the H waveform, with the same structure as the B file.
+        
+                Finally, a .csv file contains the information of the switching frequency, where each row corresponds to the data-point of the B and H files.
+            """)
+        else:
+            st.write('Download data missing, please contact us')
+
     st.sidebar.markdown("""---""")
     st.markdown("""---""")
