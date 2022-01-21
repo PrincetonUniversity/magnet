@@ -7,7 +7,7 @@ from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
 from ui_raw import ui_download_raw_data
 from ui_faq import ui_faq
-
+from ui_intro import ui_intro
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -33,26 +33,34 @@ def contributor(name, email):
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-    st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
 
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
-        'Select MagNet Function:',
-        ('Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data', 'Frequently Asked Questions')
+        'Select a MagNet Function:',
+        ('Introduction to MagNet', 'Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data', 'Frequently Asked Questions')
     )
 
-    st.title('Princeton-Dartmouth-Plexim MagNet Project')
-    st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
-    st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.title('Princeton-Dartmouth-Plexim MagNet Project')
+        st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
+        st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
+    with col2:
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
+
     st.markdown('---')
 
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    if function_select!= 'Frequently Asked Questions':
-        clicked = st.sidebar.button("Add another material")
+    if function_select in ['Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data']:
+        clicked = st.sidebar.button("Add another case")
         if clicked:
             st.session_state.n_material += 1
+
+    if function_select == 'Introduction to MagNet':
+        ui_multiple_materials(ui_intro)
+        st.session_state.n_material = 1  # Resets the number of plots
 
     if function_select == 'Core Loss Database':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
@@ -65,19 +73,22 @@ if __name__ == '__main__':
         
     if function_select == 'Frequently Asked Questions':
         ui_multiple_materials(ui_faq)
+        st.session_state.n_material = 1  # Resets the number of plots
 
-    st.title('MagNet Research Team')
+    st.header('MagNet Research Team')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg')), width=1000)
-    st.title('MagNet Sponsors')
+    st.header('MagNet Sponsors')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'sponsor.jpg')), width=1000)
 
     st.markdown('---')
     st.markdown(f"<h6>MAGNet v{__version__}</h6>", unsafe_allow_html=True)
 
-    st.sidebar.title('Thanks for using MagNet!')
+    st.sidebar.header('Thanks for using MagNet!')
     contributor('Haoran Li', 'haoranli@princeton.edu')
-    contributor('Diego Serrano Lopez', 'ds9056@princeton.edu')
+    contributor('Diego Serrano', 'ds9056@princeton.edu')
     contributor('Evan Dogariu', 'edogariu@princeton.edu')
+    contributor('Arielle Rivera', 'aerivera@princeton.edu')
+    contributor('Yuxin Chen', 'yuxinc@wharton.upenn.edu')
     contributor('Thomas Guillod', 'Thomas.Paul.Henri.Guillod@dartmouth.edu')
     contributor('Vineet Bansal', 'vineetb@princeton.edu')
     contributor('Niraj Jha', 'jha@princeton.edu')
