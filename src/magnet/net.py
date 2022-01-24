@@ -46,20 +46,32 @@ def model(material, waveform, device='cpu'):
 
 
 class Net_LSTM(nn.Module):
-    def __init__(self, NN_ARCHITECTURE):
+    def __init__(self):
         super(Net_LSTM, self).__init__()
-        self.lstm = nn.LSTM(1, NN_ARCHITECTURE[0], num_layers=1, batch_first=True, bidirectional=False)
-        self.fc_layers = nn.Sequential(
-            nn.Linear(NN_ARCHITECTURE[0], NN_ARCHITECTURE[1]),
-            nn.ReLU(),
-            nn.Linear(NN_ARCHITECTURE[1], 1)
-        )
+        self.lstm = nn.LSTM(1, 32, num_layers=1, batch_first=True, bidirectional=False)
+        self.fc1 = nn.Sequential(
+            nn.Linear(32, 16),
+            nn.LeakyReLU(0.2),
 
-    def forward(self, x):
+            nn.Linear(16, 16),
+            nn.LeakyReLU(0.2),
+
+            nn.Linear(16, 15)
+            )
+        self.fc2 = nn.Sequential(
+            nn.Linear(16, 16),
+            nn.LeakyReLU(0.2),
+            nn.Linear(16, 16),
+            nn.LeakyReLU(0.2),
+            nn.Linear(16, 1)
+            )
+    
+    def forward(self, x, freq):
         x, _ = self.lstm(x)
-        x = x[:, -1, :]  # Get last output only (many-to-one)
-        x = self.fc_layers(x)
-        return x
+        x = x[:, -1, :] # Get last output only (many-to-one)
+        x = self.fc1(x)
+        y = self.fc2(torch.cat((x,freq),1))
+        return y
 
     def count_parameters(self):
         # Returns number of trainable parameters in a network
@@ -69,9 +81,10 @@ class Net_LSTM(nn.Module):
 @functools.lru_cache(maxsize=8)
 def model_lstm(material, device='cpu'):
     with path('magnet.models', f'Model_{material}_LSTM.sd') as sd_file:
-        state_dict = torch.load(sd_file)
+        device = torch.device('cpu')
+        state_dict = torch.load(sd_file, map_location=device)
 
-    neural_network = Net_LSTM([32, 32]).double().to(device)
+    neural_network = Net_LSTM().double().to(device)
         
     neural_network.load_state_dict(state_dict, strict=True)
     neural_network.eval() 

@@ -56,8 +56,10 @@ class CircuitModel(object):
         self.Time = Data_raw['Time']
         self.V = Data_raw['Values'][0]
         self.I = Data_raw['Values'][1]
+        self.H = Data_raw['Values'][2]
+        self.B = Data_raw['Values'][3]
         self.Ploss = Data_raw['Values'][4][-1]/self.mag.Ac/self.mag.lc/1000
-        return self.Ploss
+        return self.B,self.Time
 
     # Display waveform
     def displayWfm(self):
@@ -90,6 +92,21 @@ class CircuitModel(object):
         fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
         st.plotly_chart(fig2, use_container_width=True)
+        
+        fig3 = go.Figure()
+        fig3.add_trace(go.Scatter(x=self.Time, y=self.B, line=dict(color='gray', width=2)))
+        fig3.update_layout(xaxis_title='Time', yaxis_title='Flux Density [T]',
+                           autosize=False,
+                           margin=dict(
+                               autoexpand=False,
+                               l=50,
+                               r=20,
+                               t=50,
+                           ),
+                           plot_bgcolor='white')
+        fig3.update_xaxes(showgrid=True, gridwidth=1, gridcolor='gray')
+        fig3.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
+        st.plotly_chart(fig3, use_container_width=True)
 
 
 class MagModel(object):
