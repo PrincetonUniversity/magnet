@@ -198,6 +198,10 @@ def SimulationPLECS(m):
                          flux density, which is not yet taken into consideration by the model.""")
                 st.write("""
                          Models for **dc-biased** condition will be coming soon in the next release!""")
+            elif topology_type == "DAB":
+                st.write(f"""
+                         **Note**: This core loss result stands for the loss in the magnetic core of the **transformer**, 
+                         while the series auxiliary inductor is assumed lossless.""")
                          
             with col2:
                 circuit.displayWfm()
