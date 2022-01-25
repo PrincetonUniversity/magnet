@@ -18,7 +18,7 @@ def SimulationPLECS(m):
         topology_type = st.selectbox(
             "Topology:",
             topology_list,
-            key=f'Topology'
+            key='Topology'
         )
         
     # Circuit model instance
@@ -36,27 +36,28 @@ def SimulationPLECS(m):
         'ph': 0
     }
 
-    st.header("Circuit parameters")
+    st.header("Circuit Parameters")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         # Display schematic
         circuit.displaySch(path)
     with col3:      
-        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0., max_value=1000., value=400., step=10.,
-                                      key=f'Vi')
-        Param['R'] = st.number_input("Load resistor [Ω]", min_value=0., max_value=1e6, value=100., step=10.,
-                                     key=f'R')
+        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0., max_value=1000., value=40., step=10.,
+                                      key='Vi')
+        Param['Ro'] = st.number_input("Load resistor [Ω]", min_value=0., max_value=1e6, value=10., step=10.,
+                                     key='R')
         if topology_type == "DAB":
-            Param['Lk'] = st.number_input("Serial inductor [μH]", min_value=0., max_value=1000., value=50., step=1e3,                                        key=f'Lk')*1e-6
+            Param['Lk'] = st.number_input("Serial inductor [μH]", min_value=0., max_value=1000., value=12., step=1., key='Lk')*1e-6
     with col4:
         Param['fsw'] = st.number_input("Switching frequency [kHz]", min_value=50., max_value=500., value=100., step=1.,
-                                       key=f'fsw')*1e3
+                                       key='fsw')*1e3
         if topology_type == "DAB":
-            Param['ph'] = st.number_input("Duty cycle [ ]", min_value=0., max_value=1., value=0.5, step=0.01,
-                                          key=f'ph')
+            Param['ph'] = st.number_input("Phase shift [deg]", min_value=0., max_value=360., value=90., step=1.,
+                                          key='ph')/360.
+            Param['duty'] = 0.5
         else:
-            Param['duty'] = st.number_input("Duty cycle [ ]", min_value=0., max_value=1., value=0.5, step=0.01,
-                                            key=f'duty')
+            Param['duty'] = st.number_input("Duty cycle [p.u.]", min_value=0., max_value=1., value=0.5, step=0.01,
+                                            key='duty')
     # Assign the inputs to the simulation parameter structure
     circuit.setParam(Param)
 
@@ -75,25 +76,25 @@ def SimulationPLECS(m):
         mag = MagModel("Toroid")
 
 
-    st.header("Core geometry")
-    col1, col2, col3 = st.columns(3)
+    st.header("Core Geometry")
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         # Display geometry
         mag.displaySch(path)   
-    with col2: 
+    with col3: 
         Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0., max_value=1000., value=100., step=1.,
-                                          key=f'Lc')*1e-3
-        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0., max_value=1000., value=600., step=1.,
-                                          key=f'Ac')*1e-6
-    with col3:    
-        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0., max_value=1000., value=1., step=0.1,
-                                          key=f'lg')*1e-3
+                                          key='Lc')*1e-3
+        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0., max_value=1000., value=100., step=1.,
+                                          key='Ac')*1e-6
+    with col4:    
+        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0., max_value=1000., value=0.1, step=0.01,
+                                          key='lg')*1e-3
     
-        Param_mag['Np'] = st.number_input("Turns number primary", min_value=0., max_value=100., value=8., step=1.,
-                                          key=f'Np')
+        Param_mag['Np'] = st.number_input("Turns number primary", min_value=0., max_value=100., value=10., step=1.,
+                                          key='Np')
         if topology_type == "Flyback" or topology_type == "DAB":
-            Param_mag['Ns'] = st.number_input("Turns number secondary", min_value=0., max_value=100., value=8.,
-                                              step=1., key=f'Ns')
+            Param_mag['Ns'] = st.number_input("Turns number secondary", min_value=0., max_value=100., value=10.,
+                                              step=1., key='Ns')
 
     # Assign the inputs to the simulation parameter structure
     mag.setParam(Param_mag)
@@ -101,7 +102,7 @@ def SimulationPLECS(m):
     Vc = (Param_mag['lc']+Param_mag['lg'])*Param_mag['Ac']
 
     # Steinmetz Parameters
-    st.header("Material parameters")
+    st.header("Magnetic Material")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -110,7 +111,7 @@ def SimulationPLECS(m):
             "Material:",
             Material_list,
             index = 9,
-            key=f'Material'
+            key='Material'
         )
         
         k_i, alpha, beta = materials[Material_type]
@@ -125,6 +126,7 @@ def SimulationPLECS(m):
         material = CoreMaterial(Material_type)
         material.setParam(Param_material)
     with col2:
+        st.write("Reference parameters of the selected magnetic material:")
         df = pd.DataFrame(
             np.array([[material.mu_r, material.iGSE_ki, material.iGSE_alpha, material.iGSE_beta]]),
             columns=["μr", "ki", "α", "β"]
@@ -134,8 +136,8 @@ def SimulationPLECS(m):
         st.table(df)
 
     # Simulate and obtain the data
-    result = st.button("Simulate", key=f'Simulate')
-    Ploss = 0
+    result = st.button("Simulate", key='Simulate')
+
     circuit.setMagModel(mag, material)
     
     
@@ -196,6 +198,10 @@ def SimulationPLECS(m):
                          flux density, which is not yet taken into consideration by the model.""")
                 st.write("""
                          Models for **dc-biased** condition will be coming soon in the next release!""")
+            elif topology_type == "DAB":
+                st.write(f"""
+                         **Note**: This core loss result stands for the loss in the magnetic core of the **transformer**, 
+                         while the series auxiliary inductor is assumed lossless.""")
                          
             with col2:
                 circuit.displayWfm()
