@@ -27,7 +27,8 @@ class CircuitModel(object):
         self.opt['ModelVars']['fsw'] = param_init["fsw"]
         self.opt['ModelVars']['duty'] = param_init["duty"]
         self.opt['ModelVars']['ph'] = param_init["ph"]
-
+        self.opt['ModelVars']['C'] = 100e-6
+        
     # Display schematic
     def displaySch(self, path):
         st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}_sch.png')), width=500)
