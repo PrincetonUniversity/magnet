@@ -172,13 +172,18 @@ def core_loss_ML_trapezoidal(freq, flux, duty, material):
 
 def core_loss_ML_arbitrary(material, freq, flux, duty):
     nn = model_lstm(material=material)
-    Ts = 10e-9
-    Num = 5000
-    time = np.linspace(start=Ts, stop=Ts*Num, num=Num)
+    Num = 100
     period = 1/freq
-    flux_interpolated = np.interp(np.remainder(time, period), np.multiply(duty, period), flux)
-    flux_interpolated = torch.from_numpy(flux_interpolated).view(-1, 5000, 1)
-    core_loss = 10.0 ** nn(flux_interpolated).item()
+    time = np.linspace(start=0, stop=period, num=Num)
+    flux_interpolated = np.interp(time, np.multiply(duty, period), flux)
+    
+    # Manually get rid of the dc-bias in the flux, for now
+    # print(np.average(flux_interpolated))
+    flux_interpolated = flux_interpolated - np.average(flux_interpolated)
+    
+    flux_interpolated = torch.from_numpy(flux_interpolated).view(-1, Num, 1)
+    freq = torch.from_numpy(np.asarray(np.log10(freq))).view(-1, 1)
+    core_loss = 10.0 ** nn(flux_interpolated,freq).item()
     return core_loss
 
 
