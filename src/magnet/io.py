@@ -21,11 +21,10 @@ def h5_load(filename):
 
 
 @st.cache
-def load_dataframe(material, excitation, freq_min=None, freq_max=None, flux_min=None, flux_max=None,
+def load_dataframe(material, freq_min=None, freq_max=None, flux_min=None, flux_max=None,
                    duty_1=None, duty_3=None, out_max=None):
     duty_margin = 0.01
-    excitation = excitation.lower()
-    with path('magnet.data', f'{material}_{excitation}.h5') as h5file:
+    with path('magnet.data', f'{material}_database.h5') as h5file:
         data, metadata = h5_load(h5file)
 
         data['Frequency_kHz'] = data['Frequency'] / 1e3
@@ -113,7 +112,7 @@ def load_dataframe_point(material, excitation, freq, flux):
 
 def load_metadata(material, excitation):
     excitation = excitation.lower()
-    with path('magnet.data', f'{material}_{excitation}.h5') as h5file:
+    with path('magnet.data', f'{material}_database.h5') as h5file:
         data, metadata = h5_load(h5file)
     return metadata
 

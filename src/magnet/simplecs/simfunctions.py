@@ -42,7 +42,7 @@ def SimulationPLECS(material, algorithm):
         Param['R'] = st.number_input("Load resistor [Ω]", min_value=0., max_value=1e6, value=100., step=10.,
                                      key=f'R {material} {algorithm}')
         if topology_type == "DAB":
-            Param['Lk'] = st.number_input("Serial inductor [μH]", min_value=0., max_value=1000., value=50., step=1.,
+            Param['Lk'] = st.number_input("Series inductor [μH]", min_value=0., max_value=1000., value=50., step=1.,
                                           key=f'Lk {material} {algorithm}')*1e-6
     with col2:
         Param['fsw'] = st.number_input("Switching frequency [Hz]", min_value=1e3, max_value=1e6, value=10e3, step=1.,

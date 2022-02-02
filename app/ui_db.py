@@ -157,9 +157,9 @@ def ui_core_loss_db(m):
     if read_excitation == 'Datasheet':
         df = load_dataframe_datasheet(material, freq_min, freq_max, flux_min, flux_max, temperature)
     if read_excitation == 'Sinusoidal':
-        df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, None, None, out_max)
+        df = load_dataframe(material, freq_min, freq_max, flux_min, flux_max, -1.0, -1.0, out_max)
     if read_excitation == 'Trapezoidal':
-        df = load_dataframe(material, read_excitation, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
+        df = load_dataframe(material, freq_min, freq_max, flux_min, flux_max, duty_p, duty_n, out_max)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -169,10 +169,6 @@ def ui_core_loss_db(m):
         st.subheader(f'f=[{round(freq_min / 1e3)}~{round(freq_max / 1e3)}] kHz, '
                      f'B=[{round(flux_min * 1e3)}~{round(flux_max * 1e3)}] mT, '
                      f'Bias={round(flux_bias * 1e3)} mT')
-        if excitation == "Datasheet":
-            st.subheader(f'T={round(temperature)} C')
-        else:
-            st.subheader(f'Max outlier factor={out_max} %')
         if excitation == "Triangular":
             st.subheader(f'D={round(duty_p, 2)}')
         if excitation == "Trapezoidal":
@@ -180,6 +176,10 @@ def ui_core_loss_db(m):
                          f'D2={round(duty_0, 2)}, '
                          f'D3={round(duty_n, 2)}, '
                          f'D4={round(duty_0, 2)}')
+        if excitation == "Datasheet":
+            st.subheader(f'T={round(temperature)} C')
+        else:
+            st.subheader(f'Max outlier factor={out_max} %')
 
         if df.empty:
             st.subheader("Warning: no data in range, please change the range")
@@ -187,9 +187,13 @@ def ui_core_loss_db(m):
             if excitation != 'Datasheet':
                 with st.expander('Measurement details'):
                     metadata = load_metadata(material, read_excitation)
-                    st.write(metadata['info_date'])
-                    st.write(metadata['info_excitation'])
-                    if excitation in ['Sinusoidal', 'Triangular', 'Trapezoidal']:
+                    if excitation == 'Sinusoidal':
+                        st.write(metadata['info_date_sine'])
+                        st.write(metadata['info_excitation'])
+                        st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
+                    if excitation in ['Triangular', 'Trapezoidal']:
+                        st.write(metadata['info_date_trap'])
+                        st.write(metadata['info_excitation'])
                         st.write(metadata['info_core'])  # The datasheet is not associated with a specific core
             st.subheader(f'Download data:')
 
@@ -199,14 +203,14 @@ def ui_core_loss_db(m):
                 df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Outlier_Factor']]
             if read_excitation == 'Trapezoidal':
                 df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss', 'Duty_1', 'Duty_2', 'Duty_3', 'Duty_4', 'Outlier_Factor']]
-            file = df_csv.to_csv().encode('utf-8')
+            file = df_csv.to_csv(index=False).encode('utf-8')
             st.download_button(
                 'Download CSV',
                 file,
                 material + '-' + excitation + '.csv',
                 'text/csv',
                 key=m,
-                help='Download a CSV file containing the flux, frequency, duty cycle,'
+                help='Download a .csv file containing the flux, frequency, duty cycle,'
                      'power loss and outlier factor for the depicted data points')
 
     with col2:
