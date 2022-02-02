@@ -65,6 +65,5 @@ material_core_tested = {
 }
 material_names = list(materials.keys())
 excitations_db = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
-excitations_raw = ('Sinusoidal', 'Triangular-Trapezoidal')
+excitations_download = ('Sinusoidal', 'Triangular', 'Trapezoidal')
 excitations_predict = ('Sinusoidal', 'Triangular', 'Trapezoidal', 'Arbitrary')
-# prediction_algorithms = ('iGSE', 'Advanced Analytical', 'Machine Learning')  # Not used, isn't it?

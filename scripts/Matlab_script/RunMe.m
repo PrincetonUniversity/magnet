@@ -127,7 +127,7 @@ disp(['Main parameters extracted for ', Excitation, ' ', Material])
 
 %% Saving the .mat data with the conventional information and the voltage and current, all in SI units
 
-Discard_Algorithm = ['Data discarded: Voltage below ', num2str(Vmin_absolute), ' V; Current below ', num2str(Imin_absolute), ' A; Average values above ', num2str(Relative_accuracy*100), ' percent of the peak value of the sample; Clipped signals for more than ', num2str(Clipping_fraction*100), ' percent of the sample length in a row'];
+Discard_Algorithm = ['Data discarded: Voltage below ', num2str(Vmin_absolute), ' V; Current below ', num2str(Imin_absolute), ' A; Average power below ', num2str(Relative_accuracy*Relative_accuracy*100*2), ' percent of the peak power of the sample; Clipped signals for more than ', num2str(Clipping_fraction*100), ' percent of the sample length in a row'];
 Freq_Algorithm = ['Frequency estimation based on FFT of the current with a frequency resolution of ', num2str(1/(Nsamples*Tsampling)/1000), ' kHz'];
 Flux_Algorithm = 'Flux estimated based on the integral of the voltage minus the switching cycle length moving average and discarding the first and last cycles';
 Loss_Algorithm = 'Loss density calculated as the average product of the voltage and the current after removing the first and last switching cycle (removing the average values for the voltage and current) divided by the effective volume';
@@ -200,7 +200,7 @@ if Excitation(1)=='T' % Trapezoidal
     end
 end
 
-%% Create the .zip file with the .txt info file and the .cvs reduced voltage and current waveform
+%% Create the .zip file with the .txt info file and the .cvs voltage and current waveform
 fid=fopen([path_output, 'Test_Info.txt'], 'w'); % Clear previous content
 fprintf(fid, 'Excitation: '); fprintf(fid, Excitation);
 fprintf(fid, ', Sampling time: '); fprintf(fid, num2str(Tsampling*1e9)); fprintf(fid,' ns'); fprintf(fid, '\n');
@@ -213,21 +213,19 @@ fprintf(fid, Info_Test);
 
 fclose('all'); % Close this files (and all other files)
 
-Data_fraction = 0.2; % Only saving 20% of the data (this is a cycle at Fmin in this case)
+writematrix(Volt, [path_output, 'Raw_Volt.csv']);
+writematrix(Curr, [path_output, 'Raw_Curr.csv']);
+writematrix([Freq, Duty1, Duty2, Duty3, Duty4], [path_output, 'Info_Row.csv']);
 
-Short_volt = Volt(:,1:ceil(Nsamples*Data_fraction));
-Short_curr = Curr(:,1:ceil(Nsamples*Data_fraction));
-writematrix(Short_volt, [path_output, 'Raw_Volt_Short.csv']);
-writematrix(Short_curr, [path_output, 'Raw_Curr_Short.csv']);
-
-zip([path_output, Material, '_', Excitation, '_Raw_Data_Short'], {...
-    [path_output, 'Raw_Volt_Short.csv'],...
-    [path_output, 'Raw_Curr_Short.csv'],...
+zip([path_output, Material, '_', Excitation, '_Raw_Data'], {...
+    [path_output, 'Raw_Volt.csv'],...
+    [path_output, 'Raw_Curr.csv'],...
     [path_output, 'Test_Info.txt']});
-delete([path_output, 'Raw_Volt_Short.csv']);
-delete([path_output, 'Raw_Curr_Short.csv']);
+delete([path_output, 'Raw_Volt.csv']);
+delete([path_output, 'Raw_Curr.csv']);
+delete([path_output, 'Info_Row.csv']);
 delete([path_output, 'Test_Info.txt']);
-disp([Excitation, '_', Material, '_Raw_Data_Short.zip file generated, .csv and .txt files deleted']);
+disp([Excitation, '_', Material, '_Raw_Data.zip file generated, .csv and .txt files deleted']);
 
 %% Steinmetz parameters for sinusoidal data
 if Excitation(1)=='S' % Sinusoidal

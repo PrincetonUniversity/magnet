@@ -5,7 +5,7 @@ import streamlit as st
 from magnet import __version__
 from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
-from ui_raw import ui_download_raw_data
+from ui_raw import ui_download_data
 from ui_faq import ui_faq
 from ui_intro import ui_intro
 from magnet.simplecs.simfunctions import SimulationPLECS
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         ui_multiple_materials(SimulationPLECS)
             
     if function_select == 'Download Waveform Data':
-        ui_multiple_materials(ui_download_raw_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
+        ui_multiple_materials(ui_download_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
         
     if function_select == 'Frequently Asked Questions':
         ui_multiple_materials(ui_faq)

@@ -1,5 +1,4 @@
 import os.path
-from PIL import Image
 import pandas as pd
 import streamlit as st
 from magnet.constants import material_names, materials, materials_extra, material_manufacturers, \
@@ -19,12 +18,11 @@ def ui_intro(m):
         MagNet is continuously being maintained and updated with new data.
         
         With this webpage, you can visualize and download the collected data for different magnetic materials and excitations or calculate core losses for your specific design conditions using Neural Networks integrated into the webpage.
-        For more information, the FAQ section details how the data is captured and processed and how losses are calculated.
         
         Please select one of these functions on the left menu to start exploring the webpage.
     """)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.subheader('Core Loss Database')
         st.write("""
@@ -42,7 +40,7 @@ def ui_intro(m):
             Additionally, all the data points in the selected range can be easily downloaded as a .csv file by clicking the download button.
             Click on "Measurement details" to see the core and specific conditions for the test.
             
-            Currently we are working on adding measurements at different temperatures and DC bias.
+            We are working on adding measurements at different temperature and DC bias.
         """)
     with col2:
         st.subheader('Core Loss Analysis')
@@ -62,7 +60,6 @@ def ui_intro(m):
             The results include both the iGSE and ML methods.
             
             Besides the calculation for conventional excitations, we are working on NN models for arbitrary waveforms.
-            In the future, it will also be possible to obtain the losses for simulated waveforms using a PLECs toolbox.
         """)
     with col3:
         st.subheader('Download Waveform Data')
@@ -83,6 +80,18 @@ def ui_intro(m):
             
             These files are intended for researchers to build their own core loss models.
         """)
+    with col4:
+        st.subheader('Core Loss Simulation')
+        st.write("""
+            This PLECs toolbox allows you to simulate conventional power converters with the selected material and core shape to obtain the desired waveforms.
+            The waveforms are then used to compute the core losses using iGSE and Machine Learning.
+
+            We are working on including the DC bias into the calculations.
+        """)
+        st.subheader('Frequently Asked Questions')
+        st.write("""
+            For more information, the FAQ section details how the data is captured and processed and how losses are calculated.
+        """)
 
     st.markdown("""---""")
     col1, col2 = st.columns([1, 2])
@@ -91,12 +100,13 @@ def ui_intro(m):
         st.write("")
         st.write("")
         n_sine = 0
-        n_trap = 0
+        n_tot = 0
         for material in material_names:
-            n_sine = n_sine + len(load_dataframe(material, 'Sinusoidal'))
-            n_trap = n_trap + len(load_dataframe(material, 'Trapezoidal'))
-        st.subheader(f'Total number of data points: {n_sine + n_trap}')
-        st.write(f'{n_sine} Sinusoidal points and {n_trap} Triangular-Trapezoidal points.')
+            n_sine = n_sine + len(load_dataframe(material, freq_min=None, freq_max=None, flux_min=None,
+                                                 flux_max=None, duty_1=-1.0, duty_3=-1.0, out_max=None))
+            n_tot = n_tot + len(load_dataframe(material))
+        st.subheader(f'Total number of data points: {n_tot}')
+        st.write(""f'{n_sine} Sinusoidal points and {n_tot-n_sine} Triangular-Trapezoidal points.'"")
         st.write("")
         st.write("")
         st.subheader(f'Number of materials added: {len(material_names)}')
