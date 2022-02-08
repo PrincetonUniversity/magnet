@@ -23,10 +23,10 @@ Plecs {
   MaxConsecutiveZCs "1000"
   AlgebraicLoopWithStateMachineMsg "3"
   AssertionAction "1"
-  InitializationCommands "fsw = 10e3;\nduty = 0.5;\nphase = 0.2;\nVi = 400;\nL"
-" = 1e-3;\nC = 1e-3;\nR = 10;\nLk = 50e-6;\n\niGSE_ki = 8.41;\niGSE_alpha = 1."
-"09;\niGSE_beta = 2.16;\n\nAc = 600e-6;\nlc = 100e-3;\nlg = 1e-3;\nmu_r = 6500"
-";\nNp = 8;\nNs = 8;"
+  InitializationCommands "fsw = 10e3;\nduty = 0.5;\nph = 0.2;\nVi = 400;\nL = "
+"1e-3;\nC = 1e-3;\nRo = 10;\nLk = 50e-6;\n\niGSE_ki = 8.41;\niGSE_alpha = 1.09"
+";\niGSE_beta = 2.16;\n\nAc = 600e-6;\nlc = 100e-3;\nlg = 1e-3;\nmu_r = 6500;"
+"\nNp = 8;\nNs = 8;"
   InitialState  "1"
   SystemState   ""
   TaskingMode   "1"
@@ -54,9 +54,9 @@ Plecs {
     Index         "1"
   }
   Schematic {
-    Location      [492, 59; 1237, 414]
-    ZoomFactor    1
-    SliderPosition [0, 15]
+    Location      [0, 23; 1920, 991]
+    ZoomFactor    2.57013
+    SliderPosition [0, 0]
     ShowBrowser   off
     BrowserWidth  100
     Component {
@@ -127,7 +127,7 @@ Plecs {
       Flipped       off
       Parameter {
         Variable      "R"
-        Value         "R"
+        Value         "Ro"
         Show          off
       }
     }
@@ -160,7 +160,7 @@ Plecs {
       }
       Parameter {
         Variable      "Delay"
-        Value         "[0 phase]/fsw"
+        Value         "[0 ph]/fsw"
         Show          off
       }
       Parameter {
@@ -1137,7 +1137,7 @@ Plecs {
       Flipped       off
       Parameter {
         Variable      "n"
-        Value         "Np"
+        Value         "Ns"
         Show          off
       }
       Parameter {
@@ -2070,4 +2070,3 @@ Plecs {
     ShowCycles    "1"
   }
 }
-DemoSignature "MVbYxysjl1oqh5Zv+carIbyeyo0OyUVi72noMGBURZs="

@@ -28,10 +28,12 @@ if __name__ == '__main__':
         'Flux_Density': list,
         'Power_Loss': list,
         'Outlier_Factor': list,
-        'Info_Date': str,
+        'Info_Date_Sine': str,
+        'Info_Date_Trap': str,
         'Info_Excitation': str,
         'Info_Core': str,
-        'Info_Setup': str,
+        'Info_Setup_Sine': str,
+        'Info_Setup_Trap': str,
         'Info_Scope': str,
         'Info_Volt_Meas': str,
         'Info_Curr_Meas': str,
@@ -110,7 +112,7 @@ if __name__ == '__main__':
 
             material = d['Material'].lower()
             excitation = (d['Excitation_Type']).lower()
-            assert filename.lower().endswith(f'{material}_{excitation}_webpage.json')
+            assert filename.lower().endswith(f'{material}_webpage.json')
             # -------------------------
             # DATA VALIDATION
             # -------------------------
@@ -127,10 +129,12 @@ if __name__ == '__main__':
                 excitation_type=excitation,
                 primary_turns=d['Primary_Turns'] or None,
                 secondary_turns=d['Secondary_Turns'] or None,
-                info_date=d['Info_Date'] or None,
+                info_date_sine=d['Info_Date_Sine'] or None,
+                info_date_trap=d['Info_Date_Trap'] or None,
                 info_excitation=d['Info_Excitation'] or None,
                 info_core=d['Info_Core'] or None,
-                info_setup=d['Info_Setup'] or None,
+                info_setup_sine=d['Info_Setup_Sine'] or None,
+                info_setup_trap=d['Info_Setup_Trap'] or None,
                 info_scope=d['Info_Scope'] or None,
                 info_volt_meas=d['Info_Volt_Meas'] or None,
                 info_curr_meas=d['Info_Curr_Meas'] or None,
@@ -138,7 +142,7 @@ if __name__ == '__main__':
 
             df = pd.DataFrame({k: d[k] for k in df_cols_meas}).astype(df_cols_meas)
 
-            output_filename = f'{material.upper()}_{excitation}.h5'
+            output_filename = f'{material.upper()}_database.h5'
             h5_store(os.path.join(OUTPUT_H5_DIR, output_filename), df, **m)
 
     for filename in glob.glob(f'{INPUT_JSON_DIR}/*Datasheet.json'):

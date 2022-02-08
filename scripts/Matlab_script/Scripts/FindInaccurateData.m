@@ -11,9 +11,8 @@ function inaccurate_vector = FindInaccurateData(volt, curr, v_min, i_min, accura
 %
 %   Deleting innacurate data for various reasons:
 %   1) Peak voltage or current below a minimum value
-%   2) Average voltage or current above the accuracy of the scope
-%   3) Power below the voltage times current accuracy of the scope
-%   4) Clipped data
+%   2) Power below the voltage times current accuracy of the scope
+%   3) Clipped data
 
 Ndata = length(volt(:,1));
 Nsamples = length(volt(1,:));
@@ -39,20 +38,6 @@ for n = 1:Ndata
         inaccurate_vector(n) = 1;
         if display==1
             disp(['Test ', num2str(n), ' discarded: peak current below minimum value'])
-        end    
-    end
-    % Maximum average voltage and current accepted (based on the DC gain accuracy of the scope)
-    if volt_mean>volt_peak*accuracy
-        % Error underestimated because the maximum is always above the peak value
-        inaccurate_vector(n) = 1;
-        if display==1
-            disp(['Test ', num2str(n), ' discarded: average voltage too high'])
-        end
-    end
-    if curr_mean>curr_peak*accuracy
-        inaccurate_vector(n) = 1;
-        if display==1
-            disp(['Test ', num2str(n), ' discarded: average current too high'])
         end    
     end
     % Minimum power (based on the DC gain accuracy of the scope)

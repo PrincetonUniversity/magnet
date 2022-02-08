@@ -1,10 +1,10 @@
 import streamlit as st
 from PIL import Image
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import xmlrpc.client as xmlrpclib
 import os
 import os.path
-
 
 class CircuitModel(object):
     cntInst = 0
@@ -27,7 +27,8 @@ class CircuitModel(object):
         self.opt['ModelVars']['fsw'] = param_init["fsw"]
         self.opt['ModelVars']['duty'] = param_init["duty"]
         self.opt['ModelVars']['ph'] = param_init["ph"]
-
+        self.opt['ModelVars']['C'] = 100e-6
+        
     # Display schematic
     def displaySch(self, path):
         st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}_sch.png')), width=500)
@@ -56,40 +57,41 @@ class CircuitModel(object):
         self.Time = Data_raw['Time']
         self.V = Data_raw['Values'][0]
         self.I = Data_raw['Values'][1]
+        self.H = Data_raw['Values'][2]
+        self.B = Data_raw['Values'][3]
         self.Ploss = Data_raw['Values'][4][-1]/self.mag.Ac/self.mag.lc/1000
-        return self.Ploss
+        return self.B,self.Time
 
     # Display waveform
     def displayWfm(self):
-        fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=self.Time, y=self.V, line=dict(color='gray', width=2)))
-        fig1.update_layout(xaxis_title='Time', yaxis_title='Primary winding voltage [V]',
-                           autosize=False,
-                           margin=dict(
-                               autoexpand=False,
-                               l=50,
-                               r=20,
-                               t=50,
-                           ),
-                           plot_bgcolor='white')
-        fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='gray')
-        fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
-        st.plotly_chart(fig1, use_container_width=True)
+        
+        # Create figure with secondary y-axis
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        
+        # Add traces
+        fig.add_trace(
+            go.Scatter(x=self.Time, y=self.V, name="Voltage", line=dict(color='firebrick', width=3)),
+            secondary_y=False,
+        )
+        
+        fig.add_trace(
+            go.Scatter(x=self.Time, y=self.I, name="Current", line=dict(color='mediumslateblue', width=3)),
+            secondary_y=True,
+        )
+        
+        fig.update_layout(
+            title_text="<b>Simulated Operation Waveforms</b>",
+            title_x=0.5,
+            legend=dict(yanchor="bottom", y=0, xanchor="right", x=0.935)
+        )
+        
+        fig.update_xaxes(title_text="Time [s]")
 
-        fig2 = go.Figure()
-        fig2.add_trace(go.Scatter(x=self.Time, y=self.I, line=dict(color='gray', width=2)))
-        fig2.update_layout(xaxis_title='Time', yaxis_title='Primary winding current [A]',
-                           autosize=False,
-                           margin=dict(
-                               autoexpand=False,
-                               l=50,
-                               r=20,
-                               t=50,
-                           ),
-                           plot_bgcolor='white')
-        fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='gray')
-        fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='gray')
-        st.plotly_chart(fig2, use_container_width=True)
+        fig.update_yaxes(title_text="Primary Winding Voltage [V]", nticks=5, secondary_y=False)
+        fig.update_yaxes(title_text="Primary Winding Current [A]", nticks=5, secondary_y=True)
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
 
 
 class MagModel(object):

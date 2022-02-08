@@ -5,9 +5,10 @@ import streamlit as st
 from magnet import __version__
 from ui_db import ui_core_loss_db
 from ui_predict import ui_core_loss_predict
-from ui_raw import ui_download_raw_data
+from ui_raw import ui_download_data
 from ui_faq import ui_faq
 from ui_intro import ui_intro
+from magnet.simplecs.simfunctions import SimulationPLECS
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
         'Select a MagNet Function:',
-        ('Introduction to MagNet', 'Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data', 'Frequently Asked Questions')
+        ('Introduction to MagNet', 'Core Loss Database', 'Core Loss Analysis', 'Core Loss Simulation', 'Download Waveform Data', 'Frequently Asked Questions')
     )
 
     col1, col2 = st.columns([3, 1])
@@ -67,9 +68,12 @@ if __name__ == '__main__':
 
     if function_select == 'Core Loss Analysis':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
+        
+    if function_select == 'Core Loss Simulation':
+        ui_multiple_materials(SimulationPLECS)
             
     if function_select == 'Download Waveform Data':
-        ui_multiple_materials(ui_download_raw_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
+        ui_multiple_materials(ui_download_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
         
     if function_select == 'Frequently Asked Questions':
         ui_multiple_materials(ui_faq)

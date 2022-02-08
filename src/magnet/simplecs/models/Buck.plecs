@@ -24,8 +24,8 @@ Plecs {
   AlgebraicLoopWithStateMachineMsg "3"
   AssertionAction "1"
   InitializationCommands "fsw = 10e3;\nduty = 0.5;\nVi = 400;\nL = 1e-3;\nC = "
-"1e-3;\nR = 10;\n\niGSE_ki = 8.41;\niGSE_alpha = 1.09;\niGSE_beta = 2.16;\n\nA"
-"c = 676e-6;\nlc = 149e-3;\nlg = 1.5e-3*2;\nmu_r = 6500;\nNp = 8;"
+"1e-3;\nRo = 10;\n\niGSE_ki = 8.41;\niGSE_alpha = 1.09;\niGSE_beta = 2.16;\n\n"
+"Ac = 676e-6;\nlc = 149e-3;\nlg = 1.5e-3*2;\nmu_r = 6500;\nNp = 8;"
   InitialState  "1"
   SystemState   ""
   TaskingMode   "1"
@@ -53,8 +53,8 @@ Plecs {
     Index         "1"
   }
   Schematic {
-    Location      [270, 52; 840, 372]
-    ZoomFactor    1
+    Location      [0, 23; 1920, 991]
+    ZoomFactor    2.94117
     SliderPosition [0, 0]
     ShowBrowser   off
     BrowserWidth  100
@@ -154,7 +154,7 @@ Plecs {
       Flipped       off
       Parameter {
         Variable      "R"
-        Value         "R"
+        Value         "Ro"
         Show          off
       }
     }
@@ -1395,4 +1395,3 @@ Plecs {
     ShowCycles    "1"
   }
 }
-DemoSignature "/FQtjbJrRiMhCU+hN8YNZhkuS2QcPhRYnlkrRi5ED4k="

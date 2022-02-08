@@ -4,24 +4,26 @@ import pandas as pd
 import os
 
 from magnet.simplecs.classes import CircuitModel, MagModel, CoreMaterial
+from magnet.core import loss
+from magnet.constants import materials, materials_extra, material_names
 
 
-def SimulationPLECS(material, algorithm):
+def SimulationPLECS(m):
     path = os.path.dirname(os.path.realpath(__file__))
 
-    # Select topology
-    topology_list = ("Buck", "Boost", "Flyback", "DAB")
-    topology_type = st.selectbox(
-        "Topology:",
-        topology_list,
-        key=f'Topology {material} {algorithm}'
-    )
-
+    col1, col2 = st.columns(2)
+    with col1:
+        # Select topology
+        topology_list = ("Buck", "Boost", "Flyback", "DAB")
+        topology_type = st.selectbox(
+            "Topology:",
+            topology_list,
+            key='Topology'
+        )
+        
     # Circuit model instance
     circuit = CircuitModel(topology_type)
 
-    # Display schematic
-    circuit.displaySch(path)
 
     # Circuit parameters
     Param = {
@@ -34,25 +36,28 @@ def SimulationPLECS(material, algorithm):
         'ph': 0
     }
 
-    st.header("Circuit parameters")
-    col1, col2 = st.columns(2)
+    st.header("Circuit Parameters")
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0., max_value=1000., value=400., step=10.,
-                                      key=f'Vi {material} {algorithm}')
-        Param['R'] = st.number_input("Load resistor [Ω]", min_value=0., max_value=1e6, value=100., step=10.,
-                                     key=f'R {material} {algorithm}')
+        # Display schematic
+        circuit.displaySch(path)
+    with col3:      
+        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0., max_value=1000., value=40., step=10.,
+                                      key='Vi')
+        Param['Ro'] = st.number_input("Load resistor [Ω]", min_value=0., max_value=1e6, value=10., step=10.,
+                                     key='R')
         if topology_type == "DAB":
-            Param['Lk'] = st.number_input("Serial inductor [μH]", min_value=0., max_value=1000., value=50., step=1.,
-                                          key=f'Lk {material} {algorithm}')*1e-6
-    with col2:
-        Param['fsw'] = st.number_input("Switching frequency [Hz]", min_value=1e3, max_value=1e6, value=10e3, step=1.,
-                                       key=f'fsw {material} {algorithm}')
+            Param['Lk'] = st.number_input("Series inductor [μH]", min_value=0., max_value=1000., value=12., step=1., key='Lk')*1e-6
+    with col4:
+        Param['fsw'] = st.number_input("Switching frequency [kHz]", min_value=50., max_value=500., value=100., step=1.,
+                                       key='fsw')*1e3
         if topology_type == "DAB":
-            Param['ph'] = st.number_input("Duty cycle [ ]", min_value=0., max_value=1., value=0.5, step=0.1,
-                                          key=f'ph {material} {algorithm}')
+            Param['ph'] = st.number_input("Phase shift [deg]", min_value=0., max_value=360., value=90., step=1.,
+                                          key='ph')/360.
+            Param['duty'] = 0.5
         else:
-            Param['duty'] = st.number_input("Duty cycle [ ]", min_value=0., max_value=1., value=0.5, step=0.1,
-                                            key=f'duty {material} {algorithm}')
+            Param['duty'] = st.number_input("Duty cycle [p.u.]", min_value=0., max_value=1., value=0.5, step=0.01,
+                                            key='duty')
     # Assign the inputs to the simulation parameter structure
     circuit.setParam(Param)
 
@@ -70,53 +75,133 @@ def SimulationPLECS(material, algorithm):
     else:
         mag = MagModel("Toroid")
 
-    # Display geometry
-    mag.displaySch(path)
 
-    st.header("Core geometry")
-    col1, col2 = st.columns(2)
+    st.header("Core Geometry")
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0., max_value=1000., value=100., step=10.,
-                                          key=f'Lc {material} {algorithm}')*1e-3
-        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0., max_value=1000., value=600., step=10.,
-                                          key=f'Ac {material} {algorithm}')*1e-6
-        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0., max_value=1000., value=1., step=1.,
-                                          key=f'lg {material} {algorithm}')*1e-3
-    with col2:
-        Param_mag['Np'] = st.number_input("Turns number primary [ ]", min_value=0., max_value=1000., value=8., step=1.,
-                                          key=f'Np {material} {algorithm}')
+        # Display geometry
+        mag.displaySch(path)   
+    with col3: 
+        Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0., max_value=1000., value=100., step=1.,
+                                          key='Lc')*1e-3
+        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0., max_value=1000., value=100., step=1.,
+                                          key='Ac')*1e-6
+    with col4:    
+        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0., max_value=1000., value=0.1, step=0.01,
+                                          key='lg')*1e-3
+    
+        Param_mag['Np'] = st.number_input("Turns number primary", min_value=0., max_value=100., value=10., step=1.,
+                                          key='Np')
         if topology_type == "Flyback" or topology_type == "DAB":
-            Param_mag['Ns'] = st.number_input("Turns number secondary [ ]", min_value=0., max_value=1000., value=8.,
-                                              step=1., key=f'Ns {material} {algorithm}')
+            Param_mag['Ns'] = st.number_input("Turns number secondary", min_value=0., max_value=100., value=10.,
+                                              step=1., key='Ns')
 
     # Assign the inputs to the simulation parameter structure
     mag.setParam(Param_mag)
+    
+    Vc = (Param_mag['lc']+Param_mag['lg'])*Param_mag['Ac']
 
     # Steinmetz Parameters
-    st.header("Material parameters")
+    st.header("Magnetic Material")
 
-    Param_material = {
-        'mu_r': 6500,
-        'iGSE_ki': 8.41,
-        'iGSE_alpha': 1.09,
-        'iGSE_beta': 2.16
-    }
-
-    material = CoreMaterial("N87")
-    material.setParam(Param_material)
-
-    df = pd.DataFrame(
-        np.array([[material.mu_r, material.iGSE_ki, material.iGSE_alpha, material.iGSE_beta]]),
-        columns=["μr", "ki", "α", "β"]
-    )
-    st.table(df)
+    col1, col2 = st.columns(2)
+    with col1:
+        Material_list = material_names
+        Material_type = st.selectbox(
+            "Material:",
+            Material_list,
+            index = 9,
+            key='Material'
+        )
+        
+        k_i, alpha, beta = materials[Material_type]
+        mu_r_0 = materials_extra[Material_type][0]
+        
+        Param_material = {
+            'mu_r': mu_r_0,
+            'iGSE_ki': k_i,
+            'iGSE_alpha': alpha,
+            'iGSE_beta': beta
+        }
+        material = CoreMaterial(Material_type)
+        material.setParam(Param_material)
+    with col2:
+        st.write("Reference parameters of the selected magnetic material:")
+        df = pd.DataFrame(
+            np.array([[material.mu_r, material.iGSE_ki, material.iGSE_alpha, material.iGSE_beta]]),
+            columns=["μr", "ki", "α", "β"]
+        )
+        
+        df = df.style.format({"μr": "{:.0f}", "ki": "{:.4f}", "α": "{:.4f}", "β": "{:.4f}"})
+        st.table(df)
 
     # Simulate and obtain the data
-    result = st.button("Simulate", key=f'Simulate {material} {algorithm}')
-    Ploss = 0
-    circuit.setMagModel(mag, material)
-    if result:
-        Ploss = circuit.steadyRun(path)
-        circuit.displayWfm()
+    result = st.button("Simulate", key='Simulate')
 
-    return Ploss
+    circuit.setMagModel(mag, material)
+    
+    
+    if result:
+        
+        col1, col2 = st.columns(2)
+        with col1:
+        
+            st.header("Simulation Results")
+            
+            Flux,Time = circuit.steadyRun(path)
+            
+            Flux = np.array(Flux)
+            Time = np.array(Time)
+            Duty = np.multiply(Time,Param['fsw'])
+            
+            temp = (Duty<=1)
+            Flux = Flux[temp]
+            Duty = Duty[temp]
+            
+            Flux_amp = (np.max(Flux) - np.min(Flux))/2
+    
+            Loss_iGSE = loss(
+                waveform="Arbitrary", 
+                algorithm="iGSE", 
+                material=Material_type, 
+                freq=Param['fsw'], 
+                flux=Flux, 
+                duty=Duty) / 1e3
+            
+            Loss_ML = loss(
+                waveform="Arbitrary", 
+                algorithm="ML", 
+                material=Material_type, 
+                freq=Param['fsw'], 
+                flux=Flux, 
+                duty=Duty) / 1e3
+            
+        
+            st.header("Simulated Core Loss")
+            st.subheader(f'{round(Loss_iGSE*Vc*1e3,2)} W  ({round(Loss_iGSE,2)} kW/m^3) - iGSE')
+            st.subheader(f'{round(Loss_ML*Vc*1e3,2)} W ({round(Loss_ML,2)} kW/m^3) - ML')
+            
+            if Flux_amp<0.02:
+                st.write("""
+                         **Caution**: The simulated amplitude of flux density is **too small** under the given 
+                         parameter configurations. The predicted core loss result may be inaccurate!
+                         """)
+            elif Flux_amp>0.3:
+                st.write("""
+                         **Caution**: The simulated amplitude of flux density is **too large** under the given 
+                         parameter configurations. The predicted core loss result may be inaccurate!
+                         """)
+            
+            if topology_type in ["Buck", "Boost", "Flyback"]:
+                st.write(f"""
+                         **Note**: The selected {topology_type} topology is very likely to result in a **dc-biased** 
+                         flux density, which is not yet taken into consideration by the model.""")
+                st.write("""
+                         Models for **dc-biased** condition will be coming soon in the next release!""")
+            elif topology_type == "DAB":
+                st.write(f"""
+                         **Note**: This core loss result stands for the loss in the magnetic core of the **transformer**, 
+                         while the series auxiliary inductor is assumed lossless.""")
+                         
+            with col2:
+                circuit.displayWfm()
