@@ -35,7 +35,7 @@ def ui_faq(m):
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'system-photo.jpg')), width=500)
     with st.expander("2. How are Sinusoidal excitations generated?"):
         st.write("""
-            For sinusoidal excitation, a signal generator connected to a power amplifier (Amplifier Research 25A250AMB) is used.
+            For sinusoidal excitation, a signal generator connected to a power amplifier (Amplifier Research 25A250AM6) is used.
             The load for the power amplifier is the series connection of a blocking capacitor and the core under test.
             The computer is used to apply the desired frequency and amplitude to the signal generator in each test.
         """)
