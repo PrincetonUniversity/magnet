@@ -98,19 +98,17 @@ def ui_intro(m):
     with col1:
         st.header('Webpage Status')
         st.write("")
-        st.write("")
         n_sine = 0
         n_tot = 0
         for material in material_names:
             n_sine = n_sine + len(load_dataframe(material, freq_min=None, freq_max=None, flux_min=None,
                                                  flux_max=None, duty_1=-1.0, duty_3=-1.0, out_max=None))
             n_tot = n_tot + len(load_dataframe(material))
+        st.subheader(f'Number of materials added: {len(material_names)}')
+        st.write("")
         st.subheader(f'Total number of data points: {n_tot}')
         st.write(""f'{n_sine} Sinusoidal points and {n_tot-n_sine} Triangular-Trapezoidal points.'"")
-        st.write("")
-        st.write("")
-        st.subheader(f'Number of materials added: {len(material_names)}')
-        st.write(f'Tested for 25 C and no DC bias so far.')
+        st.write(f'Tested for 25 C and no DC bias so far. During the tests, the core temperature may increase 5~10 C in worst case conditions.')
     with col2:
         st.header('How to Cite')
         st.write("""
