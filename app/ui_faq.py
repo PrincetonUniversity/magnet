@@ -125,12 +125,12 @@ def ui_faq(m):
             In this webpage, the Steinmetz parameters for each materials are required to estimate the core losses with the iGSE method.
             The parameters are obtained from the Sinusoidal results for each material.
             
-            For each material, the parameters k, alpha, and beta that best fit the measured data are obtained.
+            For each material, the parameters k, α, and β that best fit the measured data are obtained.
             For such purpose, a least-squares curve fitting method is used ("lsqcurvefit" Matlab function).
-            To ensure that data points with large losses have the same impact as those with reduced losses, the logarithm of losses is used for curve fitting instead of losses directly
+            To ensure that data points with large losses have the same impact as those with reduced losses, the logarithm of losses is used.
             
-            Once k, alpha, and beta are obtained, ki for iGSE is calculated.
-            Please note that the ki, alpha, and beta are obtained from Sinusoidal tests, even when used for Trapezoidal or Triangular loss calculations.
+            Once k, α, and β are obtained, ki for iGSE is calculated.
+            Please note that the ki, α, and β are obtained from Sinusoidal tests, even when used for Trapezoidal or Triangular loss calculations.
         """)
     with st.expander("7. What is the definition of the outlier factor?"):
         st.write("""
@@ -257,6 +257,9 @@ def ui_faq(m):
             2) Skipping points where losses are too high to be practical.
             
             3) Including a waiting time between tests to let the core cool down.
+            
+            Initial tests with the core N87 R22.1x13.7x7.9 and sinusoidal excitation show an increase in losses of 10~15% when the temperature is controlled in a better way.
+            Measurements with better temperature control will be captured and added to the webpage in the future.
         """)
     with st.expander("4. Effect of variations in core dimensions"):
         st.write("""
@@ -264,6 +267,8 @@ def ui_faq(m):
             Unfortunately, the physical dimensions vary from core to core, and the variations of the dimensions with respect to the specified values are translated into an error in the reported B, H, and losses.
             As most toroids used for testing are coated, their real dimensions cannot be measured.
             This is a common problem that designers must face and leads to variations in inductance and core loss between samples.
+            
+            This effect can be considerable. For instance, for the core N87 R22.1x13.7x7.9, variations in B of up to -10.8%/+7.6% and variations in losses of up to -7.3%/+10.4% would be obtained due to the change in the effective area when comparing the biggest and smallest possible core (based on tolerances) with respect to the "nominal" core.
         """)
 # TODO: Comparison to other data and a list of the things we are working on for the next release.
 

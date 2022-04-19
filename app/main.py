@@ -37,8 +37,8 @@ if __name__ == '__main__':
 
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
-        'Select a MagNet Function:',
-        ('Introduction to MagNet', 'Core Loss Database', 'Core Loss Analysis', 'Core Loss Simulation', 'Download Waveform Data', 'Frequently Asked Questions')
+        'Select a Function:',
+        ('Introduction to MagNet', 'MagNet Database', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'Frequently Asked Questions')
     )
 
     col1, col2 = st.columns([3, 1])
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    if function_select in ['Core Loss Database', 'Core Loss Analysis', 'Download Waveform Data']:
+    if function_select in ['MagNet Database', 'MagNet Analysis', 'MagNet Download']:
         clicked = st.sidebar.button("Add another case")
         if clicked:
             st.session_state.n_material += 1
@@ -63,16 +63,16 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_intro)
         st.session_state.n_material = 1  # Resets the number of plots
 
-    if function_select == 'Core Loss Database':
+    if function_select == 'MagNet Database':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
 
-    if function_select == 'Core Loss Analysis':
+    if function_select == 'MagNet Analysis':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
-    if function_select == 'Core Loss Simulation':
+    if function_select == 'MagNet Simulation':
         ui_multiple_materials(SimulationPLECS)
             
-    if function_select == 'Download Waveform Data':
+    if function_select == 'MagNet Download':
         ui_multiple_materials(ui_download_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
         
     if function_select == 'Frequently Asked Questions':
