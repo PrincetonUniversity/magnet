@@ -109,6 +109,7 @@ def ui_intro(m):
         st.subheader(f'Total number of data points: {n_tot}')
         st.write(""f'{n_sine} Sinusoidal points and {n_tot-n_sine} Triangular-Trapezoidal points.'"")
         st.write(f'Tested for 25 C and no DC bias so far. During the tests, the core temperature may increase 5 C ~ 10 C in worst case conditions.')
+
     with col2:
         st.header('How to Cite')
         st.write("""
