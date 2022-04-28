@@ -40,37 +40,6 @@ def plot_title(prop):
         'outlier_factor': 'Outlier Factor'
     }[prop]
 
-
-def core_loss_iGSE_arbitrary(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None,
-                             n_interval=10_000):
-
-    """
-    Calculate magnetic core loss using iGSE
-
-    :param freq: Frequency of excitation waveform (Hz)
-    :param flux: Relative Flux Density (T) in a single waveform cycle, as an ndarray
-    :param duty: Fractional time wrt time period, in [0, 1], in a single waveform cycle, as an ndarray
-    :param k_i: Steinmetz coefficient k_i
-    :param alpha: Steinmetz coefficient alpha
-    :param beta: Steinmetz coefficient beta
-    :param material: Name of material. If specified, k_i/alpha/beta are ignored.
-    :param n_interval: No. of intervals to use to solve iGSE using trapezoidal rule
-    :return: Core loss (W/m^3)
-    """
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    period = 1 / freq
-    flux_delta = np.amax(flux) - np.amin(flux)
-    time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
-    B = np.interp(time, np.multiply(duty, period), flux)
-    dBdt = np.gradient(B, dt)
-    core_loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
-
-    return core_loss
-
-
 def core_loss_iGSE_sinusoidal(freq, flux, duty=None, k_i=None, alpha=None, beta=None, material=None, dc_bias=0, n_interval=10_000):
     # Here duty is not needed, but it is convenient to call the function recursively
     if material is not None:
@@ -121,6 +90,36 @@ def core_loss_iGSE_trapezoidal(freq, flux, duty, k_i=None, alpha=None, beta=None
     flux_list = dc_bias + np.array([-BPplot, BPplot, BNplot, -BNplot, -BPplot])
 
     return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
+
+
+def core_loss_iGSE_arbitrary(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None,
+                             n_interval=10_000):
+
+    """
+    Calculate magnetic core loss using iGSE without minor loops
+
+    :param freq: Frequency of excitation waveform (Hz)
+    :param flux: Relative Flux Density (T) in a single waveform cycle, as an ndarray
+    :param duty: Fractional time wrt time period, in [0, 1], in a single waveform cycle, as an ndarray
+    :param k_i: Steinmetz coefficient k_i
+    :param alpha: Steinmetz coefficient alpha
+    :param beta: Steinmetz coefficient beta
+    :param material: Name of material. If specified, k_i/alpha/beta are ignored.
+    :param n_interval: No. of intervals to use to solve iGSE using trapezoidal rule
+    :return: Core loss (W/m^3)
+    """
+    if material is not None:
+        assert material in materials, f'Material {material} not found'
+        k_i, alpha, beta = materials[material]
+
+    period = 1 / freq
+    flux_delta = np.amax(flux) - np.amin(flux)
+    time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
+    B = np.interp(time, np.multiply(duty, period), flux)
+    dBdt = np.gradient(B, dt)
+    core_loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
+
+    return core_loss
 
 
 def core_loss_ML_sinusoidal(freq, flux, material, duty=None):
@@ -183,7 +182,7 @@ def core_loss_ML_arbitrary(material, freq, flux, duty):
     
     flux_interpolated = torch.from_numpy(flux_interpolated).view(-1, Num, 1)
     freq = torch.from_numpy(np.asarray(np.log10(freq))).view(-1, 1)
-    core_loss = 10.0 ** nn(flux_interpolated,freq).item()
+    core_loss = 10.0 ** nn(flux_interpolated, freq).item()
     return core_loss
 
 
