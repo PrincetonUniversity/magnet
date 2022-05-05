@@ -47,7 +47,7 @@ for n = min(Run):max(Run)
     for i = 1:Ndata_run
         Closeness_run = zeros(Ndata_run,1); % Initialization
         for j = 1:Ndata_run
-          Closeness_run(j) = 1-sqrt(log10(max(Freq_run(i)/Freq_run(j),Freq_run(j)/Freq_run(i)))^2+log10(max(Flux_run(i)/Flux_run(j),Flux_run(j)/Flux_run(i)))^2)/closeness_max;
+          Closeness_run(j) = 1-sqrt(log10(Freq_run(i)/Freq_run(j))^2+log10(Flux_run(i)/Flux_run(j))^2)/closeness_max;
         end
         Closeness_run(Closeness_run<0) = 0; Closeness_run(i) = 0; % Avoid having negative distances and itself not inlcuded
 

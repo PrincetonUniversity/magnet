@@ -19,8 +19,8 @@ def ui_download_data(m, streamlit_root):
                    
                 The .csv files contain the information for the current and for the voltage, this is, the samples measured from the oscilloscope.
                 Each row is a different measurement (i.e. a data point with a different frequency, flux density, etc.)
-                and each column is a sample; there are 2.000 samples per data-point.
-                The sampling time is 10 ns, so the total waveform last 20 us.
+                and each column is a sample; there are 10.000 samples per data-point.
+                The sampling time is 10 ns, so the total waveform last 100 us.
                 
                 Additionally, the commanded duty cycles and frequency of each data point are included in separated .csv files.
                 Each row correspond to the same row in the voltage and current files.
