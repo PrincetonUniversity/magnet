@@ -269,6 +269,8 @@ def ui_faq(m):
             This is a common problem that designers must face and leads to variations in inductance and core loss between samples.
             
             This effect can be considerable. For instance, for the core N87 R22.1x13.7x7.9, variations in B of up to -10.8%/+7.6% and variations in losses of up to -7.3%/+10.4% would be obtained due to the change in the effective area when comparing the biggest and smallest possible core (based on tolerances) with respect to the "nominal" core.
+        
+            For shapes other than toroidal, the gap is minimum given by the surface roughness. Its effects are neglected in the calculations.
         """)
 # TODO: Comparison to other data and a list of the things we are working on for the next release.
 

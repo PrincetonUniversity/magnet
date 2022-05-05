@@ -132,9 +132,9 @@ def ui_intro(m):
     df['Material'] = materials.keys()
     df['Applications'] = pd.DataFrame({'Applications': material_applications})
     df_extra = pd.DataFrame(materials_extra)
-    df['mu_i_0'] = df_extra.iloc[0]
-    df['f_min'] = df_extra.iloc[1]
-    df['f_max'] = df_extra.iloc[2]
+    df['mu_i_r'] = df_extra.iloc[0]
+    df['f_min [Hz]'] = df_extra.iloc[1]
+    df['f_max [Hz]'] = df_extra.iloc[2]
     df_params = pd.DataFrame(materials)
     df['k_i*'] = df_params.iloc[0]
     df['alpha*'] = df_params.iloc[1]
