@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>magnet package &mdash; magnet 0.1.dev1+g5704c10 documentation</title>
+  <title>magnet package &mdash; magnet 0.1.dev1+gcb8d195 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -30,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> magnet
           </a>
               <div class="version">
-                0.1.dev1+g5704c10
+                0.1.dev1+gcb8d195
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -90,9 +91,9 @@
            <div itemprop="articleBody">
              
   <section id="magnet-package">
-<h1>magnet package<a class="headerlink" href="#magnet-package" title="Permalink to this headline">¶</a></h1>
+<h1>magnet package<a class="headerlink" href="#magnet-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="magnet.data.html">magnet.data package</a><ul>
@@ -127,13 +128,13 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-magnet.constants">
-<span id="magnet-constants-module"></span><h2>magnet.constants module<a class="headerlink" href="#module-magnet.constants" title="Permalink to this headline">¶</a></h2>
+<span id="magnet-constants-module"></span><h2>magnet.constants module<a class="headerlink" href="#module-magnet.constants" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-magnet.core">
-<span id="magnet-core-module"></span><h2>magnet.core module<a class="headerlink" href="#module-magnet.core" title="Permalink to this headline">¶</a></h2>
+<span id="magnet-core-module"></span><h2>magnet.core module<a class="headerlink" href="#module-magnet.core" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="magnet.core.core_loss_ML_arbitrary">
 <span class="sig-prename descclassname"><span class="pre">magnet.core.</span></span><span class="sig-name descname"><span class="pre">core_loss_ML_arbitrary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duty</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#magnet.core.core_loss_ML_arbitrary" title="Permalink to this definition">¶</a></dt>
@@ -214,14 +215,14 @@
 
 </section>
 <section id="magnet-io-module">
-<h2>magnet.io module<a class="headerlink" href="#magnet-io-module" title="Permalink to this headline">¶</a></h2>
+<h2>magnet.io module<a class="headerlink" href="#magnet-io-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-magnet.net">
-<span id="magnet-net-module"></span><h2>magnet.net module<a class="headerlink" href="#module-magnet.net" title="Permalink to this headline">¶</a></h2>
+<span id="magnet-net-module"></span><h2>magnet.net module<a class="headerlink" href="#module-magnet.net" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="magnet.net.Net">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">magnet.net.</span></span><span class="sig-name descname"><span class="pre">Net</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NN_ARCHITECTURE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#magnet.net.Net" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
@@ -398,7 +399,7 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="magnet.net.Net_LSTM">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">magnet.net.</span></span><span class="sig-name descname"><span class="pre">Net_LSTM</span></span><a class="headerlink" href="#magnet.net.Net_LSTM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
@@ -584,10 +585,10 @@ registered hooks while the latter silently ignores them.</p>
 
 </section>
 <section id="magnet-plots-module">
-<h2>magnet.plots module<a class="headerlink" href="#magnet-plots-module" title="Permalink to this headline">¶</a></h2>
+<h2>magnet.plots module<a class="headerlink" href="#magnet-plots-module" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-magnet">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-magnet" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-magnet" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
