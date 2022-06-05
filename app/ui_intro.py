@@ -12,9 +12,12 @@ def ui_intro(m):
 
     st.header('Introduction of MagNet')
     st.write("""
-        MagNet is a large-scale dataset designed to enable researchers modeling magnetic core loss using machine learning to accelerate the design process of power electronics.
-        The dataset contains a large amount of voltage and current data of different magnetic components with different shapes of waveforms and different properties measured in the real world.
-        Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss to derive static models.
+        MagNet is a large-scale dataset designed to enable researchers modeling power magnetics with real measurement data.
+        
+        The dataset contains a large amount of voltage and current data (B and H) of different magnetic components with different shapes of waveforms and different properties measured in the real world.
+        
+        Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss in design.
+        
         MagNet is continuously being maintained and updated with new data.
         
         With this webpage, you can visualize and download the collected data for different magnetic materials and excitations or calculate core losses for your specific design conditions using Neural Networks integrated into the webpage.
@@ -24,9 +27,9 @@ def ui_intro(m):
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.subheader('Core Loss Database')
+        st.subheader('MagNet Database')
         st.write("""
-            In this section, the core loss data can be visualized.
+            In this section, the MagNet database can be visualized.
             
             Select the desired material and excitation on the left to visualize the core loss as a function of the frequency and flux density.
             The desired range for the plot and specific conditions such as temperature, DC bias, or duty cycle can also be selected from the left sliders.
@@ -43,7 +46,7 @@ def ui_intro(m):
             We are working on adding measurements at different temperature and DC bias.
         """)
     with col2:
-        st.subheader('Core Loss Analysis')
+        st.subheader('MagNet Analysis')
         st.write("""
             In this section, volumetric core losses are calculated for any desired operation point.
             
@@ -52,7 +55,7 @@ def ui_intro(m):
             
             For the selected operation point, losses are calculated using two methods:
             1) improved Generalized Steinmetz Equations (iGSE).
-            2) Machine Learning (ML) models, which is a Neural Networks trained with the measured database are deployed on the webpage.
+            2) Machine Learning (ML) models, which are Neural Networks trained with the measured database are deployed on the webpage.
             Further information on the iGSE and ML models can be found in the FAQ section.
             Additionally, the interpolated values for the measurement and datasheet are provided when available for comparison purposes.
             
@@ -62,7 +65,7 @@ def ui_intro(m):
             Besides the calculation for conventional excitations, we are working on NN models for arbitrary waveforms.
         """)
     with col3:
-        st.subheader('Download Waveform Data')
+        st.subheader('Download Measurement Data')
         st.write("""
             In this section, the measurement and post-processed data are available for download.
             
@@ -81,7 +84,7 @@ def ui_intro(m):
             These files are intended for researchers to build their own core loss models.
         """)
     with col4:
-        st.subheader('Core Loss Simulation')
+        st.subheader('MagNet Simulation')
         st.write("""
             This PLECs toolbox allows you to simulate conventional power converters with the selected material and core shape to obtain the desired waveforms.
             The waveforms are then used to compute the core losses using iGSE and Machine Learning.
