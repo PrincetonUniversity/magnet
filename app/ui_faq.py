@@ -68,7 +68,7 @@ def ui_faq(m):
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'volt-curr.jpg')), width=500)
         st.write("""
             Then, these files are processed using Matlab.
-            The Matlab scripts can be found at https://github.com/PrincetonUniversity/magnet/tree/main/scripts/Matlab_scripts
+            The Matlab scripts can be found at GitHub -> Princeton University -> MagNet -> Main -> Scripts -> Matlab Scripts.
             Besides the raw data from the oscilloscope, the Matlab script also needs the core under test information and points from the volumetric losses plot in the datasheet.
         """)
     with st.expander("2. How is the frequency identified?"):
