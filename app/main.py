@@ -38,7 +38,7 @@ if __name__ == '__main__':
     st.sidebar.header('Welcome to Princeton MagNet')
     function_select = st.sidebar.radio(
         'Select a Function:',
-        ('Introduction to MagNet', 'MagNet Database', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'Frequently Asked Questions')
+        ('MagNet Search', 'MagNet Database', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'MagNet Help')
     )
 
     col1, col2 = st.columns([3, 1])
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         if clicked:
             st.session_state.n_material += 1
 
-    if function_select == 'Introduction to MagNet':
+    if function_select == 'MagNet Search':
         ui_multiple_materials(ui_intro)
         st.session_state.n_material = 1  # Resets the number of plots
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     if function_select == 'MagNet Download':
         ui_multiple_materials(ui_download_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
         
-    if function_select == 'Frequently Asked Questions':
+    if function_select == 'MagNet Help':
         ui_multiple_materials(ui_faq)
         st.session_state.n_material = 1  # Resets the number of plots
 
@@ -90,6 +90,8 @@ if __name__ == '__main__':
     st.sidebar.header('Thanks for using MagNet!')
     contributor('Haoran Li', 'haoranli@princeton.edu')
     contributor('Diego Serrano', 'ds9056@princeton.edu')
+    contributor('Shukai Wang', 'sw0123@princeton.edu')
+    contributor('Annie Lin', 'al2413@princeton.edu')
     contributor('Evan Dogariu', 'edogariu@princeton.edu')
     contributor('Arielle Rivera', 'aerivera@princeton.edu')
     contributor('Yuxin Chen', 'yuxinc@wharton.upenn.edu')

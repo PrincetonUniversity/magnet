@@ -7,7 +7,6 @@ from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
-
 def ui_intro(m):
 
     st.header('Introduction of MagNet')
@@ -118,15 +117,17 @@ def ui_intro(m):
         st.write("""
             If you used MagNet, please cite us with the following:
             
-            [1] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
+            [1] D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), 2022, pp. 1-8.
+            
+            [2] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
             "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," 
             IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
             
-            [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
+            [3] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
             "Transfer Learning Methods for Magnetic Core Loss Modeling,” 
             IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
             
-            [3] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
+            [4] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
             "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
             IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
         """)
