@@ -15,6 +15,8 @@ the functionality is exposed. Before `magnet` is released on PyPI, it can be ins
 
 API Documentation for `magnet` can be viewed online at [https://princetonuniversity.github.io/magnet/](https://princetonuniversity.github.io/magnet/)
 
+Please `pip install magnet` before running streamlit.
+
 ## How to Cite
 
 If you used MagNet, please cite us with the following.
