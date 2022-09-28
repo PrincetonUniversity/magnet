@@ -10,6 +10,8 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 def ui_download_data(m, streamlit_root):
 
+    
+    st.title('MagNet Download: Raw Database')
     if m == 'A':
         col1, col2 = st.columns(2)
         with col1:

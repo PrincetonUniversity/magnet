@@ -34,22 +34,14 @@ def contributor(name, email):
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-
     st.sidebar.header('Welcome to Princeton MagNet')
+    st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
+    st.sidebar.markdown('by Princeton-Dartmouth-Plexim')
+    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Princeton Power Electronics](https://www.princeton.edu/~minjie/)')
     function_select = st.sidebar.radio(
         'Select a Function:',
-        ('MagNet Search', 'MagNet Database', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'MagNet Help')
+        ('MagNet Go', 'MagNet Database', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'MagNet Help')
     )
-
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.title('Princeton-Dartmouth-Plexim MagNet Project')
-        st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
-        st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
-    with col2:
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
-
-    st.markdown('---')
 
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
@@ -59,7 +51,7 @@ if __name__ == '__main__':
         if clicked:
             st.session_state.n_material += 1
 
-    if function_select == 'MagNet Search':
+    if function_select == 'MagNet Go':
         ui_multiple_materials(ui_intro)
         st.session_state.n_material = 1  # Resets the number of plots
 
@@ -70,6 +62,7 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':
+        st.title('MagNet Simulation - Simulate Magnetics in SPICE')
         ui_multiple_materials(SimulationPLECS)
             
     if function_select == 'MagNet Download':

@@ -163,11 +163,11 @@ def ui_core_loss_db(m):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.title(f'Core Loss Database: Case {m}')
+        st.title(f'MagNet Database: Case {m}')
         st.subheader(f'{material_manufacturers[material]} - {material}, '
                      f'{excitation} excitation')
-        st.subheader(f'f=[{round(freq_min / 1e3)}~{round(freq_max / 1e3)}] kHz, '
-                     f'B=[{round(flux_min * 1e3)}~{round(flux_max * 1e3)}] mT, '
+        st.subheader(f'f=[{round(freq_min / 1e3)}-{round(freq_max / 1e3)}] kHz, '
+                     f'B=[{round(flux_min * 1e3)}-{round(flux_max * 1e3)}] mT, '
                      f'Bias={round(flux_bias * 1e3)} mT')
         if excitation == "Triangular":
             st.subheader(f'D={round(duty_p, 2)}')

@@ -10,7 +10,7 @@ from magnet.constants import materials, materials_extra, material_names
 
 def SimulationPLECS(m):
     path = os.path.dirname(os.path.realpath(__file__))
-
+    
     col1, col2 = st.columns(2)
     with col1:
         # Select topology

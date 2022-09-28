@@ -131,7 +131,7 @@ def ui_core_loss_predict(m):
     col1, col2 = st.columns(2)
     # DUT and operation point and core losses
     with col1:
-        st.title(f'Core Loss Analysis: Case {m}')
+        st.title(f'MagNet Analysis: Case {m}')
         st.subheader(f'{material_manufacturers[material]} - {material}, '
                      f'{excitation} excitation')
         if excitation == "Arbitrary":
