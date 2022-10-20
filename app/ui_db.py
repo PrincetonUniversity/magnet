@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 
 from magnet import config as c
-from magnet.constants import material_names, material_manufacturers
+from magnet.constants import material_names, material_manufacturers, materials_extra
 from magnet.io import load_dataframe, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_2axes, cycle_points_sinusoidal, cycle_points_trapezoidal
 
@@ -69,8 +69,10 @@ def ui_core_loss_db(m):
         df = load_dataframe(material)
         if len(df['DC_Bias']) == 0:
             dc_bias = 0
-            st.markdown(f'##### Only data without DC bias is measured'),
+            flux_bias = 0
+            st.write(f'Only data without DC bias is available'),
         else:
+            mu_relative = materials_extra[material][0]
             dc_bias = st.slider(
                 f'DC bias (A/m)',
                 0,
@@ -78,7 +80,9 @@ def ui_core_loss_db(m):
                 0,
                 step=15,
                 key=f'bias {m}',
-                help=f'DC bias in the H field')
+                help=f'Hdc provided as Bdc is not measured. '
+                     f'Bdc approximated with B=mu*H for mur={mu_relative} for the plots')
+            flux_bias = dc_bias * mu_relative * c.streamlit.mu_0
 
         if excitation == 'Triangular':
             duty_p = st.slider(
@@ -92,7 +96,7 @@ def ui_core_loss_db(m):
             duty_0 = 0.0
         if excitation == 'Trapezoidal':
             duty_p = st.slider(
-                f'Duty Ratio (D1)',
+                f'Duty Cycle (D1)',
                 0.1,
                 0.9 - 2 * 0.1,
                 0.5 - 0.1,
@@ -106,7 +110,7 @@ def ui_core_loss_db(m):
                 duty_n_min = 0.2
             if duty_n_max <= duty_n_min+0.01:  # In case they are equal but implemented for floats
                 duty_n = st.slider(
-                    f'Duty Ratio (D3) Fixed',
+                    f'Duty Cycle (D3) Fixed',
                     duty_n_max - 0.01,
                     duty_n_max + 0.01,
                     duty_n_max,
@@ -115,7 +119,7 @@ def ui_core_loss_db(m):
                     help=f'Falling part with the highest slope, fixed by D1')  # Step outside the range to fix the variable
             else:
                 duty_n = st.slider(
-                    f'Duty Ratio (D3)',
+                    f'Duty Cycle (D3)',
                     duty_n_min,
                     duty_n_max,
                     duty_n_max,
@@ -136,12 +140,12 @@ def ui_core_loss_db(m):
             st,
             x1=np.multiply(cycle_list, 1e6 / freq_avg),  # In us
             x2=cycle_list,  # Percentage
-            y1=np.multiply(flux_vector, 1e3),  # In mT
+            y1=np.multiply(np.add(flux_vector, flux_bias), 1e3),  # In mT
             y2=volt_list,  # Per unit
             x1_aux=cycle_list,  # Percentage
             y1_aux=flux_list,
             title=f"<b>Waveform visualization</b>"
-                  f"<br>f={format(freq_avg / 1e3, '.0f')} kHz, B={format(flux_avg * 1e3, '.0f')} mT")
+                  f"<br>f={format(freq_avg / 1e3, '.0f')} kHz, Bac={format(flux_avg * 1e3, '.0f')} mT")
 
     with col2:
         c_axis = st.selectbox(
@@ -154,13 +158,13 @@ def ui_core_loss_db(m):
     if excitation in ['Triangular', 'Trapezoidal']:
         df = load_dataframe(material, freq_min, freq_max, flux_min, flux_max, dc_bias, duty_p, duty_n, temperature)
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
     with col1:
         st.header(f'Output: Case {m}')
         st.write(f'{material_manufacturers[material]} - {material}, '
                  f'{excitation} excitation')
         st.write(f'f=[{round(freq_min / 1e3)}-{round(freq_max / 1e3)}] kHz, '
-                 f'B=[{round(flux_min * 1e3)}-{round(flux_max * 1e3)}] mT, '
+                 f'Bac=[{round(flux_min * 1e3)}-{round(flux_max * 1e3)}] mT, '
                  f'Bias={round(dc_bias)} A/m')
         if excitation == "Sinusoidal":
             st.write(f'T={round(temperature)} C')
@@ -177,15 +181,18 @@ def ui_core_loss_db(m):
         if df.empty:
             st.subheader("Warning: no data in range, please change the range")
         else:
-            with st.expander('Measurement details'):
+            # with st.expander('Measurement details'):
+            #     metadata = load_metadata(material)
+            #     st.write('Core information: ', metadata['info_core'])
+            #     st.write('Setup information: ', metadata['info_setup'])
+            #     st.write('Data-processing information: ', metadata['info_processing'])
+            #     st.write(
+            #         'Note: the dc bias, duty cycles and temperature have small variations with respect to the data '
+            #         'reported here, this data has been rounded for visualization purposes. '
+            #         'The measurements can be obtain from the download section.')
+            with st.expander('Core information:'):
                 metadata = load_metadata(material)
-                st.write('Core information: ', metadata['info_core'])
-                st.write('Setup information: ', metadata['info_setup'])
-                st.write('Data-processing information: ', metadata['info_processing'])
-                st.write(
-                    'Note: the dc bias, duty cycles and temperature have small variations with respect to the data '
-                    'reported here, this data has been rounded for visualization purposes. '
-                    'The measurements can be obtain from the download section.')
+                st.write(metadata['info_core'])
 
             st.subheader(f'Download data:')
             df_csv = df[['Frequency', 'Flux_Density', 'Power_Loss']]

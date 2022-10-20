@@ -91,7 +91,7 @@ if __name__ == '__main__':
     contributor('Evan Dogariu', 'edogariu@princeton.edu')
     contributor('Arielle Rivera', 'aerivera@princeton.edu')
     contributor('Yuxin Chen', 'yuxinc@wharton.upenn.edu')
-    contributor('Thomas Guillod', 'Thomas.Paul.Henri.Guillod@dartmouth.edu')
+    contributor('Thomas Guillod', 'thomas.paul.henri.guillod@dartmouth.edu')
     contributor('Vineet Bansal', 'vineetb@princeton.edu')
     contributor('Niraj Jha', 'jha@princeton.edu')
     contributor('Min Luo', 'luo@plexim.com')

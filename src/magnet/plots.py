@@ -128,7 +128,8 @@ def waveform_visualization(
 
 
 def core_loss_multiple(
-        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True, y3=None, y03=None, y4=None, y04=None):
+        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]',
+        x_log=True, y_log=True, y3=None, y03=None, y4=None, y04=None):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(

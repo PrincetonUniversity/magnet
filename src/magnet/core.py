@@ -9,8 +9,7 @@ def default_units(prop):  # Probably we are not going to need the default units
     return {
         'frequency': 'Hz',
         'flux_density': 'T',
-        'power_loss': '[W/m^3]',
-        'outlier_factor': '%'
+        'power_loss': '[W/m^3]'
     }[prop]
 
 
@@ -23,8 +22,7 @@ def plot_label(prop):
         'frequency': 'Frequency [Hz]',
         'flux_density': 'AC Flux Density [T]',
         'power_loss': 'Power Loss [W/m^3]',
-        'duty_ratio': 'Duty Ratio',
-        'outlier_factor': 'Outlier Factor [%]'
+        'duty_ratio': 'Duty Ratio'
     }[prop]
 
 
@@ -36,9 +34,9 @@ def plot_title(prop):
         'power_loss_kw/m3': 'Power Loss',
         'frequency': 'Frequency',
         'flux_density': 'Flux Density',
-        'power_loss': 'Power Loss',
-        'outlier_factor': 'Outlier Factor'
+        'power_loss': 'Power Loss'
     }[prop]
+
 
 def core_loss_iGSE_sinusoidal(freq, flux, duty=None, k_i=None, alpha=None, beta=None, material=None, dc_bias=0, n_interval=10_000):
     # Here duty is not needed, but it is convenient to call the function recursively
@@ -122,7 +120,7 @@ def core_loss_iGSE_arbitrary(freq, flux, duty, k_i=None, alpha=None, beta=None, 
     return core_loss
 
 
-def core_loss_ML_sinusoidal(freq, flux, material, duty=None):
+def core_loss_ML_sinusoidal(material, freq, flux, duty=None):
     nn = model(material=material, waveform='Sinusoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
@@ -135,7 +133,7 @@ def core_loss_ML_sinusoidal(freq, flux, material, duty=None):
     return core_loss
 
 
-def core_loss_ML_triangular(freq, flux, duty, material):
+def core_loss_ML_triangular(material, freq, flux, duty):
     nn = model(material=material, waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
@@ -152,7 +150,7 @@ def core_loss_ML_triangular(freq, flux, duty, material):
     return core_loss
 
 
-def core_loss_ML_trapezoidal(freq, flux, duty, material):
+def core_loss_ML_trapezoidal(material, freq, flux, duty):
     nn = model(material=material, waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(

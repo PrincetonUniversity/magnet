@@ -55,12 +55,8 @@ def ui_intro(m):
             format='%f',
             key=f'bias {m}',
             help='determined by the bias dc current') * 1e-3
-        mueff = st.number_input(
-            "Initial Relative Permeability (mu)",
-            value=1000.0,
-            format='%f',
-            key=f'mueff {m}',
-            help='determines the center of the B-H loop')
+        mueff = materials_extra[material][0]
+        st.write(f'Initial Relative Permeability (mu) set to {mueff} to determine the center of the B-H loop')
 
     with col2:
         st.subheader('Bac Input (Unit: mT)')  # Create an example Bac input file
@@ -162,7 +158,7 @@ def ui_intro(m):
         fig.update_yaxes(title_text="H - Field Strength [A/m]")
         st.plotly_chart(fig, use_container_width=True)
         
-    st.subheader(f'Volumetric Loss:         {np.round(loss,2)} kW/m^3')
+    st.subheader(f'Volumetric Loss: {np.round(loss,2)} kW/m^3')
 
     st.download_button(
         "Download the B-H Loop as a CSV File",
