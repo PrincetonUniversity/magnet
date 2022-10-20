@@ -1,10 +1,13 @@
 import os.path
 import pandas as pd
 import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from magnet.constants import material_names, materials, materials_extra, material_manufacturers, \
     material_applications, material_core_tested
 from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes, \
-    cycle_points_sinusoidal, cycle_points_trapezoidal
+    cycle_points_sinusoidal, cycle_points_trapezoidal, scatter_plot
 from magnet.io import load_dataframe
 from magnet import config as c
 import numpy as np
@@ -17,14 +20,14 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
-def transformer(material,freq,temp,bias,bdata):
-    hdata = np.add(bdata,0.1)
+def network(material,freq,temp,bias,bdata):
+    hdata = 0.2 * np.cos(np.linspace(-np.pi, np.pi, 100))
     return hdata
 
 def ui_intro(m):
     
-    st.title('MagNet Go: AI for Power Magnetics')
-    st.subheader('MagNet Input - Operating Condition')
+    st.title('MagNet Go: Neural Network as Datasheet')
+    st.subheader('MagNet Input - Operating Conditions')
     col1, col2 = st.columns(2)
     with col1:
         material = st.selectbox(
@@ -48,55 +51,69 @@ def ui_intro(m):
             format='%f',
             key=f'bias {m}') * 1e-3
     
-    st.subheader('MagNet Input - Excitation Waveform')
-    inputfile = st.file_uploader(
-        "CSV File for B Excitation in Single Cycle [mT]; Default: 100 mT Sinusoidal",
+
+    st.subheader('B Input (Unit: mT)')
+    Bfile = st.file_uploader(
+        "CSV File for B in Single Cycle; Default: 100 mT Sinusoidal",
         type='csv',
-        key=f'upload {m}',
+        key=f'bfile {m}',
         help=None
-    )
-    if inputfile is None:
-        bdata  = 0.1 * np.linspace(-np.pi, np.pi, 101),
-        hdata  = transformer(material,freq,temp,bias,bdata),
-        output = {'B': bdata, 'H': hdata},
+            )
+    
+    if Bfile is None:
+        bdata  = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
+        hdata  = network(material,freq,temp,bias,bdata)
+        output = {'B [mT]': bdata, 'H [A/m]': hdata}
+        loss = np.mean(np.multiply(bdata,hdata))
+        csv = convert_df(pd.DataFrame(output))
+    
+    if Bfile is not None:
+        bdata  = inputfile.read(),
+        hdata  = network(material,freq,temp,bias,bdata),
+        output = {'B [mT]': bdata, 'H [A/m]': hdata}
         loss = np.mean(np.multiply(bdata,hdata)),
         csv = convert_df(pd.DataFrame(output))
-    if inputfile is not None:
-        bdata  = inputfile.read(),
-        hdata  = transformer(material,freq,temp,bias,bdata),
-        output = {'B [mT]': bdata, 'H [A/m]': hdata},
-        loss = np.mean(bdata * hdata),
-        csv = convert_df(pd.DataFrame(output))
         
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader('B-H Waveform')
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1,100,num=100), 
+                y=bdata,
+                line=dict(color='mediumslateblue', width=4),
+                name="B [mT]"),
+            secondary_y=False,
+            )
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1,100,num=100), 
+                y=hdata, 
+                line=dict(color='firebrick', width=4),
+                name="H [A/m]"),
+            secondary_y=True,
+            )
+        fig.update_xaxes(title_text="Fraction of a Cycle [%]")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader('B-H Loop')
+        waveform_visualization(
+            st,
+            x = bdata,
+            y = hdata,
+            x_title = 'B - Flux Density [mT]', 
+            y_title = 'H - Field Strength [A/m]',
+            color='mediumslateblue', width=4)
         
-    st.subheader(f'MagNet Predicted Volumetric Loss: {np.round(loss,2)} kW/m^3')
+    st.subheader(f'MagNet Volumetric Loss:         {np.round(loss,2)} kW/m^3')
     st.download_button(
         "Download the B-H Loop as a CSV File",
         data = csv,
         file_name='BH-Loop.csv',
         mime='text/csv', 
         )
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('B-H Waveform')
-        waveform_visualization(
-            st,
-            x = np.linspace(1,100,num=100),
-            y = bdata,
-            x_title = 'Fraction of a cycle', 
-            y_title = 'B - Field Strength [A/m]',
-            color='mediumslateblue', width=4)
-        
-    with col2:
-        st.markdown('B-H Loop')
-        waveform_visualization(
-            st,
-            x = np.linspace(1,100,num=100),
-            y = bdata,
-            x_title = 'B - Flux Density [mT]', 
-            y_title = 'H - Field Strength [A/m]',
-            color='mediumslateblue', width=4)
 
     st.markdown("""---""")
     col1, col2 = st.columns([1, 2])
