@@ -49,12 +49,12 @@ def ui_intro(m):
             key=f'freq {m}',
             help='fundamental frequency of the excitation') * 1e3
         bias = st.number_input(
-            "DC Bias [A/m]",
+            "Hdc Bias [A/m]",
             format='%f',
             key=f'bias {m}',
             help='determined by the bias dc current') * 1e-3
         mueff = st.number_input(
-            "Approximate Permeability (mu)",
+            "Initial Relative Permeability (mu)",
             value=1000.0,
             format='%f',
             key=f'mueff {m}',
@@ -102,17 +102,25 @@ def ui_intro(m):
         fig.add_trace(
             go.Scatter(
                 x=np.linspace(1,100,num=100), 
-                y=bdata,
+                y=bdata+bias/mueff * np.ones(100),
                 line=dict(color='mediumslateblue', width=4),
-                name="Bac [mT]"),
+                name="B [mT]"),
             secondary_y=False,
             )
         fig.add_trace(
             go.Scatter(
                 x=np.linspace(1,100,num=100), 
-                y=hdata, 
+                y=bias/mueff * np.ones(100), 
+                line=dict(color='brown', dash='longdash', width=4),
+                name="Bdc [mT]"),
+            secondary_y=False,
+            )                
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1,100,num=100), 
+                y=hdata+bias * np.ones(100), 
                 line=dict(color='firebrick', width=4),
-                name="Hac [A/m]"),
+                name="H [A/m]"),
             secondary_y=True,
             )
         fig.add_trace(
@@ -124,6 +132,8 @@ def ui_intro(m):
             secondary_y=True,
             )
         fig.update_xaxes(title_text="Fraction of a Cycle [%]")
+        fig.update_yaxes(title_text="B - Flux Density [mT]", secondary_y=False)
+        fig.update_yaxes(title_text="H - Field Strength [A/m]", secondary_y=True)
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -131,7 +141,7 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Scatter(
-                x = bdata,
+                x = bdata + bias/mueff * np.ones(100),
                 y = hdata + bias * np.ones(100),
                 line=dict(color='mediumslateblue', width=4),
                 name="B-H Loop"),

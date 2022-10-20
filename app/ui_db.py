@@ -11,143 +11,150 @@ def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
         ui_core_loss_db(chr(ord('A') + i))
 
-
 def ui_core_loss_db(m):
-    st.sidebar.header(f'Information: Case {m}')
-    excitation = st.sidebar.selectbox(
-        f'Excitation:',
-        excitations_db,
-        key=f'excitation {m}',
-        index=1)
+    
+    st.title('MagNet Visualization: Plot the Data')
+    st.markdown("""---""")
+    st.header(f'Input: Case {m}')
+    col1, col2 = st.columns(2)
+    with col1:
+        excitation = st.selectbox(
+            f'Excitation:',
+            excitations_db,
+            key=f'excitation {m}',
+            index=1)
 
-    if excitation == 'Datasheet':  # No datasheet info for 3E6 or N30
-        material = st.sidebar.selectbox(
-            f'Material:',
-            [elem for elem in material_names if elem not in {'N30', '3E6'}],
-            key=f'material {m}')
-    else:
-        material = st.sidebar.selectbox(
-            f'Material:',
-            material_names,
-            key=f'material {m}')
+        [freq_min_aux, freq_max_aux] = st.slider(
+            f'Frequency Range (kHz)',
+            round(c.streamlit.freq_min / 1e3),
+            round(c.streamlit.freq_max / 1e3),
+            (round(c.streamlit.freq_min / 1e3), round(c.streamlit.freq_max / 1e3)),
+            step=round(c.streamlit.freq_step_db / 1e3),
+            key=f'freq {m}')
+        freq_min = freq_min_aux * 1e3
+        freq_max = freq_max_aux * 1e3
+        freq_avg = (freq_max + freq_min) / 2
 
-    [freq_min_aux, freq_max_aux] = st.sidebar.slider(
-        f'Frequency Range (kHz)',
-        round(c.streamlit.freq_min / 1e3),
-        round(c.streamlit.freq_max / 1e3),
-        (round(c.streamlit.freq_min / 1e3), round(c.streamlit.freq_max / 1e3)),
-        step=round(c.streamlit.freq_step_db / 1e3),
-        key=f'freq {m}')
-    freq_min = freq_min_aux * 1e3
-    freq_max = freq_max_aux * 1e3
-    freq_avg = (freq_max + freq_min) / 2
-
-    [flux_min_aux, flux_max_aux] = st.sidebar.slider(
-        f'AC Flux Density Range (mT)',
-        round(c.streamlit.flux_min * 1e3),
-        round(c.streamlit.flux_max * 1e3),
-        (round(c.streamlit.flux_min * 1e3), round(c.streamlit.flux_max * 1e3)),
-        step=round(c.streamlit.flux_step_db * 1e3),
-        key=f'flux {m}',
-        help=f'Amplitude of the AC signal, not peak to peak')
-    flux_min = flux_min_aux / 1e3
-    flux_max = flux_max_aux / 1e3
-    flux_avg = (flux_max + flux_min) / 2
-
-    flux_bias = st.sidebar.slider(
-        f'DC Flux Density (mT) coming soon!',
-        round(-c.streamlit.flux_max * 1e3),
-        round(c.streamlit.flux_max * 1e3),
-        0,
-        step=round(1e9),
-        key=f'bias {m}',
-        help=f'Fixed at 0 mT for now') / 1e3  # 1e9 step to fix it
-
-    if excitation == 'Triangular':
-        duty_p = st.sidebar.slider(
-            f'Duty Ratio',
-            c.streamlit.duty_min,
-            c.streamlit.duty_max,
-            (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
-            step=c.streamlit.duty_step_db,
-            key=f'duty {m}')
-        duty_n = 1.0 - duty_p  # For triangular excitation, there are no flat parts
-        duty_0 = 0.0
-    if excitation == 'Trapezoidal':
-        duty_p = st.sidebar.slider(
-            f'Duty Ratio (D1)',
-            c.streamlit.duty_min,
-            c.streamlit.duty_max - 2 * c.streamlit.duty_step_db,
-            (c.streamlit.duty_min + c.streamlit.duty_max) / 2 - c.streamlit.duty_step_db,
-            step=c.streamlit.duty_step_db,
-            key=f'dutyP {m}',
-            help=f'Rising part with the highest slope')
-        duty_n_max = 1.0 - duty_p - 0.2
-        if duty_p in [0.1, 0.3, 0.5, 0.7]:  # TODO: probably there is a more elegant way to implement this
-            duty_n_min = 0.1
-        elif duty_p in [0.2, 0.4, 0.6]:
-            duty_n_min = 0.2
-
-        if duty_n_max <= duty_n_min+0.01:  # In case they are equal but implemented for floats
-            duty_n = st.sidebar.slider(
-                f'Duty Ratio (D3) Fixed',
-                duty_n_max - 0.01,
-                duty_n_max + 0.01,
-                duty_n_max,
-                step=1.0,
-                key=f'dutyN {m}',
-                help=f'Falling part with the highest slope, fixed by D1')  # Step outside the range to fix the variable
-        else:
-            duty_n = st.sidebar.slider(
-                f'Duty Ratio (D3)',
-                duty_n_min,
-                duty_n_max,
-                duty_n_max,
-                step=2 * c.streamlit.duty_step_db,
-                key=f'dutyN {m}',
-                help=f'Falling part with the highest slope, maximum imposed by D1')
-        duty_0 = st.sidebar.slider(
-            f'Duty Ratio (D2=D4=(1-D1-D3)/2) Fixed',
-            0.0,
-            1.0,
-            (1-duty_p-duty_n)/2,
-            step=1e7,
-            key=f'duty0 {m}',
-            help=f'Low slope regions, fixed by D1 and D3')  # Step outside the range to fix the variable
-
-    if excitation == 'Datasheet':
-        temperature = st.sidebar.slider(
-            f'Temperature (C)',
-            round(c.streamlit.temp_min),
-            round(c.streamlit.temp_max),
-            round(c.streamlit.temp_default),
-            step=round(c.streamlit.temp_step),
-            key=f'temp {m}')
-    else:
-        temperature = st.sidebar.slider(
-            f'Temperature (C) coming soon!',
-            round(c.streamlit.temp_min),
-            round(c.streamlit.temp_max),
-            round(c.streamlit.temp_default),
+        [flux_min_aux, flux_max_aux] = st.slider(
+            f'AC Flux Density Range (mT)',
+            round(c.streamlit.flux_min * 1e3),
+            round(c.streamlit.flux_max * 1e3),
+            (round(c.streamlit.flux_min * 1e3), round(c.streamlit.flux_max * 1e3)),
+            step=round(c.streamlit.flux_step_db * 1e3),
+            key=f'flux {m}',
+            help=f'Amplitude of the AC signal, not peak to peak')
+        flux_min = flux_min_aux / 1e3
+        flux_max = flux_max_aux / 1e3
+        flux_avg = (flux_max + flux_min) / 2
+        
+        flux_bias = st.slider(
+            f'DC Flux Density (mT) coming soon!',
+            round(-c.streamlit.flux_max * 1e3),
+            round(c.streamlit.flux_max * 1e3),
+            0,
             step=round(1e9),
-            key=f'temp {m}',
-            help=f'Fixed at 25 C for now')
-        out_max = st.sidebar.slider(
-            f'Maximum Outlier Factor (%)',
-            round(c.streamlit.outlier_min),
-            round(c.streamlit.outlier_max),
-            round(c.streamlit.outlier_max),
-            step=1,
-            key=f'outlier {m}',
-            help=f'Measures the similarity between the loss of a datapoint and their neighbours ' 
-                 f'(in terms of B and f) based on local Steinmetz parameters')
+            key=f'bias {m}',
+            help=f'Fixed at 0 mT for now') / 1e3  # 1e9 step to fix it
 
-    c_axis = st.sidebar.selectbox(
-        f'Select Color-Axis for the Plots:',
-        ['Flux Density', 'Frequency', 'Power Loss'],
-        key=f'c_axis {m}')
+        c_axis = st.selectbox(
+            f'Select Color-Axis for the Plots:',
+            ['Flux Density', 'Frequency', 'Power Loss'],
+            key=f'c_axis {m}')
 
-    st.sidebar.markdown("""---""")
+    with col2:
+        if excitation == 'Datasheet':  # No datasheet info for 3E6 or N30
+            material = st.selectbox(
+                f'Material:',
+                [elem for elem in material_names if elem not in {'N30', '3E6'}],
+                key=f'material {m}')
+        else:
+            material = st.selectbox(
+                f'Material:',
+                material_names,
+                key=f'material {m}')
+        
+        if excitation == 'Datasheet':
+            temperature = st.slider(
+                f'Temperature (C)',
+                round(c.streamlit.temp_min),
+                round(c.streamlit.temp_max),
+                round(c.streamlit.temp_default),
+                step=round(c.streamlit.temp_step),
+                key=f'temp {m}')
+        else:
+            temperature = st.slider(
+                f'Temperature (C) coming soon!',
+                round(c.streamlit.temp_min),
+                round(c.streamlit.temp_max),
+                round(c.streamlit.temp_default),
+                step=round(1e9),
+                key=f'temp {m}',
+                help=f'Fixed at 25 C for now')
+            out_max = st.slider(
+                f'Maximum Outlier Factor (%)',
+                round(c.streamlit.outlier_min),
+                round(c.streamlit.outlier_max),
+                round(c.streamlit.outlier_max),
+                step=1,
+                key=f'outlier {m}',
+                help=f'Measures the similarity between the loss of a datapoint and their neighbours ' 
+                     f'(in terms of B and f) based on local Steinmetz parameters')
+
+        
+        if excitation == 'Triangular':
+            duty_p = st.slider(
+                f'Duty Ratio',
+                c.streamlit.duty_min,
+                c.streamlit.duty_max,
+                (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
+                step=c.streamlit.duty_step_db,
+                key=f'duty {m}')
+            duty_n = 1.0 - duty_p  # For triangular excitation, there are no flat parts
+            duty_0 = 0.0
+        if excitation == 'Trapezoidal':
+            duty_p = st.slider(
+                f'Duty Ratio (D1)',
+                c.streamlit.duty_min,
+                c.streamlit.duty_max - 2 * c.streamlit.duty_step_db,
+                (c.streamlit.duty_min + c.streamlit.duty_max) / 2 - c.streamlit.duty_step_db,
+                step=c.streamlit.duty_step_db,
+                key=f'dutyP {m}',
+                help=f'Rising part with the highest slope')
+            duty_n_max = 1.0 - duty_p - 0.2
+            if duty_p in [0.1, 0.3, 0.5, 0.7]:  # TODO: probably there is a more elegant way to implement this
+                duty_n_min = 0.1
+            elif duty_p in [0.2, 0.4, 0.6]:
+                duty_n_min = 0.2
+
+            if duty_n_max <= duty_n_min+0.01:  # In case they are equal but implemented for floats
+                duty_n = st.slider(
+                    f'Duty Ratio (D3) Fixed',
+                    duty_n_max - 0.01,
+                    duty_n_max + 0.01,
+                    duty_n_max,
+                    step=1.0,
+                    key=f'dutyN {m}',
+                    help=f'Falling part with the highest slope, fixed by D1')  # Step outside the range to fix the variable
+            else:
+                duty_n = st.slider(
+                    f'Duty Ratio (D3)',
+                    duty_n_min,
+                    duty_n_max,
+                    duty_n_max,
+                    step=2 * c.streamlit.duty_step_db,
+                    key=f'dutyN {m}',
+                    help=f'Falling part with the highest slope, maximum imposed by D1')
+            duty_0 = st.slider(
+                f'Duty Ratio (D2=D4=(1-D1-D3)/2) Fixed',
+                0.0,
+                1.0,
+                (1-duty_p-duty_n)/2,
+                step=1e7,
+                key=f'duty0 {m}',
+                help=f'Low slope regions, fixed by D1 and D3')  # Step outside the range to fix the variable
+
+
+    st.markdown("""---""")
 
     if excitation == 'Triangular':
         read_excitation = 'Trapezoidal'  # Triangular data read from Trapezoidal files
@@ -163,26 +170,26 @@ def ui_core_loss_db(m):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.title(f'MagNet Database: Case {m}')
-        st.subheader(f'{material_manufacturers[material]} - {material}, '
+        st.header(f'Output: Case {m}')
+        st.write(f'{material_manufacturers[material]} - {material}, '
                      f'{excitation} excitation')
-        st.subheader(f'f=[{round(freq_min / 1e3)}-{round(freq_max / 1e3)}] kHz, '
+        st.write(f'f=[{round(freq_min / 1e3)}-{round(freq_max / 1e3)}] kHz, '
                      f'B=[{round(flux_min * 1e3)}-{round(flux_max * 1e3)}] mT, '
                      f'Bias={round(flux_bias * 1e3)} mT')
         if excitation == "Triangular":
-            st.subheader(f'D={round(duty_p, 2)}')
+            st.write(f'D={round(duty_p, 2)}')
         if excitation == "Trapezoidal":
-            st.subheader(f'D1={round(duty_p, 2)}, '
+            st.write(f'D1={round(duty_p, 2)}, '
                          f'D2={round(duty_0, 2)}, '
                          f'D3={round(duty_n, 2)}, '
                          f'D4={round(duty_0, 2)}')
         if excitation == "Datasheet":
-            st.subheader(f'T={round(temperature)} C')
+            st.write(f'T={round(temperature)} C')
         else:
-            st.subheader(f'Max outlier factor={out_max} %')
+            st.write(f'Max outlier factor={out_max} %')
 
         if df.empty:
-            st.subheader("Warning: no data in range, please change the range")
+            st.write("Warning: no data in range, please change the range")
         else:
             if excitation != 'Datasheet':
                 with st.expander('Measurement details'):

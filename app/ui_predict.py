@@ -12,82 +12,93 @@ from magnet.io import loss_interpolated
 
 def ui_core_loss_predict(m):
     # Sidebar: input for all calculations
-    st.sidebar.header(f'Information: Case {m}')
-    excitation = st.sidebar.selectbox(
-        f'Excitation:', excitations_predict,
-        key=f'excitation {m}')  # TBD
-    material = st.sidebar.selectbox(
-        f'Material:',
-        material_names,
-        key=f'material {m}')
-    freq = st.sidebar.slider(
-        "Frequency (kHz)",
-        round(c.streamlit.freq_min / 1e3),
-        round(c.streamlit.freq_max / 1e3),
-        round(c.streamlit.freq_max / 2 / 1e3),
-        step=round(c.streamlit.freq_step / 1e3),
-        key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
-    if excitation == "Arbitrary":
-        flux_string = st.sidebar.text_input(
-            f'Waveform Pattern - AC Flux Density (mT)',
-            [0, 150, 0, -20, -27, -20, 0],
-            key=f'flux {m}')
-        duty_string = st.sidebar.text_input(
-            f'Waveform Pattern - Duty Cycle (%)',
-            [0, 50, 60, 65, 70, 75, 80],
-            key=f'duty {m}')
-    else:
-        flux = st.sidebar.slider(
-            f'AC Flux Density (mT)',
-            round(c.streamlit.flux_min * 1e3),
+    st.title('MagNet Analysis: Make Predictions')
+    st.markdown("""---""")
+    st.header(f'Input: Case {m}')
+    col1, col2 = st.columns(2)
+    with col1:
+        excitation = st.selectbox(
+            f'Excitation:', excitations_predict,
+            key=f'excitation {m}')  # TBD
+        
+        flux_bias = st.slider(
+            f'DC Flux Density (mT) coming soon!',
+            round(-c.streamlit.flux_max * 1e3),
             round(c.streamlit.flux_max * 1e3),
-            round(c.streamlit.flux_max / 2 * 1e3),
-            step=round(c.streamlit.flux_step * 1e3),
-            key=f'flux {m}',
-            help=f'Amplitude of the AC signal, not peak to peak') / 1e3  # Use mT for front-end demonstration while T for underlying calculation
-    flux_bias = st.sidebar.slider(
-        f'DC Flux Density (mT) coming soon!',
-        round(-c.streamlit.flux_max * 1e3),
-        round(c.streamlit.flux_max * 1e3),
-        0,
-        step=round(1e9),
-        key=f'bias {m}',
-        help=f'Fixed at 0 mT for now') / 1e3
-    if excitation == "Triangular":
-        duty_p = st.sidebar.slider(
-            f'Duty Ratio',
-            c.streamlit.duty_min,
-            c.streamlit.duty_max,
-            (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
-            step=c.streamlit.duty_step,
-            key=f'duty {m}')
-        duty_n = 1 - duty_p
-        duty_0 = 0
-    if excitation == "Trapezoidal":
-        duty_p = st.sidebar.slider(
-            f'Duty Ratio (D1)',
-            c.streamlit.duty_min,
-            c.streamlit.duty_max,
-            (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
-            step=c.streamlit.flux_step,
-            key=f'dutyP {m}',
-            help=f'Rising part with the highest slope')
-        duty_n = st.sidebar.slider(
-            f'Duty Ratio (D3)',
-            c.streamlit.duty_min,
-            1 - duty_p,
-            max(round((1 - duty_p) / 2, 2), c.streamlit.duty_min),
-            step=c.streamlit.duty_step,
-            key=f'dutyN {m}',
-            help=f'Falling part with the highest slope')
-        duty_0 = st.sidebar.slider(
-            "Duty Ratio (D2=D4=(1-D1-D3)/2)",  # TBD
-            0.0,
-            1.0,
-            round((1 - duty_p - duty_n) / 2, 2),
-            step=1e7,
-            key=f'duty0 {m}',
-            help=f'Low slope regions, fixed by D1 and D3, asymmetric D2 and D4 coming soon!')
+            0,
+            step=round(1e9),
+            key=f'bias {m}',
+            help=f'Fixed at 0 mT for now') / 1e3
+
+        freq = st.slider(
+            "Frequency (kHz)",
+            round(c.streamlit.freq_min / 1e3),
+            round(c.streamlit.freq_max / 1e3),
+            round(c.streamlit.freq_max / 2 / 1e3),
+            step=round(c.streamlit.freq_step / 1e3),
+            key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
+
+
+    with col2:   
+        material = st.selectbox(
+            f'Material:',
+            material_names,
+            key=f'material {m}')
+         
+        if excitation == "Triangular":
+            duty_p = st.slider(
+                f'Duty Ratio',
+                c.streamlit.duty_min,
+                c.streamlit.duty_max,
+                (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
+                step=c.streamlit.duty_step,
+                key=f'duty {m}')
+            duty_n = 1 - duty_p
+            duty_0 = 0
+        if excitation == "Trapezoidal":
+            duty_p = st.slider(
+                f'Duty Ratio (D1)',
+                c.streamlit.duty_min,
+                c.streamlit.duty_max,
+                (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
+                step=c.streamlit.flux_step,
+                key=f'dutyP {m}',
+                help=f'Rising part with the highest slope')
+            duty_n = st.slider(
+                f'Duty Ratio (D3)',
+                c.streamlit.duty_min,
+                1 - duty_p,
+                max(round((1 - duty_p) / 2, 2), c.streamlit.duty_min),
+                step=c.streamlit.duty_step,
+                    key=f'dutyN {m}',
+                    help=f'Falling part with the highest slope')
+            duty_0 = st.slider(
+                "Duty Ratio (D2=D4=(1-D1-D3)/2)",  # TBD
+                0.0,
+                1.0,
+                round((1 - duty_p - duty_n) / 2, 2),
+                step=1e7,
+                key=f'duty0 {m}',
+                help=f'Low slope regions, fixed by D1 and D3, asymmetric D2 and D4 coming soon!')
+            
+        if excitation == "Arbitrary":
+            flux_string = st.text_input(
+                f'Waveform Pattern - AC Flux Density (mT)',
+                [0, 150, 0, -20, -27, -20, 0],
+                key=f'flux {m}')
+            duty_string = st.text_input(
+                f'Waveform Pattern - Duty Cycle (%)',
+                [0, 50, 60, 65, 70, 75, 80],
+                key=f'duty {m}')
+        else:
+            flux = st.slider(
+                f'AC Flux Density (mT)',
+                round(c.streamlit.flux_min * 1e3),
+                round(c.streamlit.flux_max * 1e3),
+                round(c.streamlit.flux_max / 2 * 1e3),
+                step=round(c.streamlit.flux_step * 1e3),
+                key=f'flux {m}',
+                help=f'Amplitude of the AC signal, not peak to peak') / 1e3  # Use mT for front-end demonstration while T for underlying calculation
 
     st.sidebar.markdown("""---""")
 
@@ -131,19 +142,19 @@ def ui_core_loss_predict(m):
     col1, col2 = st.columns(2)
     # DUT and operation point and core losses
     with col1:
-        st.title(f'MagNet Analysis: Case {m}')
-        st.subheader(f'{material_manufacturers[material]} - {material}, '
+        st.header(f'Output: Case {m}')
+        st.write(f'{material_manufacturers[material]} - {material}, '
                      f'{excitation} excitation')
         if excitation == "Arbitrary":
-            st.subheader(f'f={round(freq / 1e3)} kHz')
+            st.write(f'f={round(freq / 1e3)} kHz')
         else:  # if Sinusoidal Trapezoidal or Triangular
-            st.subheader(f'f={round(freq / 1e3)} kHz, '
+            st.write(f'f={round(freq / 1e3)} kHz, '
                          f'B={round(flux * 1e3)} mT, '
                          f'Bias={flux_bias} mT')
             if excitation == "Triangular":
-                st.subheader(f'D={round(duty_p, 2)}')
+                st.write(f'D={round(duty_p, 2)}')
             if excitation == "Trapezoidal":
-                st.subheader(f'D1={round(duty_p, 2)}, '
+                st.write(f'D1={round(duty_p, 2)}, '
                              f'D2={round(duty_0, 2)}, '
                              f'D3={round(duty_n, 2)}, '
                              f'D4={round(duty_0, 2)}')
@@ -152,15 +163,15 @@ def ui_core_loss_predict(m):
             flag_minor_loop = 0
             if excitation == "Arbitrary":
                 if max(abs(flux)) > 0.3:
-                    st.subheader('Warning: Peak flux density above 300 mT,')
-                    st.subheader('above targeted test values; results might be inaccurate.')
+                    st.write('Warning: Peak flux density above 300 mT,')
+                    st.write('above targeted test values; results might be inaccurate.')
                 flag_dbdt_high = 0
                 for i in range(0, len(duty)-1):
                     if abs(flux[i + 1] - flux[i]) * freq / (duty[i + 1] - duty[i]) > 3e6:
                         flag_dbdt_high = 1
                 if flag_dbdt_high == 1:
-                    st.subheader('Warning: dB/dt above 3 mT/ns,')
-                    st.subheader('above targeted test values; results might be inaccurate.')
+                    st.write('Warning: dB/dt above 3 mT/ns,')
+                    st.write('above targeted test values; results might be inaccurate.')
 
                 if np.argmin(flux) < np.argmax(flux):  # min then max
                     for i in range(np.argmin(flux), np.argmax(flux)):
@@ -182,35 +193,35 @@ def ui_core_loss_predict(m):
                     for i in range(np.argmax(flux), np.argmin(flux)):
                         if flux[i + 1] > flux[i]:
                             flag_minor_loop = 1
-            st.subheader(f'Core Loss:')
+            st.write(f'Core Loss:')
             if flag_minor_loop == 1:
-                st.subheader('Minor loops present, iGSE not defined for this case.')
+                st.write('Minor loops present, iGSE not defined for this case.')
             else:
-                st.subheader(f'{round(core_loss_iGSE,2)} kW/m^3 - iGSE')
-            st.subheader(f'{round(core_loss_ML,2)} kW/m^3 - Machine Learning (ML)')
+                st.write(f'{round(core_loss_iGSE,2)} kW/m^3 - iGSE')
+            st.write(f'{round(core_loss_ML,2)} kW/m^3 - Machine Learning (ML)')
 
         else:
             if len(duty) != len(flux):
-                st.subheader('The Flux and Duty vectors should have the same length, please fix it to proceed.')
+                st.write('The Flux and Duty vectors should have the same length, please fix it to proceed.')
             if max(duty) > 1:
-                st.subheader('Duty cycle should be below 100%, please fix it to proceed.')
+                st.write('Duty cycle should be below 100%, please fix it to proceed.')
             if min(duty) < 0:
-                st.subheader('Please provide only positive values for the Duty cycle, fix it to proceed.')
+                st.write('Please provide only positive values for the Duty cycle, fix it to proceed.')
             flag_duty_wrong = 0
             for i in range(0, len(duty)-1):
                 if duty[i] >= duty[i + 1]:
                     flag_duty_wrong = 1
             if flag_duty_wrong == 1:
-                st.subheader('Only increasing duty cycles allowed, fix it to proceed.')
+                st.write('Only increasing duty cycles allowed, fix it to proceed.')
                 st.write('Please remove the 100% duty cycle value, the flux is assigned to the value at Duty=0%.')
 
         if excitation == "Sinusoidal":
             if core_loss_SI != 0.0:
-                st.subheader(f'{round(core_loss_SI, 2)} kW/m^3 - Interpolated from Measurements')
+                st.write(f'{round(core_loss_SI, 2)} kW/m^3 - Interpolated from Measurements')
             else:
                 st.write('No measured data available for interpolation')
             if core_loss_DI != 0.0:
-                st.subheader(f'{round(core_loss_DI, 2)} kW/m^3 - Interpolated from Datasheet')
+                st.write(f'{round(core_loss_DI, 2)} kW/m^3 - Interpolated from Datasheet')
             else:
                 st.write('No datasheet information available for interpolation')
         if excitation == "Arbitrary":
