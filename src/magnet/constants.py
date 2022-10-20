@@ -65,5 +65,6 @@ material_core_tested = {
 }
 material_names = list(materials.keys())
 excitations_db = ('Datasheet', 'Sinusoidal', 'Triangular', 'Trapezoidal')
+
 excitations_download = ('Sinusoidal', 'Triangular', 'Trapezoidal')
 excitations_predict = ('Sinusoidal', 'Triangular', 'Trapezoidal', 'Arbitrary')

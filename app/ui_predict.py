@@ -133,10 +133,6 @@ def ui_core_loss_predict(m):
         waveform=excitation, algorithm='iGSE', material=material, freq=freq, flux=flux, duty=duty) / 1e3
     core_loss_ML = 0.0 if flag_inputs_ok == 0 else loss(
         waveform=excitation, algorithm='ML', material=material, freq=freq, flux=flux, duty=duty) / 1e3
-    core_loss_DI = 0.0 if excitation != 'Sinusoidal' else loss_interpolated(  # Comparison only available for Sinusoidal
-        waveform=excitation, algorithm='DI', material=material, freq=freq, flux=flux) / 1e3
-    core_loss_SI = 0.0 if excitation != 'Sinusoidal' else loss_interpolated(  # Comparison only available for Sinusoidal
-        waveform=excitation, algorithm='SI', material=material, freq=freq, flux=flux) / 1e3
 
     # Results summary and waveform
     col1, col2 = st.columns(2)
@@ -215,15 +211,6 @@ def ui_core_loss_predict(m):
                 st.write('Only increasing duty cycles allowed, fix it to proceed.')
                 st.write('Please remove the 100% duty cycle value, the flux is assigned to the value at Duty=0%.')
 
-        if excitation == "Sinusoidal":
-            if core_loss_SI != 0.0:
-                st.write(f'{round(core_loss_SI, 2)} kW/m^3 - Interpolated from Measurements')
-            else:
-                st.write('No measured data available for interpolation')
-            if core_loss_DI != 0.0:
-                st.write(f'{round(core_loss_DI, 2)} kW/m^3 - Interpolated from Datasheet')
-            else:
-                st.write('No datasheet information available for interpolation')
         if excitation == "Arbitrary":
             st.write('Please bear in mind that the neural network has been trained using '
                      'trapezoidal, triangular and sinusoidal data. '
@@ -266,17 +253,10 @@ def ui_core_loss_predict(m):
                 y2=[1e-3 *
                     loss(waveform=excitation, algorithm='ML', material=material, freq=i, flux=flux)
                     for i in c.streamlit.core_loss_freq],
-                y3=[1e-3 *
-                    loss_interpolated(waveform=excitation, algorithm='DI', material=material, freq=i, flux=flux)
-                    for i in c.streamlit.core_loss_freq],
-                y4=[1e-3 *
-                    loss_interpolated(waveform=excitation, algorithm='SI', material=material, freq=i, flux=flux)
-                    for i in c.streamlit.core_loss_freq],
                 x0=list([freq / 1e3]),
                 y01=list([core_loss_iGSE]),
                 y02=list([core_loss_ML]),
-                y03=list([core_loss_DI]),
-                y04=list([core_loss_SI]),
+
                 title=f'<b> Core Loss Sweeping Frequency </b>'
                       f'<br> at a fixed Flux Density ({round(flux * 1e3)} mT)',
                 x_title='Frequency [kHz]'
@@ -291,17 +271,9 @@ def ui_core_loss_predict(m):
                 y2=[1e-3 *
                     loss(waveform=excitation, algorithm='ML', material=material, freq=freq, flux=i)
                     for i in c.streamlit.core_loss_flux],
-                y3=[1e-3 *
-                    loss_interpolated(waveform=excitation, algorithm='DI', material=material, freq=freq, flux=i)
-                    for i in c.streamlit.core_loss_flux],
-                y4=[1e-3 *
-                    loss_interpolated(waveform=excitation, algorithm='SI', material=material, freq=freq, flux=i)
-                    for i in c.streamlit.core_loss_flux],
                 x0=list([flux * 1e3]),
                 y01=list([core_loss_iGSE]),
                 y02=list([core_loss_ML]),
-                y03=list([core_loss_DI]),
-                y04=list([core_loss_SI]),
                 title=f'<b> Core Loss Sweeping Flux Density </b>'
                       f'<br> at a fixed Frequency ({round(freq / 1e3)} kHz)',
                 x_title='AC Flux Density [mT]'
@@ -317,8 +289,7 @@ def ui_core_loss_predict(m):
                     loss(waveform=excitation, algorithm='iGSE', material=material, freq=i, flux=flux, duty=duty)
                     for i in c.streamlit.core_loss_freq],
                 y2=[1e-3 *
-                    loss(
-                    waveform=excitation, algorithm='ML', material=material, freq=i, flux=flux, duty=duty)
+                    loss(waveform=excitation, algorithm='ML', material=material, freq=i, flux=flux, duty=duty)
                     for i in c.streamlit.core_loss_freq],
                 x0=list([freq / 1e3]),
                 y01=list([core_loss_iGSE]),

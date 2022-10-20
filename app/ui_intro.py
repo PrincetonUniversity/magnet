@@ -20,9 +20,11 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
+
 def network(material,freq,temp,bias,bdata):
     hdata = 0.2 * np.cos(np.linspace(-np.pi, np.pi, 100))
     return hdata
+
 
 def ui_intro(m):
     
@@ -162,9 +164,10 @@ def ui_intro(m):
         st.plotly_chart(fig, use_container_width=True)
         
     st.subheader(f'Volumetric Loss:         {np.round(loss,2)} kW/m^3')
+
     st.download_button(
         "Download the B-H Loop as a CSV File",
-        data = csv,
+        data=csv,
         file_name='BH-Loop.csv',
         mime='text/csv', 
         )
@@ -175,16 +178,23 @@ def ui_intro(m):
         st.header('MagNet Status')
         st.write("")
         n_sine = 0
+        n_tri = 0
         n_tot = 0
+
         for material in material_names:
-            n_sine = n_sine + len(load_dataframe(material, freq_min=None, freq_max=None, flux_min=None,
-                                                 flux_max=None, duty_1=-1.0, duty_3=-1.0, out_max=None))
+            n_sine = n_sine + len(load_dataframe(
+                material, freq_min=None, freq_max=None, flux_min=None, flux_max=None,
+                bias=None, duty_p=-1, duty_n=-1, temp=None))
+            for duty_aux in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+                n_tri = n_tri + len(load_dataframe(
+                    material, freq_min=None, freq_max=None, flux_min=None, flux_max=None, bias=None,
+                    duty_p=duty_aux, duty_n=1-duty_aux, temp=None))
             n_tot = n_tot + len(load_dataframe(material))
         st.subheader(f'Number of materials added: {len(material_names)}')
         st.write("")
         st.subheader(f'Total number of data points: {n_tot}')
-        st.write(""f'{n_sine} Sinusoidal points and {n_tot-n_sine} Triangular-Trapezoidal points.'"")
-        st.write(f'Tested for 25 C and no DC bias so far. During the tests, the core temperature may increase 5 C ~ 10 C in worst case conditions.')
+        st.write(f'{n_sine} Sinusoidal points, {n_tri} Triangular points and {n_tot-n_sine-n_tri} Trapezoidal points.')
+        st.write(f'During the tests, the core temperature may increase 5 C ~ 10 C in worst case conditions.')
 
     with col2:
         st.header('How to Cite')
@@ -228,7 +238,7 @@ def ui_intro(m):
     st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
     st.table(df)
 
-    st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C and data '
+    st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C without bias and data '
              f'between 50 kHz and 500 kHz and 10 mT and 300 mT; '
              f'with Pv, f, and B in W/m^3, Hz and T respectively')
 
