@@ -27,53 +27,74 @@ def network(material,freq,temp,bias,bdata):
 def ui_intro(m):
     
     st.title('MagNet Go: Neural Network as Datasheet')
-    st.subheader('MagNet Input - Operating Conditions')
+    st.markdown("""---""")
     col1, col2 = st.columns(2)
     with col1:
+        st.subheader('Operating Conditions')
         material = st.selectbox(
             f'Material:',
             material_names,
-            key=f'material {m}')
+            key=f'material {m}',
+            help='select from a list of available materials')
         temp = st.number_input(
-            "Temperature (C)",
+            "Temperature [C]",
             value=25.0,
             format='%f',
-            key=f'temp {m}')
-        
-    with col2:
+            key=f'temp {m}',
+            help='device surface temperature')
         freq = st.number_input(
-            "Frequency (kHz)",
+            "Frequency [kHz]",
             format='%f',
             value=100.0,
-            key=f'freq {m}') * 1e3
+            key=f'freq {m}',
+            help='fundamental frequency of the excitation') * 1e3
         bias = st.number_input(
-            "DC Bias (mT)",
+            "DC Bias [A/m]",
             format='%f',
-            key=f'bias {m}') * 1e-3
-    
+            key=f'bias {m}',
+            help='determined by the bias dc current') * 1e-3
+        mueff = st.number_input(
+            "Approximate Permeability (mu)",
+            value=1000.0,
+            format='%f',
+            key=f'mueff {m}',
+            help='determines the center of the B-H loop')
 
-    st.subheader('B Input (Unit: mT)')
-    Bfile = st.file_uploader(
-        "CSV File for B in Single Cycle; Default: 100 mT Sinusoidal",
-        type='csv',
-        key=f'bfile {m}',
-        help=None
+    with col2:
+        st.subheader('Bac Input (Unit: mT)')
+        #create an example Bac input file
+        bdata  = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
+        output = {'B [mT]': bdata}
+        csv = convert_df(pd.DataFrame(output))
+        st.download_button(
+            "Download an Example 100-Step Bac Input CSV File",
+            data = csv,
+            file_name='B-Input.csv',
+            mime='text/csv', 
             )
     
-    if Bfile is None:
-        bdata  = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
-        hdata  = network(material,freq,temp,bias,bdata)
-        output = {'B [mT]': bdata, 'H [A/m]': hdata}
-        loss = np.mean(np.multiply(bdata,hdata))
-        csv = convert_df(pd.DataFrame(output))
-    
-    if Bfile is not None:
-        bdata  = inputfile.read(),
-        hdata  = network(material,freq,temp,bias,bdata),
-        output = {'B [mT]': bdata, 'H [A/m]': hdata}
-        loss = np.mean(np.multiply(bdata,hdata)),
-        csv = convert_df(pd.DataFrame(output))
-        
+        inputB = st.file_uploader(
+            "CSV File for Bac in Single Cycle; Default: 100 mT Sinusoidal  with 100-Steps",
+            type='csv',
+            key=f'bfile {m}',
+            help=None
+                )
+
+        if inputB is None:          #default input for display
+            bdata  = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
+            hdata  = network(material,freq,temp,bias,bdata)
+            output = {'B [mT]': bdata, 'H [A/m]': hdata}
+            loss = np.mean(np.multiply(bdata,hdata))
+            csv = convert_df(pd.DataFrame(output))
+
+        if inputB is not None:      #user input
+            df = pd.read_csv(inputB)
+            st.write(df)
+            hdata  = network(material,freq,temp,bias,bdata)
+            output = {'B [mT]': bdata, 'H [A/m]': hdata}
+            loss = np.mean(np.multiply(bdata,hdata))
+            csv = convert_df(pd.DataFrame(output))
+    st.markdown("""---""")
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('B-H Waveform')
@@ -83,7 +104,7 @@ def ui_intro(m):
                 x=np.linspace(1,100,num=100), 
                 y=bdata,
                 line=dict(color='mediumslateblue', width=4),
-                name="B [mT]"),
+                name="Bac [mT]"),
             secondary_y=False,
             )
         fig.add_trace(
@@ -91,7 +112,15 @@ def ui_intro(m):
                 x=np.linspace(1,100,num=100), 
                 y=hdata, 
                 line=dict(color='firebrick', width=4),
-                name="H [A/m]"),
+                name="Hac [A/m]"),
+            secondary_y=True,
+            )
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1,100,num=100), 
+                y=bias * np.ones(100), 
+                line=dict(color='black', dash='longdash', width=4),
+                name="Hdc [A/m]"),
             secondary_y=True,
             )
         fig.update_xaxes(title_text="Fraction of a Cycle [%]")
@@ -99,13 +128,27 @@ def ui_intro(m):
 
     with col2:
         st.subheader('B-H Loop')
-        waveform_visualization(
-            st,
-            x = bdata,
-            y = hdata,
-            x_title = 'B - Flux Density [mT]', 
-            y_title = 'H - Field Strength [A/m]',
-            color='mediumslateblue', width=4)
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(
+            go.Scatter(
+                x = bdata,
+                y = hdata + bias * np.ones(100),
+                line=dict(color='mediumslateblue', width=4),
+                name="B-H Loop"),
+            secondary_y=False,
+            )
+        fig.add_trace(
+            go.Scatter(
+                x = bdata,
+                y = bdata / mueff,
+                line=dict(color='firebrick', dash='longdash', width=4),
+                name="B = mu * H"),
+            secondary_y=True,
+            )
+
+        fig.update_xaxes(title_text="B - Flux Density [mT]")
+        fig.update_yaxes(title_text="H - Field Strength [A/m]")
+        st.plotly_chart(fig, use_container_width=True)
         
     st.subheader(f'MagNet Volumetric Loss:         {np.round(loss,2)} kW/m^3')
     st.download_button(
