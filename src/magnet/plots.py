@@ -27,7 +27,7 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
 # From https://stackoverflow.com/questions/67589451/how-to-add-secondary-xaxis-in-plotly-using-plotly-express
 def waveform_visualization_2axes(
         st, x1, x2, y1, y2, x1_aux, y1_aux,
-        title='Waveform Visualization', x1_title='Time [us]', x2_title='Cycle',
+        title='Waveform Visualization', x1_title='Time [us]', x2_title='Fraction of the Cycle',
         y1_title='Flux Density [mT]', y2_title='Normalized Voltage', width=4):
     fig = go.Figure()
     fig.layout = go.Layout(dict(

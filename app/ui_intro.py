@@ -21,7 +21,7 @@ def convert_df(df):
     return df.to_csv().encode('utf-8')
 
 
-def network(material,freq,temp,bias,bdata):
+def network(material, freq, temp, bias, bdata):
     hdata = 0.2 * np.cos(np.linspace(-np.pi, np.pi, 100))
     return hdata
 
@@ -63,14 +63,13 @@ def ui_intro(m):
             help='determines the center of the B-H loop')
 
     with col2:
-        st.subheader('Bac Input (Unit: mT)')
-        #create an example Bac input file
-        bdata  = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
+        st.subheader('Bac Input (Unit: mT)')  # Create an example Bac input file
+        bdata = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
         output = {'B [mT]': bdata}
         csv = convert_df(pd.DataFrame(output))
         st.download_button(
             "Download an Example 100-Step Bac Input CSV File",
-            data = csv,
+            data=csv,
             file_name='B-Input.csv',
             mime='text/csv', 
             )
@@ -82,19 +81,19 @@ def ui_intro(m):
             help=None
                 )
 
-        if inputB is None:          #default input for display
-            bdata  = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
-            hdata  = network(material,freq,temp,bias,bdata)
+        if inputB is None:  # default input for display
+            bdata = 100 * np.sin(np.linspace(-np.pi, np.pi, 100))
+            hdata = network(material, freq, temp, bias, bdata)
             output = {'B [mT]': bdata, 'H [A/m]': hdata}
-            loss = np.mean(np.multiply(bdata,hdata))
+            loss = np.mean(np.multiply(bdata, hdata))
             csv = convert_df(pd.DataFrame(output))
 
-        if inputB is not None:      #user input
+        if inputB is not None:  # user input
             df = pd.read_csv(inputB)
             st.write(df)
-            hdata  = network(material,freq,temp,bias,bdata)
+            hdata = network(material, freq, temp, bias, bdata)
             output = {'B [mT]': bdata, 'H [A/m]': hdata}
-            loss = np.mean(np.multiply(bdata,hdata))
+            loss = np.mean(np.multiply(bdata, hdata))
             csv = convert_df(pd.DataFrame(output))
     st.markdown("""---""")
     st.header('MagNet AI Predicted Results')
@@ -104,7 +103,7 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1,100,num=100), 
+                x=np.linspace(1, 100, num=100),
                 y=bdata+bias/mueff * np.ones(100),
                 line=dict(color='mediumslateblue', width=4),
                 name="B [mT]"),
@@ -112,7 +111,7 @@ def ui_intro(m):
             )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1,100,num=100), 
+                x=np.linspace(1, 100, num=100),
                 y=bias/mueff * np.ones(100), 
                 line=dict(color='brown', dash='longdash', width=4),
                 name="Bdc [mT]"),
@@ -120,7 +119,7 @@ def ui_intro(m):
             )                
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1,100,num=100), 
+                x=np.linspace(1, 100, num=100),
                 y=hdata+bias * np.ones(100), 
                 line=dict(color='firebrick', width=4),
                 name="H [A/m]"),
@@ -128,7 +127,7 @@ def ui_intro(m):
             )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1,100,num=100), 
+                x=np.linspace(1, 100, num=100),
                 y=bias * np.ones(100), 
                 line=dict(color='black', dash='longdash', width=4),
                 name="Hdc [A/m]"),
@@ -144,16 +143,16 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Scatter(
-                x = bdata + bias/mueff * np.ones(100),
-                y = hdata + bias * np.ones(100),
+                x=bdata + bias/mueff * np.ones(100),
+                y=hdata + bias * np.ones(100),
                 line=dict(color='mediumslateblue', width=4),
                 name="B-H Loop"),
             secondary_y=False,
             )
         fig.add_trace(
             go.Scatter(
-                x = bdata,
-                y = bdata / mueff,
+                x=bdata,
+                y=bdata / mueff,
                 line=dict(color='firebrick', dash='longdash', width=4),
                 name="B = mu * H"),
             secondary_y=True,
@@ -240,6 +239,6 @@ def ui_intro(m):
 
     st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C without bias and data '
              f'between 50 kHz and 500 kHz and 10 mT and 300 mT; '
-             f'with Pv, f, and B in W/m^3, Hz and T respectively')
+             f'with Pv, f, and B in W/m^3, Hz and T respectively.')
 
     st.markdown("""---""")

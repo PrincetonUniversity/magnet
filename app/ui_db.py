@@ -12,6 +12,7 @@ def ui_core_loss_dbs(n=1):
     for i in range(int(n)):
         ui_core_loss_db(chr(ord('A') + i))
 
+
 def ui_core_loss_db(m):
 
     st.title('MagNet Visualization')
@@ -19,74 +20,76 @@ def ui_core_loss_db(m):
     st.header(f'Input: Case {m}')
     
     col1, col2 = st.columns(2)
-    
-    with col1:
+    with col2:
         excitation = st.selectbox(
             f'Excitation:',
             ('Sinusoidal', 'Triangular', 'Trapezoidal'),
             key=f'excitation {m}',
             index=1)
-
-    with col2:
+    with col1:
         material = st.selectbox(
             f'Material:',
             material_names,
             key=f'material {m}')
+    with col1:
+        # temperature = st.sidebar.radio(
+        #     f'Temperature (C)',
+        #     [25, 50, 70, 90],
+        #     key=f'temp {m}',
+        #     horizontal=False)  # TODO Switch to radio buttons once we update the Streamlit version
+        temperature = st.selectbox(
+            f'Temperature (C)',
+            [25, 50, 70, 90],
+            key=f'temp {m}')
 
     with col1:
-      [freq_min_aux, freq_max_aux] = st.slider(
+        [freq_min_aux, freq_max_aux] = st.slider(
           f'Frequency Range (kHz)',
           50,
           500,
           (50, 500),
           step=1,
           key=f'freq {m}')
-      freq_min = freq_min_aux * 1e3
-      freq_max = freq_max_aux * 1e3
-      freq_avg = (freq_max + freq_min) / 2
-    
-    with col1:
+        freq_min = freq_min_aux * 1e3
+        freq_max = freq_max_aux * 1e3
+        freq_avg = (freq_max + freq_min) / 2
+
         [flux_min_aux, flux_max_aux] = st.slider(
             f'AC Flux Density Range (mT)',
             10,
             300,
             (10, 300),
             step=5,
-            step=round(c.streamlit.flux_step_db * 1e3),
             key=f'flux {m}',
             help=f'Amplitude of the AC signal, not peak to peak')
         flux_min = flux_min_aux / 1e3
         flux_max = flux_max_aux / 1e3
         flux_avg = (flux_max + flux_min) / 2
-    
-    with col2:
-      df = load_dataframe(material)
-      if len(df['DC_Bias']) == 0:
-          dc_bias = 0
-          st.sidebar.markdown(f'##### Only data without DC bias is measured'),
-      else:
-          dc_bias = st.sidebar.slider(
-              f'DC bias (A/m)',
-              0,
-              round(round(max(df['DC_Bias']) / 15) * 15),
-              0,
-              step=15,
-              key=f'bias {m}',
-              help=f'DC bias in the H field')
-    
-    with col2:
-        if excitation == 'Triangular':
-         duty_p = st.slider(
-                    f'Duty Cycle',
-                    0.1,
-                    0.9,
-                    0.5,
-                    step=0.1,
-                    key=f'duty {m}')
-          duty_n = 1.0 - duty_p  # For triangular excitation, there are no flat parts
-          duty_0 = 0.0
 
-    with col2:
+        df = load_dataframe(material)
+        if len(df['DC_Bias']) == 0:
+            dc_bias = 0
+            st.markdown(f'##### Only data without DC bias is measured'),
+        else:
+            dc_bias = st.slider(
+                f'DC bias (A/m)',
+                0,
+                round(round(max(df['DC_Bias']) / 15) * 15),
+                0,
+                step=15,
+                key=f'bias {m}',
+                help=f'DC bias in the H field')
+
+        if excitation == 'Triangular':
+            duty_p = st.slider(
+                f'Duty Cycle',
+                0.1,
+                0.9,
+                0.5,
+                step=0.1,
+                key=f'duty {m}')
+            duty_n = 1.0 - duty_p  # For triangular excitation, there are no flat parts
+            duty_0 = 0.0
         if excitation == 'Trapezoidal':
             duty_p = st.slider(
                 f'Duty Ratio (D1)',
@@ -119,28 +122,26 @@ def ui_core_loss_db(m):
                     step=2 * 0.1,
                     key=f'dutyN {m}',
                     help=f'Falling part with the highest slope, maximum imposed by D1')
-          duty_0 = (1-duty_p-duty_n)/2
-          st.sidebar.markdown(f'##### Duty cycle D2=D4=(1-D1-D3)/2)={round(duty_0 * 10) / 10}'),
-          
-    with col2:
-        temperature = st.slider(
-            f'Temperature (C) coming soon!',
-            round(c.streamlit.temp_min),
-            round(c.streamlit.temp_max),
-            round(c.streamlit.temp_default),
-            step=round(1e9),
-            key=f'temp {m}',
-            help=f'Fixed at 25 C for now')
-    # temperature = st.sidebar.radio(
-    #     f'Temperature (C)',
-    #     [25, 50, 70, 90],
-    #     key=f'temp {m}',
-    #     horizontal=False)  # TODO Switch to radio buttons once we update the Streamlit version
+            duty_0 = (1-duty_p-duty_n)/2
+            st.write(f'Duty cycle D2=D4=(1-D1-D3)/2)={round(duty_0, 1)}'),
 
-        temperature = st.selectbox(
-            f'Temperature (C)',
-            [25, 50, 70, 90],
-            key=f'temp {m}')
+    with col2:
+        if excitation == 'Sinusoidal':
+            [cycle_list, flux_list, volt_list] = cycle_points_sinusoidal(c.streamlit.n_points_plot)
+        if excitation in ['Triangular', 'Trapezoidal']:
+            [cycle_list, flux_list, volt_list] = cycle_points_trapezoidal(duty_p, duty_n, duty_0)
+        flux_vector = np.multiply(flux_list, flux_avg)
+
+        waveform_visualization_2axes(
+            st,
+            x1=np.multiply(cycle_list, 1e6 / freq_avg),  # In us
+            x2=cycle_list,  # Percentage
+            y1=np.multiply(flux_vector, 1e3),  # In mT
+            y2=volt_list,  # Per unit
+            x1_aux=cycle_list,  # Percentage
+            y1_aux=flux_list,
+            title=f"<b>Waveform visualization</b>"
+                  f"<br>f={format(freq_avg / 1e3, '.0f')} kHz, B={format(flux_avg * 1e3, '.0f')} mT")
 
     with col2:
         c_axis = st.selectbox(
@@ -148,33 +149,30 @@ def ui_core_loss_db(m):
             ['Flux Density', 'Frequency', 'Power Loss'],
             key=f'c_axis {m}')
 
-    st.markdown("""---""")
-
     if excitation == 'Sinusoidal':
         df = load_dataframe(material, freq_min, freq_max, flux_min, flux_max, dc_bias, -1.0, -1.0, temperature)
     if excitation in ['Triangular', 'Trapezoidal']:
         df = load_dataframe(material, freq_min, freq_max, flux_min, flux_max, dc_bias, duty_p, duty_n, temperature)
 
-    col1, col2, col3 = st.columns([2, 3, 4])
+    col1, col2 = st.columns(2)
     with col1:
         st.header(f'Output: Case {m}')
         st.write(f'{material_manufacturers[material]} - {material}, '
-        st.write(f'{material_manufacturers[material]} - {material}, '
-                     f'{excitation} excitation')
+                 f'{excitation} excitation')
         st.write(f'f=[{round(freq_min / 1e3)}-{round(freq_max / 1e3)}] kHz, '
-                     f'B=[{round(flux_min * 1e3)}-{round(flux_max * 1e3)}] mT, '
-                     f'Bias={round(dc_bias)} A/m')
+                 f'B=[{round(flux_min * 1e3)}-{round(flux_max * 1e3)}] mT, '
+                 f'Bias={round(dc_bias)} A/m')
         if excitation == "Sinusoidal":
             st.write(f'T={round(temperature)} C')
         if excitation == "Triangular":
             st.write(f'D={round(duty_p, 2)}, '
-                         f'T={round(temperature)} C')
+                     f'T={round(temperature)} C')
         if excitation == "Trapezoidal":
             st.write(f'D1={round(duty_p, 2)}, '
-                         f'D2={round(duty_0, 2)}, '
-                         f'D3={round(duty_n, 2)}, '
-                         f'D4={round(duty_0, 2)}, '
-                         f'T={round(temperature)} C')
+                     f'D2={round(duty_0, 2)}, '
+                     f'D3={round(duty_n, 2)}, '
+                     f'D4={round(duty_0, 2)}, '
+                     f'T={round(temperature)} C')
 
         if df.empty:
             st.subheader("Warning: no data in range, please change the range")
@@ -201,7 +199,6 @@ def ui_core_loss_db(m):
             if excitation == "Trapezoidal":
                 csv_name = material + '-' + excitation + '_' + str(dc_bias) + 'Am-1(bias)_'\
                            + str(duty_p) + '(D1)_' + str(duty_n) + '(D3)_' + str(temperature) + 'C(temp).csv'
-
             st.download_button(
                 'Download CSV',
                 file,
@@ -212,23 +209,6 @@ def ui_core_loss_db(m):
                      'power loss for the depicted data points')
 
     with col2:
-        if excitation == 'Sinusoidal':
-            [cycle_list, flux_list, volt_list] = cycle_points_sinusoidal(c.streamlit.n_points_plot)
-        if excitation in ['Triangular', 'Trapezoidal']:
-            [cycle_list, flux_list, volt_list] = cycle_points_trapezoidal(duty_p, duty_n, duty_0)
-        flux_vector = np.multiply(flux_list, flux_avg)
-
-        waveform_visualization_2axes(
-            st,
-            x1=np.multiply(cycle_list, 1e6 / freq_avg),  # In us
-            x2=cycle_list,  # Percentage
-            y1=np.multiply(flux_vector, 1e3),  # In mT
-            y2=volt_list,  # Per unit
-            x1_aux=cycle_list,  # Percentage
-            y1_aux=flux_list,
-            title=f"<b>Waveform visualization</b>"
-                  f"<br>f={format(freq_avg / 1e3, '.0f')} kHz, B={format(flux_avg * 1e3, '.0f')} mT")
-    with col3:
         if not df.empty:
             st.plotly_chart(scatter_plot(
                 df,
@@ -241,4 +221,4 @@ def ui_core_loss_db(m):
                 'Power_Loss_kW/m3'),
                 use_container_width=True,)
 
-    st.markdown("""---""") 
+    st.markdown("""---""")

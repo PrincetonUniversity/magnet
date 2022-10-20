@@ -37,10 +37,12 @@ if __name__ == '__main__':
     st.sidebar.header('Welcome to Princeton MagNet')
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
     st.sidebar.markdown('by Princeton-Dartmouth-Plexim')
-    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Princeton Power Electronics](https://www.princeton.edu/~minjie/)')
+    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | '
+                        '[Princeton Power Electronics](https://www.princeton.edu/~minjie/)')
     function_select = st.sidebar.radio(
         'Select a Function:',
-        ('MagNet AI', 'MagNet Visualization', 'MagNet Prediction', 'MagNet Simulation', 'MagNet Download', 'MagNet Help')
+        ('MagNet AI', 'MagNet Visualization', 'MagNet Prediction',
+         'MagNet Simulation', 'MagNet Download', 'MagNet Help')
     )
 
     if 'n_material' not in st.session_state:
