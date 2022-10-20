@@ -12,7 +12,7 @@ from magnet.io import loss_interpolated
 
 def ui_core_loss_predict(m):
     # Sidebar: input for all calculations
-    st.title('MagNet Analysis: Make Predictions')
+    st.title('MagNet Prediction')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     col1, col2 = st.columns(2)

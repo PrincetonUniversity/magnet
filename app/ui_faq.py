@@ -7,9 +7,11 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 def ui_faq(m):
 
-    st.title('MagNet Overview')
+    st.title('MagNet AI Overview')
     st.write("""
         MagNet is a large-scale dataset designed to enable researchers modeling power magnetics with real measurement data.
+        
+        MagNet AI is a pre-trained smart agent that can predict the behavior of power magnetics with neural networks.
         
         The dataset contains a large amount of voltage and current data (B and H) of different magnetic components with different shapes of waveforms and different properties measured in the real world.
         
@@ -24,7 +26,7 @@ def ui_faq(m):
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.subheader('MagNet Database')
+        st.subheader('MagNet Visualization')
         st.write("""
             In this section, the MagNet database can be visualized.
             
@@ -43,7 +45,7 @@ def ui_faq(m):
             We are working on adding measurements at different temperature and DC bias.
         """)
     with col2:
-        st.subheader('MagNet Analysis')
+        st.subheader('MagNet Prediction')
         st.write("""
             In this section, volumetric core losses are calculated for any desired operation point.
             

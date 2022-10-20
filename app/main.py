@@ -40,25 +40,25 @@ if __name__ == '__main__':
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Princeton Power Electronics](https://www.princeton.edu/~minjie/)')
     function_select = st.sidebar.radio(
         'Select a Function:',
-        ('MagNet Go', 'MagNet Visualization', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'MagNet Help')
+        ('MagNet AI', 'MagNet Visualization', 'MagNet Prediction', 'MagNet Simulation', 'MagNet Download', 'MagNet Help')
     )
 
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    if function_select in ['MagNet Visualization', 'MagNet Analysis']:
+    if function_select in ['MagNet Visualization', 'MagNet Prediction']:
         clicked = st.sidebar.button("Add Another Case")
         if clicked:
             st.session_state.n_material += 1
 
-    if function_select == 'MagNet Go':
+    if function_select == 'MagNet AI':
         ui_multiple_materials(ui_intro)
         st.session_state.n_material = 1  # Resets the number of plots
 
     if function_select == 'MagNet Visualization':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
 
-    if function_select == 'MagNet Analysis':
+    if function_select == 'MagNet Prediction':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':

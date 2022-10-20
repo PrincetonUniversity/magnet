@@ -13,7 +13,7 @@ def ui_core_loss_dbs(n=1):
 
 def ui_core_loss_db(m):
     
-    st.title('MagNet Visualization: Plot the Data')
+    st.title('MagNet Visualization')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     col1, col2 = st.columns(2)

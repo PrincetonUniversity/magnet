@@ -26,11 +26,11 @@ def network(material,freq,temp,bias,bdata):
 
 def ui_intro(m):
     
-    st.title('MagNet Go: Neural Network as Datasheet')
+    st.title('MagNet AI')
     st.markdown("""---""")
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader('Operating Conditions')
+        st.subheader('Material Information')
         material = st.selectbox(
             f'Material:',
             material_names,
@@ -95,6 +95,7 @@ def ui_intro(m):
             loss = np.mean(np.multiply(bdata,hdata))
             csv = convert_df(pd.DataFrame(output))
     st.markdown("""---""")
+    st.header('MagNet AI Predicted Results')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('B-H Waveform')
@@ -160,7 +161,7 @@ def ui_intro(m):
         fig.update_yaxes(title_text="H - Field Strength [A/m]")
         st.plotly_chart(fig, use_container_width=True)
         
-    st.subheader(f'MagNet Volumetric Loss:         {np.round(loss,2)} kW/m^3')
+    st.subheader(f'Volumetric Loss:         {np.round(loss,2)} kW/m^3')
     st.download_button(
         "Download the B-H Loop as a CSV File",
         data = csv,
