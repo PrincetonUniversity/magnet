@@ -66,10 +66,11 @@ if __name__ == '__main__':
     if function_select == 'MagNet Simulation':
         st.title('MagNet Simulation - Simulate Magnetics in SPICE')
         ui_multiple_materials(SimulationPLECS)
+        st.session_state.n_material = 1  # Resets the number of plots
             
     if function_select == 'MagNet Download':
-        ui_multiple_materials(ui_download_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
-        st.session_state.n_material = 1
+        ui_multiple_materials(ui_download_data, streamlit_root=STREAMLIT_ROOT)
+        st.session_state.n_material = 1  # Resets the number of plots
         
     if function_select == 'MagNet Help':
         ui_multiple_materials(ui_faq)
