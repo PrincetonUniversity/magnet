@@ -29,7 +29,7 @@ def ui_download_data(m, streamlit_root):
         st.write(metadata['info_processing'])
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader('Voltage and current data from the oscilloscope ')
+        st.subheader('Voltage and current data from the oscilloscope')
         if os.path.isfile(os.path.join(
                 streamlit_root, c.streamlit.raw_data_file.format(material=material))):
 
