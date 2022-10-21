@@ -3,7 +3,7 @@ import numpy as np
 import streamlit as st
 
 from magnet import config as c
-from magnet.constants import material_names, excitations_predict, material_manufacturers, materials_extra
+from magnet.constants import material_names, material_manufacturers, materials_extra
 from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes, \
     cycle_points_sinusoidal, cycle_points_trapezoidal
 from magnet.core import loss
@@ -18,7 +18,7 @@ def ui_core_loss_predict(m):
 
     with col2:
         excitation = st.selectbox(
-            f'Excitation:', excitations_predict,
+            f'Excitation:', ('Sinusoidal', 'Triangular', 'Trapezoidal', 'Arbitrary'),
             key=f'excitation {m}')  # TBD
     with col1:
         material = st.selectbox(
