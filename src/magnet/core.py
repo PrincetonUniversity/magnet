@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from magnet.constants import materials
-from magnet.net import model, model_lstm
+from magnet.net import model, model_lstm, model_transformer
 
 
 def default_units(prop):  # Probably we are not going to need the default units
@@ -192,3 +192,39 @@ def loss(waveform, algorithm, **kwargs):
 
     fn = globals()[f'core_loss_{algorithm}_{waveform.lower()}']
     return fn(**kwargs)
+
+def BH_Transformer(material, freq, temp, bias, bdata):
+    net_encoder, net_decoder, norm = model_transformer(material)
+        
+    bdata = torch.from_numpy(np.array(bdata/1e3)).float()
+    bdata = (bdata-norm[0])/norm[1]
+    bdata = bdata.unsqueeze(0).unsqueeze(2)
+    freq = np.log10(freq)
+    freq = torch.from_numpy(np.array(freq)).float()
+    freq = (freq-norm[2])/norm[3]
+    freq = freq.unsqueeze(0).unsqueeze(1)
+    temp = np.log10(temp)
+    temp = torch.from_numpy(np.array(temp)).float()
+    temp = (temp-norm[4])/norm[5]
+    temp = temp.unsqueeze(0).unsqueeze(1)
+    bias = np.log10(bias+0.1) 
+    bias = torch.from_numpy(np.array(bias)).float()
+    bias = (bias-norm[6])/norm[7]
+    bias = bias.unsqueeze(0).unsqueeze(1)
+        
+    outputs = torch.zeros(1, bdata.size()[1]+1, 1)
+    tgt = (torch.rand(1, bdata.size()[1]+1, 1)*2-1)
+    tgt[:,0,:] = 0.1*torch.ones(tgt[:,0,:].size())
+    
+    src = net_encoder(src=bdata, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
+    
+    for t in range(1, bdata.size()[1]+1):   
+        outputs = net_decoder(src=src, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
+        tgt[:,t,:] = outputs[:,t-1,:]
+        
+    outputs = net_decoder(src,tgt,torch.cat((freq, temp, bias), dim=1))
+    
+    hdata = (outputs[:,:-1,:]*norm[9]+norm[8]).squeeze(2).squeeze(0).detach().numpy()
+    
+    return hdata
+    
