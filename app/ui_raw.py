@@ -31,11 +31,10 @@ def ui_download_data(m, streamlit_root):
     with col1:
         st.subheader('Voltage and current data from the oscilloscope')
         if os.path.isfile(os.path.join(
-                streamlit_root, c.streamlit.raw_data_file.format(material=material))):
+                streamlit_root, c.streamlit.data_file.format(material=material, excitation='measurements'))):
 
             data_file_raw = os.path.join(
-                streamlit_root,
-                c.streamlit.raw_data_file.format(material=material))
+                streamlit_root, c.streamlit.data_file.format(material=material, excitation='measurements'))
             with open(data_file_raw, 'rb') as file:
                 st.download_button(f'Download zip file',
                                    file,
@@ -47,9 +46,9 @@ def ui_download_data(m, streamlit_root):
     with col2:
         st.subheader('Single switching cycle post-processed B-H data')
         if os.path.isfile(os.path.join(
-                streamlit_root, c.streamlit.single_cycle_file.format(material=material))):
+                streamlit_root, c.streamlit.data_file.format(material=material, excitation='cycle'))):
             data_file_cycle = os.path.join(
-                streamlit_root, c.streamlit.single_cycle_file.format(material=material))
+                streamlit_root, c.streamlit.data_file.format(material=material, excitation='cycle'))
             with open(data_file_cycle, 'rb') as file:
                 st.download_button(f'Download zip file',
                                    file,
