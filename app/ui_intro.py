@@ -12,10 +12,11 @@ from magnet.io import load_dataframe
 from magnet import config as c
 import numpy as np
 import csv
-from magnet.core import BH_Transformer
+from magnet.core import BH_Transformer, loss_BH
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
+mu0 = 4e-7*np.pi
 
 @st.cache
 def convert_df(df):
@@ -65,8 +66,8 @@ def ui_intro(m):
 
     with col2:
         st.subheader('Bac Input (Unit: mT)')  # Create an example Bac input file
-        bdata = 100 * np.sin(np.linspace(-np.pi, np.pi, 128))
-        output = {'B [mT]': bdata}
+        bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, 128))
+        output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
         st.download_button(
             "Download an Example 128-Step Bac Input CSV File",
@@ -81,20 +82,32 @@ def ui_intro(m):
             key=f'bfile {m}',
             help=None
                 )
+        
+        st.write("\n\n\n")
+        default = st.radio(
+        "Select One of the Default Inputs for a Quick Start 👇",
+        ["Sinusoidal", "Triangular", "Trapezoidal"])
 
         if inputB is None:  # default input for display
-            bdata = 100 * np.sin(np.linspace(-np.pi, np.pi, 128))
+            if default == "Sinusoidal":
+                bdata = 100 * np.sin(np.linspace(0.0, 2*np.pi, 128))
+            if default == "Triangular":
+                bdata = np.interp(np.linspace(0,1,128), np.array([0,0.5,1]), np.array([-100,100,-100]))
+            if default == "Trapezoidal":
+                bdata = np.interp(np.linspace(0,1,128), np.array([0,0.1,0.4,0.6,0.9,1]), np.array([0,100,100,-100,-100,0]))
             hdata = BH_Transformer(material, freq, temp, bias, bdata)
-            output = {'B [mT]': bdata, 'H [A/m]': hdata}
-            loss = np.mean(np.multiply(bdata, hdata))
+            output = {'B [mT]': bdata + bias*mueff*mu0*1e3 * np.ones(128), 
+                      'H [A/m]': hdata + bias * np.ones(128)}
+            loss = loss_BH(bdata/1e3,hdata,freq)
             csv = convert_df(pd.DataFrame(output))
 
         if inputB is not None:  # user input
             df = pd.read_csv(inputB)
             st.write(df)
             hdata = BH_Transformer(material, freq, temp, bias, bdata)
-            output = {'B [mT]': bdata, 'H [A/m]': hdata}
-            loss = np.mean(np.multiply(bdata, hdata))
+            output = {'B [mT]': bdata + bias*mueff*mu0*1e3 * np.ones(128), 
+                      'H [A/m]': hdata + bias * np.ones(128)}
+            loss = loss_BH(bdata/1e3,hdata,freq)
             csv = convert_df(pd.DataFrame(output))
     st.markdown("""---""")
     st.header('MagNet AI Predicted Results')
@@ -104,23 +117,23 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128),
-                y=bdata+bias/mueff * np.ones(128),
+                x=np.linspace(1, 128, num=128)/128,
+                y=bdata + bias*mueff*mu0*1e3 * np.ones(128),
                 line=dict(color='mediumslateblue', width=4),
                 name="B [mT]"),
             secondary_y=False,
             )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128),
-                y=bias/mueff * np.ones(128), 
-                line=dict(color='brown', dash='longdash', width=4),
+                x=np.linspace(1, 128, num=128)/128,
+                y=bias*mueff*mu0*1e3 * np.ones(128), 
+                line=dict(color='mediumslateblue', dash='longdash', width=2),
                 name="Bdc [mT]"),
             secondary_y=False,
             )                
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128),
+                x=np.linspace(1, 128, num=128)/128,
                 y=hdata+bias * np.ones(128), 
                 line=dict(color='firebrick', width=4),
                 name="H [A/m]"),
@@ -128,39 +141,48 @@ def ui_intro(m):
             )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128),
+                x=np.linspace(1, 128, num=128)/128,
                 y=bias * np.ones(128), 
-                line=dict(color='black', dash='longdash', width=4),
+                line=dict(color='firebrick', dash='longdash', width=2),
                 name="Hdc [A/m]"),
             secondary_y=True,
             )
-        fig.update_xaxes(title_text="Fraction of a Cycle [%]")
-        fig.update_yaxes(title_text="B - Flux Density [mT]", secondary_y=False)
-        fig.update_yaxes(title_text="H - Field Strength [A/m]", secondary_y=True)
+
+        fig.update_xaxes(title_text="Fraction of a Cycle")
+        fig.update_yaxes(title_text="B - Flux Density [mT]", color='mediumslateblue', secondary_y=False, zeroline=False, zerolinewidth=1.5, zerolinecolor='gray')
+        fig.update_yaxes(title_text="H - Field Strength [A/m]", color='firebrick', secondary_y=True, zeroline=False, zerolinewidth=1.5, zerolinecolor='gray')
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         st.subheader('B-H Loop')
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig = make_subplots(specs=[[{"secondary_y": False}]])
         fig.add_trace(
             go.Scatter(
-                x=bdata + bias/mueff * np.ones(128),
-                y=hdata + bias * np.ones(128),
+                x=np.tile(hdata + bias * np.ones(128),2),
+                y=np.tile(bdata + bias*mueff*mu0*1e3 * np.ones(128),2),
                 line=dict(color='mediumslateblue', width=4),
-                name="B-H Loop"),
+                name="Predicted B-H Loop"),
             secondary_y=False,
             )
         fig.add_trace(
             go.Scatter(
-                x=bdata,
-                y=bdata / mueff,
-                line=dict(color='firebrick', dash='longdash', width=4),
-                name="B = mu * H"),
-            secondary_y=True,
+                x=bdata /1e3 / mueff / mu0 + bias * np.ones(128),
+                y=bdata + bias*mueff*mu0*1e3 * np.ones(128),
+                line=dict(color='firebrick', dash='longdash', width=2),
+                name="Calculated B = mu * H"),
+            secondary_y=False,
+            )
+        fig.add_trace(
+            go.Scatter(
+                x=np.array(0),
+                y=np.array(0),
+                line=dict(color='gray', width=0.25),
+                showlegend = False),
+            secondary_y=False,
             )
 
-        fig.update_xaxes(title_text="B - Flux Density [mT]")
-        fig.update_yaxes(title_text="H - Field Strength [A/m]")
+        fig.update_yaxes(title_text="B - Flux Density [mT]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
+        fig.update_xaxes(title_text="H - Field Strength [A/m]",  zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
         st.plotly_chart(fig, use_container_width=True)
         
     st.subheader(f'Volumetric Loss: {np.round(loss,2)} kW/m^3')

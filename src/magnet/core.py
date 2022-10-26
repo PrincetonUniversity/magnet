@@ -228,3 +228,6 @@ def BH_Transformer(material, freq, temp, bias, bdata):
     
     return hdata
     
+def loss_BH(bdata, hdata, freq):
+    loss = freq*np.trapz(hdata,bdata)/1e3 #kW/m3
+    return loss
