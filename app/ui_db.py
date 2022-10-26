@@ -42,12 +42,16 @@ def ui_core_loss_db(m):
             [25, 50, 70, 90],
             key=f'temp {m}')
 
+    df = load_dataframe(material)  # To find the range of the variables
+
+    st.write()
+
     with col1:
         [freq_min_aux, freq_max_aux] = st.slider(
           f'Frequency Range (kHz)',
-          50,
-          500,
-          (50, 500),
+          round(min(df['Frequency'])*1e-3),
+          round(max(df['Frequency'])*1e-3),
+          (round(min(df['Frequency'])*1e-3), round(max(df['Frequency'])*1e-3)),
           step=1,
           key=f'freq {m}')
         freq_min = freq_min_aux * 1e3
@@ -56,9 +60,9 @@ def ui_core_loss_db(m):
 
         [flux_min_aux, flux_max_aux] = st.slider(
             f'AC Flux Density Range (mT)',
-            10,
-            300,
-            (10, 300),
+            round(min(df['Flux_Density'])*1e3),
+            round(max(df['Flux_Density'])*1e3),
+            (round(min(df['Flux_Density'])*1e3), round(max(df['Flux_Density'])*1e3)),
             step=5,
             key=f'flux {m}',
             help=f'Amplitude of the AC signal, not peak to peak')
@@ -66,8 +70,7 @@ def ui_core_loss_db(m):
         flux_max = flux_max_aux / 1e3
         flux_avg = (flux_max + flux_min) / 2
 
-        df = load_dataframe(material)
-        if len(df['DC_Bias']) == 0:
+        if round(round(max(df['DC_Bias']) / 15) * 15) == 0:
             dc_bias = 0
             flux_bias = 0
             st.write(f'Only data without DC bias is available'),
@@ -147,12 +150,6 @@ def ui_core_loss_db(m):
             title=f"<b>Waveform visualization</b>"
                   f"<br>f={format(freq_avg / 1e3, '.0f')} kHz, Bac={format(flux_avg * 1e3, '.0f')} mT")
 
-    with col2:
-        c_axis = st.selectbox(
-            f'Select Color-Axis for the Plots:',
-            ['Flux Density', 'Frequency', 'Power Loss'],
-            key=f'c_axis {m}')
-
     if excitation == 'Sinusoidal':
         df = load_dataframe(material, freq_min, freq_max, flux_min, flux_max, dc_bias, -1.0, -1.0, temperature)
     if excitation in ['Triangular', 'Trapezoidal']:
@@ -178,18 +175,19 @@ def ui_core_loss_db(m):
                      f'D4={round(duty_0, 2)}, '
                      f'T={round(temperature)} C')
 
-        if df.empty:
-            st.subheader("Warning: no data in range, please change the range")
-        else:
-            # with st.expander('Measurement details'):
-            #     metadata = load_metadata(material)
-            #     st.write('Core information: ', metadata['info_core'])
-            #     st.write('Setup information: ', metadata['info_setup'])
-            #     st.write('Data-processing information: ', metadata['info_processing'])
-            #     st.write(
-            #         'Note: the dc bias, duty cycles and temperature have small variations with respect to the data '
-            #         'reported here, this data has been rounded for visualization purposes. '
-            #         'The measurements can be obtain from the download section.')
+    if df.empty:
+        st.subheader("Warning: no data in range, please change the range")
+    else:
+        # with st.expander('Measurement details'):
+        #     metadata = load_metadata(material)
+        #     st.write('Core information: ', metadata['info_core'])
+        #     st.write('Setup information: ', metadata['info_setup'])
+        #     st.write('Data-processing information: ', metadata['info_processing'])
+        #     st.write(
+        #         'Note: the dc bias, duty cycles and temperature have small variations with respect to the data '
+        #         'reported here, this data has been rounded for visualization purposes. '
+        #         'The measurements can be obtain from the download section.')
+        with col1:
             with st.expander('Core information:'):
                 metadata = load_metadata(material)
                 st.write(metadata['info_core'])
@@ -215,8 +213,12 @@ def ui_core_loss_db(m):
                 help='Download a .csv file containing the flux, frequency, and '
                      'power loss for the depicted data points')
 
-    with col2:
-        if not df.empty:
+            c_axis = st.selectbox(
+                f'Select Color-Axis for the Plots:',
+                ['Flux Density', 'Frequency', 'Power Loss'],
+                key=f'c_axis {m}')
+
+        with col2:
             st.plotly_chart(scatter_plot(
                 df,
                 x='Frequency_kHz' if c_axis == 'Flux Density' else

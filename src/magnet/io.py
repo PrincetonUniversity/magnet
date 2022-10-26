@@ -61,8 +61,8 @@ def load_dataframe(material, freq_min=None, freq_max=None, flux_min=None, flux_m
             dn_max = duty_n + duty_margin
             dn_min = duty_n - duty_margin
         if temp is None:
-            temp_max = data['DC_Bias'].max()
-            temp_min = data['DC_Bias'].min()
+            temp_max = data['Temperature'].max()
+            temp_min = data['Temperature'].min()
         else:
             temp_max = temp + temp_margin
             temp_min = temp - temp_margin
