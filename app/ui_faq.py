@@ -1,6 +1,10 @@
 import os.path
 from PIL import Image
 import streamlit as st
+import pandas as pd
+from magnet.constants import material_names, materials, material_manufacturers, material_applications, materials_extra, \
+    material_core_tested
+from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -28,40 +32,30 @@ def ui_faq(m):
     with col1:
         st.subheader('MagNet Visualization')
         st.write("""
-            In this section, the MagNet database can be visualized.
+            In this section, the MagNet database can be visualized in terms of core losses.
             
-            Select the desired material and excitation on the left to visualize the core loss as a function of the frequency and flux density.
-           The desired range for the plot and specific conditions such as temperature, DC bias, or duty cycle can also be selected from the left sliders.
-            On the right, you can see the shape of the waveform you have selected.
+            Select the desired material and excitation to visualize the core loss as a function of the frequency and flux density.
+            The desired range for the plot and specific conditions such as temperature, DC bias, or duty cycle can also be selected.
+            You can also see the shape of the waveform you have selected.
             
-            For each case, a plot will represent the volumetric loss, frequency, and flux density, where the variable in the colorbar can be selected on the left.
-            When selecting Datasheet excitation, the data provided is the interpolation of the values provided in the material datasheet from the manufacturer.
-            
-            Finally, for measured data, a plot shows the Outlier Factor, which provides information on the quality of the data; for more information please check the FAQ section.
-            
+            For each case, a plot will represent the volumetric loss, frequency, and flux density, where the variable in the colorbar can be selected.
+                        
             Additionally, all the data points in the selected range can be easily downloaded as a .csv file by clicking the download button.
             Click on "Measurement details" to see the core and specific conditions for the test.
-            
-            We are working on adding measurements at different temperature and DC bias.
         """)
     with col2:
         st.subheader('MagNet Prediction')
         st.write("""
-            In this section, volumetric core losses are calculated for any desired operation point.
+            In this section, volumetric core losses are calculated using Machine Learning for any desired operation point.
             
-            The material and operation point can be configured with the menu on the left.
-            On the right, the voltage and flux as a function of time are depicted for the selected conditions. 
+            The material and operation point can be configured with the menu and the voltage and flux as a function of time are depicted for the selected conditions. 
             
-            For the selected operation point, losses are calculated using two methods:
-            1) improved Generalized Steinmetz Equations (iGSE).
-            2) Machine Learning (ML) models, which are Neural Networks trained with the measured database are deployed on the webpage.
-            Further information on the iGSE and ML models can be found in the FAQ section.
-            Additionally, the interpolated values for the measurement and datasheet are provided when available for comparison purposes.
+            For the selected operation point, losses are calculated using Machine Learning (ML) models, which are Neural Networks trained with the measured database are deployed on the webpage.
+            Further information models can be found in the FAQ section below.
             
             For the selected material and conditions, additional plots show how losses change when sweeping one of the variables (such as frequency, flux, or duty cycle) and keeping the others fixed.
-            The results include both the iGSE and ML methods.
             
-            Besides the calculation for conventional excitations, we are working on NN models for arbitrary waveforms.
+            Finally, Machine Learning can also be used to compute the core loss of any arbitrary waveform.
         """)
     with col3:
         st.subheader('MagNet Simulation')
@@ -78,18 +72,51 @@ def ui_faq(m):
             For each material and excitation, there are two .zip files available:
             
             1) The raw voltage and current data from the oscilloscope of each measured waveform are provided for download.
-            Each data point contains 2.000 samples, the first 20 us out of the 100 us of the total sample, which ensures at least a switching cycle information while saving space.
             The voltage and current are provided as two separated .csv files. 
-            An additional .txt file includes the information regarding how the test has been performed.
+            Each data point contains 10.000 samples for a total sampling time of 80 us.
             
             2) The B and H waveforms for a single switching cycle.
-            This information is post-processed from the raw voltage and current waveform as detailed in the FAQ section.
-            Again, two .csv files are generated, one for B and one for H, and another .csv file contains the information of the frequency of each data point.
-            A .txt with information on the test is also incldued.
-            
-            These files are intended for researchers to build their own core loss models.
+            This information is post-processed from the raw voltage and current waveform as detailed in the FAQ section below.
+            Two .csv files are generated, one for B and one for H with 128 samples at variable sample time to save a single swtiching cycle
         """)
-    
+
+    st.markdown("""---""")
+
+    st.header('MagNet Status')
+    st.write("")
+    n_tot = 0
+    for material in material_names:
+        n_tot = n_tot + len(load_dataframe(material))
+    st.subheader(f'Total number of data points: {n_tot}; number of materials added: {len(material_names)}')
+    st.write("")
+
+    df = pd.DataFrame({'Manufacturer': material_manufacturers})
+    df['Material'] = materials.keys()
+    df['Applications'] = pd.DataFrame({'Applications': material_applications})
+    df_extra = pd.DataFrame(materials_extra)
+    df['mu_i_r'] = df_extra.iloc[0]
+    df['f_min [Hz]'] = df_extra.iloc[1]
+    df['f_max [Hz]'] = df_extra.iloc[2]
+    df_params = pd.DataFrame(materials)
+    df['k_i*'] = df_params.iloc[0]
+    df['alpha*'] = df_params.iloc[1]
+    df['beta*'] = df_params.iloc[2]
+    df['Tested Core'] = pd.DataFrame({'Tested Core': material_core_tested})
+    # Hide the index column
+    hide_table_row_index = """
+                   <style>
+                   tbody th {display:none}
+                   .blank {display:none}
+                   </style>
+                   """  # CSS to inject contained in a string
+    st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
+    st.table(df)
+
+    st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C without bias; '
+             f'with Pv, f, and B in W/m^3, Hz and T respectively.')
+
+    st.markdown("""---""")
+
     st.title('Frequently Asked Questions')
     st.write('')
     st.write("""
@@ -100,7 +127,7 @@ def ui_faq(m):
     """)
     st.write('')
     st.subheader('Data Acquisition System:')
-    with st.expander("1. How is the magnetic core loss data measured?"):
+    with st.expander("1. How is the data measured?"):
         st.write("""
             The magnetic core loss measurement is supported by an automated data acquisition system as shown in the figure.
             The magnetic core loss is directly measured and calculated via voltamperometric method (also referred to as the two winding method), 
@@ -137,6 +164,17 @@ def ui_faq(m):
             In the following figure, examples of different waveforms and their duty cycles are shown.
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'trapezoidal-waveforms.jpg')), width=500)
+    with st.expander("4. How is the DC bias applied?"):
+        st.write("""
+        With this setup, Hdc can be controlled by adding a constant current in the primary side.
+        This current is added using a voltage supplied using in current mode control connected between the DC blocking cpacitor and the device under test.
+        Additionally, a mirror transformer and a series inductor are added to minimize unwanted current ripples.
+        """)
+    with st.expander("5. How is the temperature controlled?"):
+        st.write("""
+        The device under test is placed in an oil bath. The oil is continously moved using a magnetic stirrer to improve heat disipation.
+        To maintain the oil temperature constant, it is placed inside a water tank. The temperature of the water is controlled using a water heater to set the desired temperature for the test.
+        """)
 
     st.subheader('Data Processing:')
     with st.expander("1. What information is processed?"):
@@ -156,16 +194,37 @@ def ui_faq(m):
         """)
     with st.expander("2. How is the frequency identified?"):
         st.write("""
-            To obtain the frequency, a Fast Fourier Transform (FFT) of the current waveform is performed.
-            The component with the highest amplitude is identified as the fundamental frequency, so this algorithm is only valid if the fundamental frequency is also the largest in amplitude.
+            To obtain the frequency, a Fast Fourier Transform (FFT) is not enough due to the low frequency resolution.
             
-            Please note that this script only works for constant time steps samples so far.
-            The frequency resolution of the FFT is 10 kHz, therefore, to ensure accuracy, only tests with a switching frequency multiple of 10 kHz are performed.
-            This is also set to ensure an entire number of switching cycles in the total sample.
+            The power spectral density using Welch method is used instead to obtain the frequency instead.
             
             In the picture below the FFT of the current in the previous example is shown; for this example, the fundamental frequency is 50 kHz.
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'fft.jpg')), width=500)
+    with st.expander("8. How are the single-cycle waveforms generated?"):
+        st.write("""
+            Besides the processed data and the raw files, the webpage also offers post-processed voltage and current waveforms containing a single switching cycle with 100 evenly spaced samples.
+            These waveforms can be useful to analyze B-H loops, generate physic-based models, or train Neural Networks.
+
+            To generate the single-cycle waveforms, the raw voltage and current waveform are split into the different switching cycles, then, for each switching cycle, 100 samples are obtained by interpolation, and, finally, the 100 samples for each cycle are averaged into a single switching cycle waveform.
+            The following simplified figure clarifies the process for obtaining a single voltage waveform; the same process is applied to the current waveform.
+        """)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.jpg')), width=500)
+    with st.expander("4. How do we get B and H?"):
+        st.write("""
+            The instantaneous flux density is the integral of the voltage waveform divided by the number of turns of the secondary winding used to measure the voltage, and also divided by the effective area specified in the datasheet.
+
+            One of the problems of this method is that any offset in the voltage will be integrated over time, as shown in red in the picture below.
+            Moreover, this "raw" integral of the voltage would have a different average value depending on the initial time the waveform is integrated.
+            These effects can be removed by subtracting the "average" flux density, or offset, from the raw signal.
+            For this purpose a moving-mean filter with a switching period length is employed, this variable represents the offset of the flux density (in blue).
+            Since the moving-mean does not use the complete period at the beginning and end of the waveform, the first and last switching cycles are removed.
+
+            Once the offset is removed, the corrected shape for the instantaneous flux density is obtained (in black)
+            The flux density amplitude is calculated from the maximum (or minimum) of the corrected waveform.
+        """)
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.jpg')), width=500)
+
     with st.expander("3. How are losses obtained?"):
         st.write("""
             The instantaneous power can be calculated directly as the product of the voltage and current.
@@ -179,20 +238,10 @@ def ui_faq(m):
             Finally, the loss density is calculated as the power divided by the effective volume specified in the datasheet.
         """)
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'power.jpg')), width=500)
-    with st.expander("4. How is the flux density calculated?"):
+    with st.expander("3. How are duty cycles calculated?"):
         st.write("""
-            The instantaneous flux density is the integral of the voltage waveform divided by the number of turns of the secondary winding used to measure the voltage, and also divided by the effective area specified in the datasheet.
-            
-            One of the problems of this method is that any offset in the voltage will be integrated over time, as shown in red in the picture below.
-            Moreover, this "raw" integral of the voltage would have a different average value depending on the initial time the waveform is integrated.
-            These effects can be removed by subtracting the "average" flux density, or offset, from the raw signal.
-            For this purpose a moving-mean filter with a switching period length is employed, this variable represents the offset of the flux density (in blue).
-            Since the moving-mean does not use the complete period at the beginning and end of the waveform, the first and last switching cycles are removed.
-            
-            Once the offset is removed, the corrected shape for the instantaneous flux density is obtained (in black)
-            The flux density amplitude is calculated from the maximum (or minimum) of the corrected waveform.
+
         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.jpg')), width=500)
     with st.expander("5. How are the results plotted?"):
         st.write("""
             Besides the frequency, volumetric loss, and flux density amplitude, the different duty cycles for Trapezoidal and Triangular waveforms are identified too (d1 to d4).
@@ -214,57 +263,6 @@ def ui_faq(m):
             
             Once k, α, and β are obtained, ki for iGSE is calculated.
             Please note that the ki, α, and β are obtained from Sinusoidal tests, even when used for Trapezoidal or Triangular loss calculations.
-        """)
-    with st.expander("7. What is the definition of the outlier factor?"):
-        st.write("""
-            The outlier factor reflects the smoothness of the measured data. 
-    
-            For each point in the dataset, the estimated power losses are calculated based on the Steinmetz parameters inferred from the nearby points that are close in terms of frequency and flux density to the considered point.
-            The Steinmetz parameters are calculated as described in the previous point, but the impact of each other point is weighted by the distance to the considered point.
-            To clarify this concept, in the following figure the weight of the nearby points for a randomly considered point is shown.
-         """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'outlier-weight.jpg')), width=500)
-        st.write("""
-            And the outlier factor calculates the relative discrepancy between the estimated losses based on the local Steinmetz parameters and the measured losses.
-            A data point whose measured core loss is far from its estimated value will get a high outlier factor,
-            and can be considered an outlier. 
-            
-            In the webpage, the tolerance for the smoothness of the dataset can be set using the "maximum outlier factor" slider.
-            The data points with an outlier factor that is higher than the threshold will be removed from the dataset
-            to improve the overall data quality.
-        """)
-    with st.expander("8. How are the single-cycle waveforms generated?"):
-        st.write("""
-            Besides the processed data and the raw files, the webpage also offers post-processed voltage and current waveforms containing a single switching cycle with 100 evenly spaced samples.
-            These waveforms can be useful to analyze B-H loops, generate physic-based models, or train Neural Networks.
-            
-            To generate the single-cycle waveforms, the raw voltage and current waveform are split into the different switching cycles, then, for each switching cycle, 100 samples are obtained by interpolation, and, finally, the 100 samples for each cycle are averaged into a single switching cycle waveform.
-            The following simplified figure clarifies the process for obtaining a single voltage waveform; the same process is applied to the current waveform.
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.jpg')), width=500)
-        st.write("""   
-            However, post-processing the data in this way has some limitations.
-            First, if the frequency of the waveform is not accurately identified, some unwanted averaging effect will appear in the single-cycle waveform, leading to an inaccurate capture of the waveform.
-            To avoid this issue, a Hann window and zero-padding are applied to the waveform before using the FFT to identity the frequency.
-            With it, the frequency resolution is increased from 10 kHz to 10 Hz, leading to higher accuracy if the waveform frequency is not exactly a multiple of 10 kHz.
-            Nevertheless, to ensure the quality of the data, data points where the single-cycle (before averaging) differs too much from one switching cycle to the next are discarded.
-        """)  # https://www.dsprelated.com/freebooks/mdft/Spectrum_Analysis_Sinusoid_Windowing.html
-    with st.expander("9. How are the datasheet points generated?"):
-        st.write("""
-            The datasheet data points are interpolated from the manufacturer's datasheet for each material.
-            
-            The loss density plots against flux density, frequency, and temperature are digitalized using the "GetData Graph Digitizer" tool (http://getdata-graph-digitizer.com/).
-            For instance, the digitalized data for the N87 datasheet is shown in the following figure:
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'datasheet-digitalized.jpg')), width=500)
-        st.write("""
-            These data points are then interpolated to obtain the complete loss, flux, frequency, and temperature dataset using the Matlab "scatteredInterpolant" function; log vales for losses, frequency and flux are used.
-            The results would look as in the following figure:
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'datasheet-interpolated.jpg')), width=500)
-        st.write("""
-            Extrapolated data is removed, and, as a result, in some materials there are ranges in terms of frequency, flux, and temperature without data.
-            Moreover, materials 3E6 and N30 are excluded from the webpage as their datasheets do not contain loss plots.
         """)
 
     st.subheader('Core Loss Prediction:')
@@ -291,6 +289,7 @@ def ui_faq(m):
         st.write("""          
             [1] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
         """)
+
     st.subheader('Limitations:')
     with st.expander("1. Frequency limit of voltamperometric measurements"):
         st.write("""
@@ -326,7 +325,7 @@ def ui_faq(m):
             
             The voltage and current measurements are available for download for those interested in the nonidealities of the excitation.
         """)
-    with st.expander("3. Temperature control"):
+    with st.expander("3. Temperature stability"):
         st.write("""
             A drawback of a system taking one measurement each 1 to 2 seconds is the heating of the core under test due to core losses.
             Since temperature affects the core loss, it is important to keep the core at the desired temperature during testing.
@@ -344,6 +343,7 @@ def ui_faq(m):
             Initial tests with the core N87 R22.1x13.7x7.9 and sinusoidal excitation show an increase in losses of 10~15% when the temperature is controlled in a better way.
             Measurements with better temperature control will be captured and added to the webpage in the future.
         """)
+    st.write(f'During the tests, the core temperature may increase 5 C ~ 10 C in worst case conditions.')
     with st.expander("4. Effect of variations in core dimensions"):
         st.write("""
             Please note that B, H, and losses are calculated from the measured voltage and currents and the effective dimensions in the datasheet (effective length, effective area, and effective volume).
@@ -355,6 +355,17 @@ def ui_faq(m):
         
             For shapes other than toroidal, the gap is minimum given by the surface roughness. Its effects are neglected in the calculations.
         """)
-# TODO: Comparison to other data and a list of the things we are working on for the next release.
+    with st.expander("4. Effect of switching speed and parasitics"):
+        st.write("""
+        """)
+    st.write(f'dv/dt during the transitions is not controlled but might impact the data.')
+
+    with st.expander("2. Postprocessing artifacts"):
+        st.write("""
+            Post-processing the data in this way has some limitations.
+            First, if the frequency of the waveform is not accurately identified, some unwanted averaging effect will appear in the single-cycle waveform, leading to an inaccurate capture of the waveform.
+            Nevertheless, to ensure the quality of the data, data points where the single-cycle (before averaging) differs too much from one switching cycle to the next are discarded.
+        """)
+    st.write(f'Errors in the fundamental frequency detection affect the quality of the single-cycle data reported.')
 
     st.markdown("""---""")
