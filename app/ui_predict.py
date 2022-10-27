@@ -149,12 +149,14 @@ def ui_core_loss_predict(m):
         duty = duty_p
     if excitation == "Trapezoidal":
         duty = [duty_p, duty_n, duty_0]
+
     if excitation == "Arbitrary":
         duty = [float(i) / 100 for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", duty_string_percentage)]
         flux_read = [float(i) * 1e-3 for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", flux_string_mT)]
         duty.append(1)
         flux_read.append(flux_read[0])
         flux = np.multiply(flux_read, 1)  # For the calculations, the average is removed
+
         if len(duty) != len(flux):
             flag_inputs_ok = 0
         if max(duty) > 1:
@@ -164,6 +166,8 @@ def ui_core_loss_predict(m):
         for i in range(0, len(duty)-1):
             if duty[i] >= duty[i+1]:
                 flag_inputs_ok = 0
+
+
 
     # Core loss based on iGSE or ML
     core_loss_ML = 0.0 if flag_inputs_ok == 0 else loss(
@@ -385,7 +389,7 @@ def ui_core_loss_predict(m):
                     y_lower=[
                         1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux / 2, duty=i)
                         for i in c.streamlit.core_loss_bias],
-                    x0=list([duty_p]),
+                    x0=list([bias]),
                     y0=list([1e-3 * core_loss_ML]),
                     legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
                     legend_upper=f'{round(freq * 1e-3)} kHz, {round(2 * flux * 1e3)} mT',

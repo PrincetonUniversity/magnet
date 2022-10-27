@@ -111,18 +111,19 @@ def loss(waveform, **kwargs):
 def BH_Transformer(material, freq, temp, bias, bdata):
     net_encoder, net_decoder, norm = model_transformer(material)
         
-    bdata = torch.from_numpy(np.array(bdata/1e3)).float()
+    bdata = torch.from_numpy(np.array(bdata)).float()
     bdata = (bdata-norm[0])/norm[1]
     bdata = bdata.unsqueeze(0).unsqueeze(2)
+    
     freq = np.log10(freq)
     freq = torch.from_numpy(np.array(freq)).float()
     freq = (freq-norm[2])/norm[3]
     freq = freq.unsqueeze(0).unsqueeze(1)
-    temp = np.log10(temp)
+    
     temp = torch.from_numpy(np.array(temp)).float()
     temp = (temp-norm[4])/norm[5]
     temp = temp.unsqueeze(0).unsqueeze(1)
-    bias = np.log10(bias+0.1) 
+    
     bias = torch.from_numpy(np.array(bias)).float()
     bias = (bias-norm[6])/norm[7]
     bias = bias.unsqueeze(0).unsqueeze(1)
@@ -145,31 +146,33 @@ def BH_Transformer(material, freq, temp, bias, bdata):
 
 
 def loss_BH(bdata, hdata, freq):
-    loss = freq * np.trapz(hdata, bdata)/1e3  # kW/m3
+    loss = freq * np.trapz(hdata, bdata)
     return loss
 
-def sequence_generation(flux, duty=None, n_points=128):
+
+def bdata_generation(flux, duty=None, n_points=128):
     # Here duty is not needed, but it is convenient to call the function recursively
 
     if duty is None:  # Sinusoidal
-        frac_time = np.linspace(0, 1, n_points)
-        flux_list = flux * np.sin(2 * np.pi * frac_time)
-    elif len(duty) == 1:  # Triangular
-        assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
-        frac_time = np.array([0, duty, 1])
-        flux_list = np.array([-flux, flux, -flux])
-    else:  # Trapezoidal
+        bdata = flux * np.sin(np.linspace(0.0, 2 * np.pi, n_points))
+    elif type(duty) is list:  # Trapezoidal
         assert len(duty) == 3, 'Please specify 3 values as the Duty Ratios'
         assert np.all((0 <= np.array(duty)) & (np.array(duty) <= 1)), 'Duty ratios should be between 0 and 1'
-        frac_time = np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1])
+
         if duty[0] > duty[1]:
             # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
-            BPplot = flux
-            BNplot = -BPplot * ((-1 - duty[0] + duty[1]) * duty[1]) / (
+            bp = flux
+            bn = -bp * ((-1 - duty[0] + duty[1]) * duty[1]) / (
                     (1 - duty[0] + duty[1]) * duty[0])  # proportional to (-1-dp+dN)*dn
         else:
-            BNplot = flux  # proportional to (-1-dP+dN)*dN
-            BPplot = -BNplot * ((1 - duty[0] + duty[1]) * duty[0]) / (
+            bn = flux  # proportional to (-1-dP+dN)*dN
+            bp = -bn * ((1 - duty[0] + duty[1]) * duty[0]) / (
                     (-1 - duty[0] + duty[1]) * duty[1])  # proportional to (1-dP+dN)*dP
-        flux_list = np.array([-BPplot, BPplot, BNplot, -BNplot, -BPplot])
-    return [frac_time, flux_list]
+        bdata = np.interp(np.linspace(0, 1, n_points),
+                          np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1]),
+                          np.array([-bp, bp, bn, -bn, -bp]))
+    else:  # type(duty) == 'float' -> Triangular
+        assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
+        bdata = np.interp(np.linspace(0, 1, n_points), np.array([0, duty, 1]), np.array([-flux, flux, -flux]))
+
+    return bdata
