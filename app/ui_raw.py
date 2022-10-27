@@ -2,7 +2,7 @@ import os.path
 from PIL import Image
 import streamlit as st
 from magnet import config as c
-from magnet.constants import material_names, material_manufacturers
+from magnet.constants import material_list, material_manufacturers
 from magnet.io import load_metadata
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
@@ -16,7 +16,7 @@ def ui_download_data(m, streamlit_root):
     with col1:
         material = st.selectbox(
             f'Material:',
-            material_names,
+            material_list,
             key=f'material {m}')
 
     # User must select data first, to avoid loading both large files

@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from magnet.constants import material_names, materials_extra
+from magnet.constants import material_list, material_extra, material_core_params
 from magnet.io import load_dataframe
 import numpy as np
 import csv
@@ -17,6 +17,7 @@ mu0 = 4e-7*np.pi
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
+
 def ui_intro(m):
     
     st.title('MagNet AI')
@@ -26,7 +27,7 @@ def ui_intro(m):
         st.subheader('Input Information')
         material = st.selectbox(
             f'Material:',
-            material_names,
+            material_list,
             key=f'material {m}',
             help='select from a list of available materials')
 
@@ -41,10 +42,10 @@ def ui_intro(m):
             format='%f',
             key=f'temp {m}',
             help='device surface temperature')
-        if temp < round(min(df['Temperature'])):
-            st.warning(f"The models has not been trained for temperature below {round(min(df['Temperature']))} C")
-        if temp > round(max(df['Temperature'])):
-            st.warning(f"The models has not been trained for temperature above {round(max(df['Temperature']))} C")
+        if temp < min(df['Temperature']):
+            st.warning(f"The model has not been trained for temperature below {round(min(df['Temperature']))} C")
+        if temp > max(df['Temperature']):
+            st.warning(f"The model has not been trained for temperature above {round(max(df['Temperature']))} C")
 
         freq = st.number_input(
             "Frequency [kHz]",
@@ -55,10 +56,10 @@ def ui_intro(m):
             format='%f',
             key=f'freq {m}',
             help='fundamental frequency of the excitation') * 1e3
-        if freq * 1e-3 < round(min(df['Frequency']) * 1e-3):
-            st.warning(f"The models has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz")
-        if freq * 1e-3 > round(max(df['Frequency']) * 1e-3):
-            st.warning(f"The models has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz")
+        if freq < min(df['Frequency']):
+            st.warning(f"The model has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz")
+        if freq > max(df['Frequency']):
+            st.warning(f"The model has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz")
 
         bias = st.number_input(
             "Hdc Bias [A/m]",
@@ -70,12 +71,12 @@ def ui_intro(m):
             key=f'bias {m}',
             help='determined by the bias dc current')
         if bias < 0:
-            st.warning(f"The models has not been trained for bias below 0 A/m")
+            st.warning(f"The model has not been trained for bias below 0 A/m")
         if bias > round(max(df['DC_Bias'])):
-            st.warning(f"The models has not been trained for bias above {round(max(df['DC_Bias']))} A/m")
+            st.warning(f"The model has not been trained for bias above {round(max(df['DC_Bias']))} A/m")
 
-        mueff = materials_extra[material][0]
-        st.write(f'Initial Relative Permeability (mu) set to {mueff} to determine the center of the B-H loop')
+        mu_relative = material_extra[material][0]
+        st.write(f'Initial Relative Permeability (mu) set to {mu_relative} to determine the center of the B-H loop')
 
     with col2:
         st.subheader('Bac Input (Unit: mT)')  # Create an example Bac input file
@@ -90,40 +91,48 @@ def ui_intro(m):
             )
     
         inputB = st.file_uploader(
-            "CSV File for Bac in Single Cycle; Default: 100 mT Sinusoidal  with 128-Steps",
+            "CSV File for Bac in Single Cycle; Default: 100 mT Sinusoidal with 128-Steps",
             type='csv',
             key=f'bfile {m}',
             help=None
                 )
-        
-        st.write("\n\n\n")
-        default = st.radio(
-        "Select One of the Default Inputs for a Quick Start 👇",
-        ["Sinusoidal", "Triangular", "Trapezoidal"])
 
-        if inputB is None:  # default input for display
+        if inputB is not None:  # user input
+            st.write("Remove the uploaded file for Default Inputs")
+            df_input = pd.read_csv(inputB)
+            st.write(df_input)
+            bdata = 100 * np.sin(np.linspace(0.0, 2*np.pi, 128))  # TODO read the file
+        else:  # default input for display
+            st.write("\n\n\n")
+            default = st.radio(
+                "Select One of the Default Inputs for a Quick Start 👇",
+                ["Sinusoidal", "Triangular", "Trapezoidal"])
             if default == "Sinusoidal":
                 bdata = 100 * np.sin(np.linspace(0.0, 2*np.pi, 128))
             if default == "Triangular":
-                bdata = np.interp(np.linspace(0,1,128), np.array([0,0.5,1]), np.array([-100,100,-100]))
+                bdata = np.interp(np.linspace(0, 1, 128), np.array([0, 0.5, 1]), np.array([-100, 100, -100]))
             if default == "Trapezoidal":
-                bdata = np.interp(np.linspace(0,1,128), np.array([0,0.1,0.4,0.6,0.9,1]), np.array([0,100,100,-100,-100,0]))
-            hdata = BH_Transformer(material, freq, temp, bias, bdata)
-            output = {'B [mT]': bdata + bias*mueff*mu0*1e3 * np.ones(128), 
-                      'H [A/m]': hdata + bias * np.ones(128)}
-            loss = loss_BH(bdata/1e3,hdata,freq)
-            csv = convert_df(pd.DataFrame(output))
+                bdata = np.interp(np.linspace(0, 1, 128), np.array([0, 0.1, 0.4, 0.6, 0.9, 1]), np.array([0, 100, 100, -100, -100, 0]))
+
+        hdata = BH_Transformer(material, freq, temp, bias, bdata)
+        output = {'B [mT]': bdata + bias * mu_relative * mu0 * 1e3 * np.ones(128),
+                  'H [A/m]': hdata + bias * np.ones(128)}
+        loss = loss_BH(bdata / 1e3, hdata, freq)
+        csv = convert_df(pd.DataFrame(output))
 
         if max(abs(bdata)) > round(max(df['Flux_Density']) * 1e3):
-            st.warning(f"The models has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT")
+            st.warning(f"The model has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT")
 
+        voltage_max = 160  # max peak to peak voltage in the setup
+        effective_area = material_core_params[material][1]
+        number_of_turns = material_core_params[material][2]
+        dbdt_max = voltage_max / (effective_area * number_of_turns)
         flag_dbdt_high = 0  # Detection of large dB/dt TODO test this limit and check if this is the case
         for i in range(0, len(bdata)-1):
-            if abs(bdata[i + 1] - bdata[i]) * freq / 128 > 3e6:
+            if abs(bdata[i + 1] - bdata[i]) * 1e-3 * freq * 128 > dbdt_max:
                 flag_dbdt_high = 1
         if flag_dbdt_high == 1:
-            st.warning(
-                f"The models has not been trained dB/dt above 3 mT/ns")
+            st.warning(f"The model has not been trained dB/dt above {round(dbdt_max * 1e-3)} mT/us")
 
         flag_minor_loop = 0  # Detection of minor loops TODO test it once data is read
         if np.argmin(bdata) < np.argmax(bdata):  # min then max
@@ -147,17 +156,7 @@ def ui_intro(m):
                 if bdata[i + 1] > bdata[i]:
                     flag_minor_loop = 1
         if flag_minor_loop == 1:
-            st.warning(f"The models has not been trained for flux densities with minor loops")
-
-        if inputB is not None:  # user input
-            df = pd.read_csv(inputB)
-            st.write(df)
-            hdata = BH_Transformer(material, freq, temp, bias, bdata)
-            output = {'B [mT]': bdata + bias*mueff*mu0*1e3 * np.ones(128), 
-                      'H [A/m]': hdata + bias * np.ones(128)}
-            loss = loss_BH(bdata/1e3,hdata,freq)
-            csv = convert_df(pd.DataFrame(output))
-
+            st.warning(f"The model has not been trained for flux densities with minor loops")
 
     st.markdown("""---""")
     st.header('MagNet AI Predicted Results')
@@ -168,7 +167,7 @@ def ui_intro(m):
         fig.add_trace(
             go.Scatter(
                 x=np.linspace(1, 128, num=128)/128,
-                y=bdata + bias*mueff*mu0*1e3 * np.ones(128),
+                y=bdata + bias*mu_relative*mu0*1e3 * np.ones(128),
                 line=dict(color='mediumslateblue', width=4),
                 name="B [mT]"),
             secondary_y=False,
@@ -176,7 +175,7 @@ def ui_intro(m):
         fig.add_trace(
             go.Scatter(
                 x=np.linspace(1, 128, num=128)/128,
-                y=bias*mueff*mu0*1e3 * np.ones(128), 
+                y=bias*mu_relative*mu0*1e3 * np.ones(128),
                 line=dict(color='mediumslateblue', dash='longdash', width=2),
                 name="Bdc [mT]"),
             secondary_y=False,
@@ -208,16 +207,16 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": False}]])
         fig.add_trace(
             go.Scatter(
-                x=np.tile(hdata + bias * np.ones(128),2),
-                y=np.tile(bdata + bias*mueff*mu0*1e3 * np.ones(128),2),
+                x=np.tile(hdata + bias * np.ones(128), 2),
+                y=np.tile(bdata + bias*mu_relative*mu0*1e3 * np.ones(128),2),
                 line=dict(color='mediumslateblue', width=4),
                 name="Predicted B-H Loop"),
             secondary_y=False,
             )
         fig.add_trace(
             go.Scatter(
-                x=bdata /1e3 / mueff / mu0 + bias * np.ones(128),
-                y=bdata + bias*mueff*mu0*1e3 * np.ones(128),
+                x=bdata / 1e3 / mu_relative / mu0 + bias * np.ones(128),
+                y=bdata + bias*mu_relative*mu0*1e3 * np.ones(128),
                 line=dict(color='firebrick', dash='longdash', width=2),
                 name="Calculated B = mu * H"),
             secondary_y=False,

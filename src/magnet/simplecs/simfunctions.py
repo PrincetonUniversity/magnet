@@ -5,7 +5,7 @@ import os
 
 from magnet.simplecs.classes import CircuitModel, MagModel, CoreMaterial
 from magnet.core import loss
-from magnet.constants import materials, materials_extra, material_names
+from magnet.constants import material_list, material_extra, material_steinmetz_param
 
 
 def SimulationPLECS(m):
@@ -105,7 +105,7 @@ def SimulationPLECS(m):
 
     col1, col2 = st.columns(2)
     with col1:
-        Material_list = material_names
+        Material_list = material_list
         Material_type = st.selectbox(
             "Material:",
             Material_list,
@@ -113,8 +113,8 @@ def SimulationPLECS(m):
             key='Material'
         )
         
-        k_i, alpha, beta = materials[Material_type]
-        mu_r_0 = materials_extra[Material_type][0]
+        k_i, alpha, beta = material_steinmetz_param[Material_type]
+        mu_r_0 = material_extra[Material_type][0]
         
         Param_material = {
             'mu_r': mu_r_0,
@@ -125,22 +125,7 @@ def SimulationPLECS(m):
         material = CoreMaterial(Material_type)
         material.setParam(Param_material)
     with col2:
-        st.write("Reference parameters of the selected magnetic material:")
-        df = pd.DataFrame(
-            np.array([[material.mu_r, material.iGSE_ki, material.iGSE_alpha, material.iGSE_beta]]),
-            columns=["μr", "ki", "α", "β"]
-        )
-
-        df = df.style.format({"μr": "{:.0f}", "ki": "{:.4f}", "α": "{:.4f}", "β": "{:.4f}"})
-        # Hide the index column
-        hide_table_row_index = """
-                         <style>
-                         tbody th {display:none}
-                         .blank {display:none}
-                         </style>
-                         """  # CSS to inject contained in a string
-        st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
-        st.table(df)
+        st.write(f"Relative initial permeability: {material.mu_r}, for reference")
 
     # Simulate and obtain the data
     result = st.button("Simulate", key='Simulate')

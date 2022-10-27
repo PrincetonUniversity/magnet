@@ -82,11 +82,3 @@ def load_metadata(material):
     with path('magnet.data', f'{material}_database.h5') as h5file:
         data, metadata = h5_load(h5file)
     return metadata
-
-
-def loss_interpolated(waveform, algorithm, **kwargs):
-    assert waveform.lower() in ('sinusoidal', 'triangular', 'trapezoidal', 'arbitrary'), f'Unknown waveform {waveform}'
-    assert algorithm in ('DI', 'SI'), f'Unknown algorithm {algorithm}'
-
-    fn = globals()[f'core_loss_{algorithm}_{waveform.lower()}']
-    return fn(**kwargs)

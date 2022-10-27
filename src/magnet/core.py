@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from magnet.constants import materials
+from magnet.constants import material_list, material_steinmetz_param
 from magnet.net import model, model_lstm, model_transformer
 
 
@@ -38,89 +38,7 @@ def plot_title(prop):
     }[prop]
 
 
-def core_loss_iGSE_sinusoidal(freq, flux, duty=None, k_i=None, alpha=None, beta=None, material=None, dc_bias=0, n_interval=10_000):
-    # Here duty is not needed, but it is convenient to call the function recursively
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    frac_time = np.linspace(0, 1, n_interval)
-    flux_list = dc_bias + flux * np.sin(2 * np.pi * frac_time)
-
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material,
-                                    n_interval=n_interval)
-
-
-def core_loss_iGSE_triangular(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
-    # Here duty is the fraction of time where the current rises
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
-    frac_time = np.array([0, duty, 1])
-    flux_list = dc_bias + np.array([-flux, flux, -flux])
-
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
-
-
-def core_loss_iGSE_trapezoidal(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
-    # Here duty is a vector
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    assert len(duty) == 3, 'Please specify 3 values as the Duty Ratios'
-    assert np.all((0 <= np.array(duty)) & (np.array(duty) <= 1)), 'Duty ratios should be between 0 and 1'
-
-    frac_time = np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1])
-
-    if duty[0] > duty[1]:
-        # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
-        BPplot = flux
-        BNplot = -BPplot * ((-1 - duty[0] + duty[1]) * duty[1]) / (
-                    (1 - duty[0] + duty[1]) * duty[0])  # proportional to (-1-dp+dN)*dn
-    else:
-        BNplot = flux  # proportional to (-1-dP+dN)*dN
-        BPplot = -BNplot * ((1 - duty[0] + duty[1]) * duty[0]) / (
-                    (-1 - duty[0] + duty[1]) * duty[1])  # proportional to (1-dP+dN)*dP
-
-    flux_list = dc_bias + np.array([-BPplot, BPplot, BNplot, -BNplot, -BPplot])
-
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
-
-
-def core_loss_iGSE_arbitrary(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None,
-                             n_interval=10_000):
-
-    """
-    Calculate magnetic core loss using iGSE without minor loops
-
-    :param freq: Frequency of excitation waveform (Hz)
-    :param flux: Relative Flux Density (T) in a single waveform cycle, as an ndarray
-    :param duty: Fractional time wrt time period, in [0, 1], in a single waveform cycle, as an ndarray
-    :param k_i: Steinmetz coefficient k_i
-    :param alpha: Steinmetz coefficient alpha
-    :param beta: Steinmetz coefficient beta
-    :param material: Name of material. If specified, k_i/alpha/beta are ignored.
-    :param n_interval: No. of intervals to use to solve iGSE using trapezoidal rule
-    :return: Core loss (W/m^3)
-    """
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    period = 1 / freq
-    flux_delta = np.amax(flux) - np.amin(flux)
-    time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
-    B = np.interp(time, np.multiply(duty, period), flux)
-    dBdt = np.gradient(B, dt)
-    core_loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
-
-    return core_loss
-
-
-def core_loss_ML_sinusoidal(material, freq, flux, duty=None):
+def core_loss_sinusoidal(material, freq, flux, duty=None):
     nn = model(material=material, waveform='Sinusoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
@@ -133,7 +51,7 @@ def core_loss_ML_sinusoidal(material, freq, flux, duty=None):
     return core_loss
 
 
-def core_loss_ML_triangular(material, freq, flux, duty):
+def core_loss_triangular(material, freq, flux, duty):
     nn = model(material=material, waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
@@ -150,7 +68,7 @@ def core_loss_ML_triangular(material, freq, flux, duty):
     return core_loss
 
 
-def core_loss_ML_trapezoidal(material, freq, flux, duty):
+def core_loss_trapezoidal(material, freq, flux, duty):
     nn = model(material=material, waveform='Trapezoidal')
     core_loss = 10.0 ** nn(
         torch.from_numpy(
@@ -167,7 +85,7 @@ def core_loss_ML_trapezoidal(material, freq, flux, duty):
     return core_loss
 
 
-def core_loss_ML_arbitrary(material, freq, flux, duty):
+def core_loss_arbitrary(material, freq, flux, duty):
     nn = model_lstm(material=material)
     Num = 100
     period = 1/freq
@@ -184,14 +102,11 @@ def core_loss_ML_arbitrary(material, freq, flux, duty):
     return core_loss
 
 
-def loss(waveform, algorithm, **kwargs):
-    if algorithm == 'Machine Learning':
-        algorithm = 'ML'
+def loss(waveform, **kwargs):
     assert waveform.lower() in ('sinusoidal', 'triangular', 'trapezoidal', 'arbitrary'), f'Unknown waveform {waveform}'
-    assert algorithm in ('iGSE', 'ML'), f'Unknown algorithm {algorithm}'
-
-    fn = globals()[f'core_loss_{algorithm}_{waveform.lower()}']
+    fn = globals()[f'core_loss_{waveform.lower()}']
     return fn(**kwargs)
+
 
 def BH_Transformer(material, freq, temp, bias, bdata):
     net_encoder, net_decoder, norm = model_transformer(material)
@@ -214,20 +129,47 @@ def BH_Transformer(material, freq, temp, bias, bdata):
         
     outputs = torch.zeros(1, bdata.size()[1]+1, 1)
     tgt = (torch.rand(1, bdata.size()[1]+1, 1)*2-1)
-    tgt[:,0,:] = 0.1*torch.ones(tgt[:,0,:].size())
+    tgt[:, 0, :] = 0.1*torch.ones(tgt[:, 0, :].size())
     
     src = net_encoder(src=bdata, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
     
     for t in range(1, bdata.size()[1]+1):   
         outputs = net_decoder(src=src, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
-        tgt[:,t,:] = outputs[:,t-1,:]
+        tgt[:, t, :] = outputs[:, t-1, :]
         
-    outputs = net_decoder(src,tgt,torch.cat((freq, temp, bias), dim=1))
+    outputs = net_decoder(src, tgt, torch.cat((freq, temp, bias), dim=1))
     
-    hdata = (outputs[:,:-1,:]*norm[9]+norm[8]).squeeze(2).squeeze(0).detach().numpy()
+    hdata = (outputs[:, :-1, :]*norm[9]+norm[8]).squeeze(2).squeeze(0).detach().numpy()
     
     return hdata
-    
+
+
 def loss_BH(bdata, hdata, freq):
-    loss = freq*np.trapz(hdata,bdata)/1e3 #kW/m3
+    loss = freq * np.trapz(hdata, bdata)/1e3  # kW/m3
     return loss
+
+def sequence_generation(flux, duty=None, n_points=128):
+    # Here duty is not needed, but it is convenient to call the function recursively
+
+    if duty is None:  # Sinusoidal
+        frac_time = np.linspace(0, 1, n_points)
+        flux_list = flux * np.sin(2 * np.pi * frac_time)
+    elif len(duty) == 1:  # Triangular
+        assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
+        frac_time = np.array([0, duty, 1])
+        flux_list = np.array([-flux, flux, -flux])
+    else:  # Trapezoidal
+        assert len(duty) == 3, 'Please specify 3 values as the Duty Ratios'
+        assert np.all((0 <= np.array(duty)) & (np.array(duty) <= 1)), 'Duty ratios should be between 0 and 1'
+        frac_time = np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1])
+        if duty[0] > duty[1]:
+            # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
+            BPplot = flux
+            BNplot = -BPplot * ((-1 - duty[0] + duty[1]) * duty[1]) / (
+                    (1 - duty[0] + duty[1]) * duty[0])  # proportional to (-1-dp+dN)*dn
+        else:
+            BNplot = flux  # proportional to (-1-dP+dN)*dN
+            BPplot = -BNplot * ((1 - duty[0] + duty[1]) * duty[0]) / (
+                    (-1 - duty[0] + duty[1]) * duty[1])  # proportional to (1-dP+dN)*dP
+        flux_list = np.array([-BPplot, BPplot, BNplot, -BNplot, -BPplot])
+    return [frac_time, flux_list]

@@ -2,8 +2,8 @@ import os.path
 from PIL import Image
 import streamlit as st
 import pandas as pd
-from magnet.constants import material_names, materials, material_manufacturers, material_applications, materials_extra, \
-    material_core_tested
+from magnet.constants import material_list, material_manufacturers, material_applications, material_extra, \
+    material_core_tested, material_steinmetz_param
 from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
@@ -77,7 +77,7 @@ def ui_faq(m):
             
             2) The B and H waveforms for a single switching cycle.
             This information is post-processed from the raw voltage and current waveform as detailed in the FAQ section below.
-            Two .csv files are generated, one for B and one for H with 128 samples at variable sample time to save a single swtiching cycle
+            Two .csv files are generated, one for B and one for H with 128 samples at variable sample time to save a single switching cycle
         """)
 
     st.markdown("""---""")
@@ -85,19 +85,19 @@ def ui_faq(m):
     st.header('MagNet Status')
     st.write("")
     n_tot = 0
-    for material in material_names:
+    for material in material_list:
         n_tot = n_tot + len(load_dataframe(material))
-    st.subheader(f'Total number of data points: {n_tot}; number of materials added: {len(material_names)}')
+    st.subheader(f'Total number of data points: {n_tot}; number of materials added: {len(material_list)}')
     st.write("")
 
     df = pd.DataFrame({'Manufacturer': material_manufacturers})
-    df['Material'] = materials.keys()
+    df['Material'] = material_steinmetz_param.keys()
     df['Applications'] = pd.DataFrame({'Applications': material_applications})
-    df_extra = pd.DataFrame(materials_extra)
+    df_extra = pd.DataFrame(material_extra)
     df['mu_i_r'] = df_extra.iloc[0]
     df['f_min [Hz]'] = df_extra.iloc[1]
     df['f_max [Hz]'] = df_extra.iloc[2]
-    df_params = pd.DataFrame(materials)
+    df_params = pd.DataFrame(material_steinmetz_param)
     df['k_i*'] = df_params.iloc[0]
     df['alpha*'] = df_params.iloc[1]
     df['beta*'] = df_params.iloc[2]
