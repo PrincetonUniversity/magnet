@@ -114,15 +114,16 @@ def BH_Transformer(material, freq, temp, bias, bdata):
     bdata = torch.from_numpy(np.array(bdata/1e3)).float()
     bdata = (bdata-norm[0])/norm[1]
     bdata = bdata.unsqueeze(0).unsqueeze(2)
+    
     freq = np.log10(freq)
     freq = torch.from_numpy(np.array(freq)).float()
     freq = (freq-norm[2])/norm[3]
     freq = freq.unsqueeze(0).unsqueeze(1)
-    temp = np.log10(temp)
+    
     temp = torch.from_numpy(np.array(temp)).float()
     temp = (temp-norm[4])/norm[5]
     temp = temp.unsqueeze(0).unsqueeze(1)
-    bias = np.log10(bias+0.1) 
+    
     bias = torch.from_numpy(np.array(bias)).float()
     bias = (bias-norm[6])/norm[7]
     bias = bias.unsqueeze(0).unsqueeze(1)
