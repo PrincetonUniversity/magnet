@@ -381,13 +381,13 @@ def ui_core_loss_predict(m):
                 plot_core_loss(
                     st,
                     x=c.streamlit.core_loss_bias,
-                    y=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux, duty=i)
+                    y=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux, duty=duty)
                        for i in c.streamlit.core_loss_bias],
                     y_upper=[
-                        1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=2 * flux, duty=i)
+                        1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=2 * flux, duty=duty)
                         for i in c.streamlit.core_loss_bias],
                     y_lower=[
-                        1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux / 2, duty=i)
+                        1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux / 2, duty=duty)
                         for i in c.streamlit.core_loss_bias],
                     x0=list([bias]),
                     y0=list([1e-3 * core_loss_ML]),
