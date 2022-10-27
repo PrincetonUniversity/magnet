@@ -51,6 +51,7 @@ material_applications = {
     'N49': 'Power transformers',
     'N87': 'Power transformers',
 }
+
 material_core_tested = {
     '3C90': 'TX-25-15-10',
     '3C94': 'TX-20-10-7',
@@ -63,4 +64,5 @@ material_core_tested = {
     'N49': 'R16.0X9.6X6.3',
     'N87': 'R34.0X20.5X12.5',
 }
+
 material_names = list(materials.keys())

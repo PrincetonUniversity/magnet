@@ -1,15 +1,10 @@
 import os.path
 import pandas as pd
 import streamlit as st
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from magnet.constants import material_names, materials, materials_extra, material_manufacturers, \
-    material_applications, material_core_tested
-from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes, \
-    cycle_points_sinusoidal, cycle_points_trapezoidal, scatter_plot
+from magnet.constants import material_names, materials_extra
 from magnet.io import load_dataframe
-from magnet import config as c
 import numpy as np
 import csv
 from magnet.core import BH_Transformer, loss_BH
@@ -34,33 +29,51 @@ def ui_intro(m):
             material_names,
             key=f'material {m}',
             help='select from a list of available materials')
+
+        df = load_dataframe(material)  # To find the range of the variables
+
         temp = st.number_input(
             "Temperature [C]",
-            min_value=25.0,
-            max_value=90.0,
+            min_value=-50.0,
+            max_value=200.0,
             value=25.0,
-            step=1.0,
+            step=5.0,
             format='%f',
             key=f'temp {m}',
             help='device surface temperature')
+        if temp < round(min(df['Temperature'])):
+            st.warning(f"The models has not been trained for temperature below {round(min(df['Temperature']))} C")
+        if temp > round(max(df['Temperature'])):
+            st.warning(f"The models has not been trained for temperature above {round(max(df['Temperature']))} C")
+
         freq = st.number_input(
             "Frequency [kHz]",
-            min_value=10.0,
-            max_value=1000.0,
+            min_value=1.0,
+            max_value=10000.0,
             value=100.0,
-            step=1.0,
+            step=10.0,
             format='%f',
             key=f'freq {m}',
             help='fundamental frequency of the excitation') * 1e3
+        if freq * 1e-3 < round(min(df['Frequency']) * 1e-3):
+            st.warning(f"The models has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz")
+        if freq * 1e-3 > round(max(df['Frequency']) * 1e-3):
+            st.warning(f"The models has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz")
+
         bias = st.number_input(
             "Hdc Bias [A/m]",
-            min_value=0.0,
-            max_value=500.0,
+            min_value=-1000.0,
+            max_value=1000.0,
             value=0.0,
-            step=1.0,
+            step=5.0,
             format='%f',
             key=f'bias {m}',
             help='determined by the bias dc current')
+        if bias < 0:
+            st.warning(f"The models has not been trained for bias below 0 A/m")
+        if bias > round(max(df['DC_Bias'])):
+            st.warning(f"The models has not been trained for bias above {round(max(df['DC_Bias']))} A/m")
+
         mueff = materials_extra[material][0]
         st.write(f'Initial Relative Permeability (mu) set to {mueff} to determine the center of the B-H loop')
 
@@ -101,6 +114,41 @@ def ui_intro(m):
             loss = loss_BH(bdata/1e3,hdata,freq)
             csv = convert_df(pd.DataFrame(output))
 
+        if max(abs(bdata)) > round(max(df['Flux_Density']) * 1e3):
+            st.warning(f"The models has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT")
+
+        flag_dbdt_high = 0  # Detection of large dB/dt TODO test this limit and check if this is the case
+        for i in range(0, len(bdata)-1):
+            if abs(bdata[i + 1] - bdata[i]) * freq / 128 > 3e6:
+                flag_dbdt_high = 1
+        if flag_dbdt_high == 1:
+            st.warning(
+                f"The models has not been trained dB/dt above 3 mT/ns")
+
+        flag_minor_loop = 0  # Detection of minor loops TODO test it once data is read
+        if np.argmin(bdata) < np.argmax(bdata):  # min then max
+            for i in range(np.argmin(bdata), np.argmax(bdata)):
+                if bdata[i + 1] < bdata[i]:
+                    flag_minor_loop = 1
+            for i in range(np.argmax(bdata), len(bdata)-1):
+                if bdata[i + 1] > bdata[i]:
+                    flag_minor_loop = 1
+            for i in range(0, np.argmin(bdata)):
+                if bdata[i + 1] > bdata[i]:
+                    flag_minor_loop = 1
+        else:  # max then min
+            for i in range(0, np.argmax(bdata)):
+                if bdata[i + 1] < bdata[i]:
+                    flag_minor_loop = 1
+            for i in range(np.argmin(bdata), len(bdata)-1):
+                if bdata[i + 1] < bdata[i]:
+                    flag_minor_loop = 1
+            for i in range(np.argmax(bdata), np.argmin(bdata)):
+                if bdata[i + 1] > bdata[i]:
+                    flag_minor_loop = 1
+        if flag_minor_loop == 1:
+            st.warning(f"The models has not been trained for flux densities with minor loops")
+
         if inputB is not None:  # user input
             df = pd.read_csv(inputB)
             st.write(df)
@@ -109,6 +157,8 @@ def ui_intro(m):
                       'H [A/m]': hdata + bias * np.ones(128)}
             loss = loss_BH(bdata/1e3,hdata,freq)
             csv = convert_df(pd.DataFrame(output))
+
+
     st.markdown("""---""")
     st.header('MagNet AI Predicted Results')
     col1, col2 = st.columns(2)

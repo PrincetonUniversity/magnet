@@ -24,7 +24,6 @@ def SimulationPLECS(m):
     # Circuit model instance
     circuit = CircuitModel(topology_type)
 
-
     # Circuit parameters
     Param = {
         'Vi': 0,
@@ -42,12 +41,12 @@ def SimulationPLECS(m):
         # Display schematic
         circuit.displaySch(path)
     with col3:      
-        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0., max_value=1000., value=40., step=10.,
+        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0.01, max_value=1000., value=40., step=10.,
                                       key='Vi')
-        Param['Ro'] = st.number_input("Load resistor [Ω]", min_value=0., max_value=1e6, value=10., step=10.,
+        Param['Ro'] = st.number_input("Load resistor [Ω]", min_value=0.01, max_value=1e6, value=10., step=10.,
                                      key='R')
         if topology_type == "DAB":
-            Param['Lk'] = st.number_input("Series inductor [μH]", min_value=0., max_value=1000., value=12., step=1., key='Lk')*1e-6
+            Param['Lk'] = st.number_input("Series inductor [μH]", min_value=0.001, max_value=1000., value=12., step=1., key='Lk')*1e-6
     with col4:
         Param['fsw'] = st.number_input("Switching frequency [kHz]", min_value=50., max_value=500., value=100., step=1.,
                                        key='fsw')*1e3
@@ -56,7 +55,7 @@ def SimulationPLECS(m):
                                           key='ph')/360.
             Param['duty'] = 0.5
         else:
-            Param['duty'] = st.number_input("Duty cycle [p.u.]", min_value=0., max_value=1., value=0.5, step=0.01,
+            Param['duty'] = st.number_input("Duty cycle [p.u.]", min_value=0.01, max_value=0.99, value=0.5, step=0.01,
                                             key='duty')
     # Assign the inputs to the simulation parameter structure
     circuit.setParam(Param)
@@ -82,12 +81,12 @@ def SimulationPLECS(m):
         # Display geometry
         mag.displaySch(path)   
     with col3: 
-        Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0., max_value=1000., value=100., step=1.,
+        Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0.01, max_value=1000., value=50., step=1.,
                                           key='Lc')*1e-3
-        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0., max_value=1000., value=100., step=1.,
+        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0.01, max_value=1000., value=100., step=1.,
                                           key='Ac')*1e-6
     with col4:    
-        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0., max_value=1000., value=0.1, step=0.01,
+        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0.0001, max_value=1000., value=0.1, step=0.01,
                                           key='lg')*1e-3
     
         Param_mag['Np'] = st.number_input("Turns number primary", min_value=0., max_value=100., value=10., step=1.,
@@ -110,7 +109,7 @@ def SimulationPLECS(m):
         Material_type = st.selectbox(
             "Material:",
             Material_list,
-            index = 9,
+            index=9,
             key='Material'
         )
         
@@ -131,16 +130,23 @@ def SimulationPLECS(m):
             np.array([[material.mu_r, material.iGSE_ki, material.iGSE_alpha, material.iGSE_beta]]),
             columns=["μr", "ki", "α", "β"]
         )
-        
+
         df = df.style.format({"μr": "{:.0f}", "ki": "{:.4f}", "α": "{:.4f}", "β": "{:.4f}"})
+        # Hide the index column
+        hide_table_row_index = """
+                         <style>
+                         tbody th {display:none}
+                         .blank {display:none}
+                         </style>
+                         """  # CSS to inject contained in a string
+        st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
         st.table(df)
 
     # Simulate and obtain the data
     result = st.button("Simulate", key='Simulate')
 
     circuit.setMagModel(mag, material)
-    
-    
+
     if result:
         
         col1, col2 = st.columns(2)
@@ -148,17 +154,17 @@ def SimulationPLECS(m):
         
             st.header("Simulation Results")
             
-            Flux,Time = circuit.steadyRun(path)
+            Flux, Time = circuit.steadyRun(path)
             
             Flux = np.array(Flux)
             Time = np.array(Time)
-            Duty = np.multiply(Time,Param['fsw'])
+            Duty = np.multiply(Time, Param['fsw'])
             
-            temp = (Duty<=1)
+            temp = (Duty <= 1)
             Flux = Flux[temp]
             Duty = Duty[temp]
             
-            Flux_amp = (np.max(Flux) - np.min(Flux))/2
+            Flux_amp = (np.max(Flux) - np.min(Flux)) / 2
     
             Loss_iGSE = loss(
                 waveform="Arbitrary", 
@@ -175,24 +181,23 @@ def SimulationPLECS(m):
                 freq=Param['fsw'], 
                 flux=Flux, 
                 duty=Duty) / 1e3
-            
-        
+
             st.header("Simulated Core Loss")
             st.subheader(f'{round(Loss_iGSE*Vc*1e3,2)} W  ({round(Loss_iGSE,2)} kW/m^3) - iGSE')
             st.subheader(f'{round(Loss_ML*Vc*1e3,2)} W ({round(Loss_ML,2)} kW/m^3) - ML')
             
-            if Flux_amp<0.02:
+            if Flux_amp < 0.01:
                 st.write("""
                          **Caution**: The simulated amplitude of flux density is **too small** under the given 
                          parameter configurations. The predicted core loss result may be inaccurate!
                          """)
-            elif Flux_amp>0.3:
+            elif Flux_amp > 0.3:
                 st.write("""
                          **Caution**: The simulated amplitude of flux density is **too large** under the given 
                          parameter configurations. The predicted core loss result may be inaccurate!
                          """)
             
-            if topology_type in ["Buck", "Boost", "Flyback"]:
+            if topology_type in ["Buck", "Boost", "Flyback"]:  # TODO add new models with DC bias
                 st.write(f"""
                          **Note**: The selected {topology_type} topology is very likely to result in a **dc-biased** 
                          flux density, which is not yet taken into consideration by the model.""")
