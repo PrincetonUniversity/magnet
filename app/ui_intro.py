@@ -133,7 +133,6 @@ def ui_intro(m):
                     format='%f',
                     key=f'duty_tri {m}',
                     help='Duty ratio of the rising part.')
-
             if default == "Trapezoidal":
                 duty_0 = st.slider(
                     "Duty Cycle",
@@ -143,6 +142,7 @@ def ui_intro(m):
                     0.02,
                     format='%f',
                     key=f'duty_trap {m}',
+
                     help='Duty cycle of the rising / falling part.')
                 duty = [(1-2*duty_0)/2, (1-2*duty_0)/2, duty_0]
             phase = st.slider(
@@ -157,6 +157,7 @@ def ui_intro(m):
 
             bdata_start0 = bdata_generation(flux, duty)
             bdata = np.roll(bdata_start0, np.int_(phase * 128))
+
             hdata = BH_Transformer(material, freq, temp, bias, bdata)
             output = {'B [mT]': bdata + bias * mu_relative * mu0 * np.ones(128),
                       'H [A/m]': hdata + bias * np.ones(128)}
@@ -178,13 +179,12 @@ def ui_intro(m):
 
             flag_dbdt_high = 0  # Detection of large dB/dt TODO test this limit and check if this is the case
             for i in range(0, len(bdata) - 1):
-
                 if abs(bdata[i + 1] - bdata[i]) * freq / 128 > 3e6:
                     flag_dbdt_high = 1
             if flag_dbdt_high == 1:
                 st.warning(
                     f"For dB/dt above 3 mT/ns, results are potentially extrapolated.")
-
+                    
             flag_minor_loop = 0  # Detection of minor loops TODO test it once data is read
             if np.argmin(bdata) < np.argmax(bdata):  # min then max
                 for i in range(np.argmin(bdata), np.argmax(bdata)):
@@ -207,7 +207,6 @@ def ui_intro(m):
                     if bdata[i + 1] > bdata[i]:
                         flag_minor_loop = 1
             if flag_minor_loop == 1:
-
                 st.warning(
                     f"The models has not been trained for waveforms with minor loops. Results are potentially unreliable.")
 
@@ -298,13 +297,13 @@ def ui_intro(m):
 
     with col1:
         st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
-
     with col2:
         st.download_button(
             "Download the B-H Loop as a CSV File",
             data=csv,
             file_name='BH-Loop.csv',
             mime='text/csv',
+
             )
 
     st.markdown("""---""")
