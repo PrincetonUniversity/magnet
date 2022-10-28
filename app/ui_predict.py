@@ -3,8 +3,9 @@ import numpy as np
 import streamlit as st
 
 from magnet import config as c
-from magnet.constants import material_names, material_manufacturers, materials_extra
-from magnet.plots import waveform_visualization, core_loss_multiple, waveform_visualization_2axes, \
+from magnet.constants import material_list, material_manufacturers, material_extra
+from magnet.io import load_dataframe
+from magnet.plots import waveform_visualization, waveform_visualization_2axes, plot_core_loss, \
     cycle_points_sinusoidal, cycle_points_trapezoidal
 from magnet.core import loss
 
@@ -19,21 +20,28 @@ def ui_core_loss_predict(m):
     with col2:
         excitation = st.selectbox(
             f'Excitation:', ('Sinusoidal', 'Triangular', 'Trapezoidal', 'Arbitrary'),
-            key=f'excitation {m}')  # TBD
+            key=f'excitation {m}')
+
     with col1:
         material = st.selectbox(
             f'Material:',
-            material_names,
+            material_list,
             key=f'material {m}')
-    with col1:
 
+    df = load_dataframe(material)  # To find the range of the variables
+
+    with col1:
         freq = st.slider(
             "Frequency (kHz)",
-            round(c.streamlit.freq_min / 1e3),
-            round(c.streamlit.freq_max / 1e3),
-            round(c.streamlit.freq_max / 2 / 1e3),
-            step=round(c.streamlit.freq_step / 1e3),
+            10,
+            1000,
+            100,
+            step=1,
             key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
+        if freq < round(min(df['Frequency'])):
+            st.warning(f"The model has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz")
+        if freq > round(max(df['Frequency'])):
+            st.warning(f"The model has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz")
 
         if excitation == "Arbitrary":
             flux_string_mT = st.text_input(
@@ -45,73 +53,92 @@ def ui_core_loss_predict(m):
                 [0, 50, 60, 65, 70, 75, 80],
                 key=f'duty {m}')
         else:
-            flux = st.slider(
+            flux = st.slider(  # Use mT for front-end demonstration while T for underlying calculation
                 f'AC Flux Density (mT)',
-                round(c.streamlit.flux_min * 1e3),
-                round(c.streamlit.flux_max * 1e3),
-                round(c.streamlit.flux_max / 2 * 1e3),
-                step=round(c.streamlit.flux_step * 1e3),
+                1,
+                500,
+                50,
+                step=1,
                 key=f'flux {m}',
-                help=f'Amplitude of the AC signal, not peak to peak') / 1e3  # Use mT for front-end demonstration while T for underlying calculation
+                help=f'Amplitude of the AC signal, not peak to peak') / 1e3
+            if flux < min(df['Flux_Density']):
+                st.warning(f"The model has not been trained for peak flux densities  below {round(min(df['Flux_Density']) * 1e3)} mT")
+            if flux > max(df['Flux_Density']):
+                st.warning(f"The model has not been trained for peak flux densities  above {round(max(df['Flux_Density']) * 1e3)} mT")
 
+    duty_step = 0.01
     with col1:
         if excitation == "Triangular":
             duty_p = st.slider(
                 f'Duty Cycle',
-                c.streamlit.duty_min,
-                c.streamlit.duty_max,
-                (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
-                step=c.streamlit.duty_step,
+                duty_step,
+                1-duty_step,
+                0.5,
+                step=duty_step,
                 key=f'duty {m}')
             duty_n = 1 - duty_p
             duty_0 = 0
         if excitation == "Trapezoidal":
             duty_p = st.slider(
                 f'Duty Cycle (D1)',
-                c.streamlit.duty_min,
-                c.streamlit.duty_max,
-                (c.streamlit.duty_min + c.streamlit.duty_max) / 2,
-                step=c.streamlit.flux_step,
+                duty_step,
+                1-duty_step,
+                0.5,
+                step=duty_step,
                 key=f'dutyP {m}',
                 help=f'Rising part with the highest slope')
             duty_n = st.slider(
                 f'Duty Cycle (D3)',
-                c.streamlit.duty_min,
+                1-duty_step,
                 1 - duty_p,
-                max(round((1 - duty_p) / 2, 2), c.streamlit.duty_min),
-                step=c.streamlit.duty_step,
+                max(round((1 - duty_p) / 2, 2), duty_step),
+                step=duty_step,
                 key=f'dutyN {m}',
                 help=f'Falling part with the highest slope')
             duty_0 = round((1-duty_p-duty_n)/2, 2)
             st.write(f'Duty cycle D2=D4=(1-D1-D3)/2)={duty_0}'),
 
-        mu_relative = materials_extra[material][0]
+            if duty_p < min(df['Duty_P']) or duty_n < min(df['Duty_N']):
+                st.warning(f"The model has not been trained for duty cycles below {round(min(df['Duty_P']), 2)}")
+            if duty_p > max(df['Duty_P']) or duty_n > max(df['Duty_N']):
+                st.warning(f"The model has not been trained for duty cycles above {round(max(df['Duty_P']), 2)}")
+
+        mu_relative = material_extra[material][0]
         if excitation == "Arbitrary":
             flux_bias = 0.010  # TODO implement the equation for flux bias based on the waveform
-            dc_bias = flux_bias / (mu_relative * c.streamlit.mu_0)
-            st.write(f'Hdc={round(dc_bias, 2)} A/m, '
+            bias = flux_bias / (mu_relative * c.streamlit.mu_0)
+            st.write(f'Hdc={round(bias, 2)} A/m, '
                      f'approximated based on the average B waveform ({flux_bias * 1e3} mT) '
                      f'using mur={mu_relative}')
         else:
-            max_dc_bias = (c.streamlit.bias_b_max - flux) / (mu_relative * c.streamlit.mu_0)
-            dc_bias = st.slider(
+            bias_b_max = 0.3
+            max_bias = (bias_b_max - flux) / (mu_relative * c.streamlit.mu_0)
+            bias = st.slider(
                 f'DC Bias (A/m)',
-                c.streamlit.bias_h_min,
-                round(max_dc_bias),
-                c.streamlit.bias_h_min,
-                step=c.streamlit.bias_h_step,
+                0,
+                round(max_bias),
+                0,
+                step=5,
                 key=f'bias {m}',
                 help=f'Hdc provided as Bdc is not available. '
                      f'Bdc approximated with B=mu*H for mur={mu_relative} for the plots')
-            flux_bias = dc_bias * mu_relative * c.streamlit.mu_0
+            flux_bias = bias * mu_relative * c.streamlit.mu_0
+            if bias < 0:
+                st.warning(f"The model has not been trained for bias below 0 A/m")
+            if bias > round(max(df['DC_Bias'])):
+                st.warning(f"The model has not been trained for bias above {round(max(df['DC_Bias']))} A/m")
 
-        temperature = st.slider(
+        temp = st.slider(
             f'Temperature (C)',
-            c.streamlit.temp_min,
-            c.streamlit.temp_max,
-            c.streamlit.temp_default,
-            step=c.streamlit.temp_step,
+            0,
+            150,
+            25,
+            step=5,
             key=f'temp {m}')
+        if temp < round(min(df['Temperature'])):
+            st.warning(f"The model has not been trained for temperature below {round(min(df['Temperature']))} C")
+        if temp > round(max(df['Temperature'])):
+            st.warning(f"The model has not been trained for temperature above {round(max(df['Temperature']))} C")
 
     # Variables that are function of the sliders, different type depending on the excitation
 
@@ -122,12 +149,14 @@ def ui_core_loss_predict(m):
         duty = duty_p
     if excitation == "Trapezoidal":
         duty = [duty_p, duty_n, duty_0]
+
     if excitation == "Arbitrary":
         duty = [float(i) / 100 for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", duty_string_percentage)]
         flux_read = [float(i) * 1e-3 for i in re.findall(r"[-+]?\d*\.?\d+|[-+]?\d+", flux_string_mT)]
         duty.append(1)
         flux_read.append(flux_read[0])
         flux = np.multiply(flux_read, 1)  # For the calculations, the average is removed
+
         if len(duty) != len(flux):
             flag_inputs_ok = 0
         if max(duty) > 1:
@@ -138,11 +167,11 @@ def ui_core_loss_predict(m):
             if duty[i] >= duty[i+1]:
                 flag_inputs_ok = 0
 
+
+
     # Core loss based on iGSE or ML
-    core_loss_iGSE = 0.0 if flag_inputs_ok == 0 else loss(
-        waveform=excitation, algorithm='iGSE', material=material, freq=freq, flux=flux, duty=duty)
     core_loss_ML = 0.0 if flag_inputs_ok == 0 else loss(
-        waveform=excitation, algorithm='ML', material=material, freq=freq, flux=flux, duty=duty)
+        waveform=excitation, material=material, freq=freq, flux=flux, duty=duty)
 
     # Representation of the waveform
     with col2:
@@ -173,22 +202,22 @@ def ui_core_loss_predict(m):
     st.header(f'Output: Case {m}: {round(core_loss_ML / 1e3 ,2)} kW/m^3')
     if excitation == "Sinusoidal":
         st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={dc_bias} A/m, '
-                 f'T={round(temperature)} C')
+                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={bias} A/m, '
+                 f'T={round(temp)} C')
     if excitation == "Triangular":
         st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={dc_bias} A/m, '
+                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={bias} A/m, '
                  f'D={round(duty_p, 2)}, '
-                 f'T={round(temperature)} C')
+                 f'T={round(temp)} C')
     if excitation == "Trapezoidal":
         st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={dc_bias} A/m, '
+                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={bias} A/m, '
                  f'D1={round(duty_p, 2)}, D2={round(duty_0, 2)}, D3={round(duty_n, 2)}, D4={round(duty_0, 2)}, '
-                 f'T={round(temperature)} C')
+                 f'T={round(temp)} C')
     if excitation == "Arbitrary":
         st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(1 * 1e3)} mT, Bias={dc_bias} A/m, '  # TODO mT PLACEHOLDER
-                 f'T={round(temperature)} C')
+                 f'f={round(freq / 1e3)} kHz, Bac={round(1 * 1e3)} mT, Bias={round(bias, 2)} A/m, '  # TODO mT PLACEHOLDER
+                 f'T={round(temp)} C')
     st.write("")
     if flag_inputs_ok == 1:  # To avoid problems with the inputs for Arbitrary waveforms
         flag_minor_loop = 0
@@ -225,12 +254,7 @@ def ui_core_loss_predict(m):
                     if flux[i + 1] > flux[i]:
                         flag_minor_loop = 1
         if flag_minor_loop == 1:
-            st.write('Minor loops present, iGSE not defined for this case. '
-                     'Only core loss using Machine Learning available.')
-        else:
-            st.write(f'Core Loss: {round(core_loss_ML / 1e3,2)} kW/m^3 using Machine Learning, '
-                     f'({round(core_loss_iGSE / 1e3,2)} kW/m^3 using iGSE for reference)')
-
+            st.write('Minor loops present, NN not trained for this waveform')
     else:
         if len(duty) != len(flux):
             st.write('The Flux and Duty vectors should have the same length, please fix it to proceed.')
@@ -249,81 +273,134 @@ def ui_core_loss_predict(m):
     if excitation == "Arbitrary":
         st.write('Please bear in mind that the neural network has been trained using '
                  'trapezoidal, triangular and sinusoidal data. '
-                 'The accuracy for waveforms very different from those used for training cannot be guaranteed. '
-                 'For iGSE, the waveform is considered as containing only major loops. '
-                 'DC bias is not yet implemented, the average flux density is removed before calculation. ')
+                 'The accuracy for waveforms very different from those used for training cannot be guaranteed.')
 
-    # Plots for different sweeps
+        # TODO implementation with DC bias
 
-    if excitation in ["Sinusoidal", "Trapezoidal"]:
+    else:
+
+        # Plots for different sweeps
         col1, col2 = st.columns(2)
-    if excitation == "Triangular":
-        col1, col2, col3 = st.columns(3)
 
-    if excitation == "Sinusoidal":
-        subtitle_plot = ''
-    if excitation == "Triangular":
-        subtitle_plot = f' and duty cycle ({duty})'
-    if excitation == "Trapezoidal":
-        subtitle_plot = f' and the selected duty cycles'
+        if excitation == "Sinusoidal":
+            subtitle_plot = ''
+        if excitation == "Triangular":
+            subtitle_plot = f' and duty cycle ({duty})'
+        if excitation == "Trapezoidal":
+            subtitle_plot = f' and the selected duty cycles'
 
-    if excitation in ["Sinusoidal", "Triangular", "Trapezoidal"]:
+        # vs frequency
         with col1:
-            core_loss_multiple(
+            plot_core_loss(
                 st,
                 x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
-                y1=[1e-3 *
-                    loss(waveform=excitation, algorithm='iGSE', material=material, freq=i, flux=flux, duty=duty)
+                y=[1e-3 * loss(waveform=excitation, material=material, freq=i, flux=flux, duty=duty)
                     for i in c.streamlit.core_loss_freq],
-                y2=[1e-3 *
-                    loss(waveform=excitation, algorithm='ML', material=material, freq=i, flux=flux, duty=duty)
-                    for i in c.streamlit.core_loss_freq],
+                y_upper=[1e-3 * loss(waveform=excitation, material=material, freq=i, flux=2*flux, duty=duty)
+                         for i in c.streamlit.core_loss_freq],
+                y_lower=[1e-3 * loss(waveform=excitation, material=material, freq=i, flux=flux/2, duty=duty)
+                         for i in c.streamlit.core_loss_freq],
                 x0=list([freq / 1e3]),
-                y01=list([1e-3 * core_loss_iGSE]),
-                y02=list([1e-3 * core_loss_ML]),
-
+                y0=list([1e-3 * core_loss_ML]),
+                legend=f'{round(flux * 1e3)} mT',
+                legend_upper=f'{round(2 * flux * 1e3)} mT',
+                legend_lower=f'{round(flux / 2 * 1e3)} mT',
                 title=f'<b> Core Loss Sweeping Frequency </b>'
-                      f'<br> at a fixed Flux Density ({round(flux * 1e3)} mT){subtitle_plot}',
+                      f'<br> at a Few Flux Densities {subtitle_plot}',
                 x_title='Frequency [kHz]'
             )
+        # vs flux density
         with col2:
-            core_loss_multiple(
+            plot_core_loss(
                 st,
                 x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
-                y1=[1e-3 *
-                    loss(waveform=excitation, algorithm='iGSE', material=material, freq=freq, flux=i, duty=duty)
+                y=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=i, duty=duty)
                     for i in c.streamlit.core_loss_flux],
-                y2=[1e-3 *
-                    loss(waveform=excitation, algorithm='ML', material=material, freq=freq, flux=i, duty=duty)
-                    for i in c.streamlit.core_loss_flux],
+                y_upper=[1e-3 * loss(waveform=excitation, material=material, freq=2 * freq, flux=i, duty=duty)
+                   for i in c.streamlit.core_loss_flux],
+                y_lower=[1e-3 * loss(waveform=excitation, material=material, freq=freq / 2, flux=i, duty=duty)
+                   for i in c.streamlit.core_loss_flux],
                 x0=list([flux * 1e3]),
-                y01=list([1e-3 * core_loss_iGSE]),
-                y02=list([1e-3 * core_loss_ML]),
+                y0=list([1e-3 * core_loss_ML]),
+                legend=f'{round(freq * 1e-3)} kHz',
+                legend_upper=f'{round(2 * freq * 1e-3)} kHz',
+                legend_lower=f'{round(freq / 2 * 1e-3)} kHz',
                 title=f'<b> Core Loss Sweeping Flux Density </b>'
-                      f'<br> at a fixed Frequency ({round(freq / 1e3)} kHz){subtitle_plot}',
+                      f'<br> at a fixed Frequency {subtitle_plot}',
                 x_title='AC Flux Density [mT]'
             )
-    if excitation == "Triangular":
-        with col3:
-            core_loss_multiple(
-                st,
-                x=c.streamlit.core_loss_duty,
-                y1=[1e-3 *
-                    loss(waveform=excitation, algorithm='iGSE', material=material, freq=freq, flux=flux, duty=i)
-                    for i in c.streamlit.core_loss_duty],
-                y2=[1e-3 *
-                    loss(waveform=excitation, algorithm='ML', material=material, freq=freq, flux=flux, duty=i)
-                    for i in c.streamlit.core_loss_duty],
-                x0=list([duty_p]),
-                y01=list([1e-3 * core_loss_iGSE]),
-                y02=list([1e-3 * core_loss_ML]),
-                title=f'<b> Core Loss Sweeping Duty Ratio </b>'
-                      f'<br> at a fixed Frequency ({round(freq / 1e3)} kHz) and Flux Density ({round(flux * 1e3)} mT)',
-                x_title='Duty Ratio',
-                x_log=False,
-                y_log=True
-            )
 
-            # TODO add plots at different temperatures and DC bias
+            if excitation == "Triangular":
+                # vs duty at a few flux densities
+                with col1:
+                    plot_core_loss(
+                        st,
+                        x=c.streamlit.core_loss_duty,
+                        y=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux, duty=i)
+                            for i in c.streamlit.core_loss_duty],
+                        y_upper=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=2 * flux, duty=i)
+                           for i in c.streamlit.core_loss_duty],
+                        y_lower=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux / 2, duty=i)
+                           for i in c.streamlit.core_loss_duty],
+                        x0=list([duty_p]),
+                        y0=list([1e-3 * core_loss_ML]),
+                        legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq * 1e-3)} kHz, {round(2 * flux * 1e3)} mT',
+                        legend_lower=f'{round(freq* 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                        title=f'<b> Core Loss Sweeping Duty Ratio </b>'
+                              f'<br> at a fixed Frequency and Flux Density',
+                        x_title='Duty Ratio',
+                        x_log=False,
+                        y_log=True
+                    )
+                with col2:
+                    # vs duty at a few frequencies
+                    plot_core_loss(
+                        st,
+                        x=c.streamlit.core_loss_duty,
+                        y=[1e-3 *
+                           loss(waveform=excitation, material=material, freq=freq, flux=flux, duty=i)
+                           for i in c.streamlit.core_loss_duty],
+                        y_upper=[1e-3 * loss(waveform=excitation, material=material, freq=2 * freq, flux=flux, duty=i)
+                                 for i in c.streamlit.core_loss_duty],
+                        y_lower=[1e-3 * loss(waveform=excitation, material=material, freq=freq / 2, flux=flux, duty=i)
+                                 for i in c.streamlit.core_loss_duty],
+                        x0=list([duty_p]),
+                        y0=list([1e-3 * core_loss_ML]),
+                        legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(2 *freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_lower=f'{round(freq /2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        title=f'<b> Core Loss Sweeping Duty Ratio </b>'
+                              f'<br> at a fixed Frequency and Flux Density',
+                        x_title='Duty Ratio',
+                        x_log=False,
+                        y_log=True
+                    )
+            # vs dc bias at a few flux densities
+            with col1:
+                plot_core_loss(
+                    st,
+                    x=c.streamlit.core_loss_bias,
+                    y=[1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux, duty=duty)
+                       for i in c.streamlit.core_loss_bias],
+                    y_upper=[
+                        1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=2 * flux, duty=duty)
+                        for i in c.streamlit.core_loss_bias],
+                    y_lower=[
+                        1e-3 * loss(waveform=excitation, material=material, freq=freq, flux=flux / 2, duty=duty)
+                        for i in c.streamlit.core_loss_bias],
+                    x0=list([bias]),
+                    y0=list([1e-3 * core_loss_ML]),
+                    legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                    legend_upper=f'{round(freq * 1e-3)} kHz, {round(2 * flux * 1e3)} mT',
+                    legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                    title=f'<b> Core Loss Sweeping DC Bias </b>'
+                          f'<br> at a fixed Frequency and Flux Density',
+                    x_title='DC Bias [A/m]',
+                    x_log=False,
+                    y_log=True
+                )
+
+                    # TODO add plots at different temperatures and DC bias
 
     st.markdown("""---""")

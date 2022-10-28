@@ -127,91 +127,47 @@ def waveform_visualization(
     st.plotly_chart(fig, use_container_width=True)
 
 
-def core_loss_multiple(
-        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]',
-        x_log=True, y_log=True, y3=None, y03=None, y4=None, y04=None):
+def plot_core_loss(
+        st, x, y, x0, y0, title, x_title, legend, y_title='Power Loss [kW/m^3]',
+        x_log=True, y_log=True, y_upper=None, y_lower=None, legend_upper=None, legend_lower=None):
     fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(
-            name="iGSE",
-            x=x,
-            y=y1,
-            line=dict(color='firebrick', width=4)
+    if y_upper is not None:
+        fig.add_trace(
+            go.Scatter(
+                name=legend_upper,
+                x=x,
+                y=y_upper,
+                line=dict(color='firebrick', width=3)
+            )
         )
-    )
-    fig.add_trace(
-        go.Scatter(dict(
-            name="iGSE",
-            marker_symbol="diamond",
-            marker_size=13,
-            showlegend=False,
-            x=x0,
-            y=y01,
-            line=dict(color='firebrick', width=4)
-        ))
-    )
     fig.add_trace(
         go.Scatter(
-            name="ML",
+            name=legend,
             x=x,
-            y=y2,
+            y=y,
             line=dict(color='darkslategrey', width=4)
         )
     )
     fig.add_trace(
         go.Scatter(dict(
-            name="ML",
+            name=legend,
             marker_symbol="diamond",
             marker_size=13,
             showlegend=False,
             x=x0,
-            y=y02,
+            y=y0,
             line=dict(color='darkslategrey', width=4)
         ))
     )
-    if (y3 is not None) and max(y3) > 0.0:
+    if y_lower is not None:
         fig.add_trace(
             go.Scatter(
-                name="Datasheet",
+                name=legend_lower,
                 x=x,
-                y=y3,
-                line=dict(color='mediumslateblue', width=0)
+                y=y_lower,
+                line=dict(color='mediumslateblue', width=3)
             )
         )
-    if y03 is not None:
-        fig.add_trace(
-            go.Scatter(dict(
-                name="Datasheet",
-                marker_symbol="diamond",
-                marker_size=13,
-                showlegend=False,
-                x=x0,
-                y=y03,
-                line=dict(color='mediumslateblue', width=4)
-            ))
-        )
-    if (y4 is not None) and max(y4) > 0.0:
-        fig.add_trace(
-            go.Scatter(
-                name="Measurement",
-                x=x,
-                y=y4,
-                line=dict(color='limegreen', width=0)
-            )
-        )
-    if y04 is not None:
-        fig.add_trace(
-            go.Scatter(dict(
-                name="Measurement",
-                marker_symbol="diamond",
-                marker_size=13,
-                showlegend=False,
-                x=x0,
-                y=y04,
-                line=dict(color='limegreen', width=4)
-            ))
-        )
-
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title,

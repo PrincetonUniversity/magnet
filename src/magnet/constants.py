@@ -1,4 +1,4 @@
-materials = {
+material_steinmetz_param = {
     # material => (k_i, alpha, beta)
     '3C90': (0.23732, 1.3932, 2.5481),
     '3C94': (2.0046, 1.4361, 2.4674),
@@ -12,7 +12,7 @@ materials = {
     'N87': (0.79822, 1.3453, 2.5752),
 }
 
-materials_extra = {
+material_extra = {
     # material => (mu_r_0, f_min, f_max)
     '3C90': (2_300, 25_000, 200_000),
     '3C94': (2_300, 25_000, 300_000),
@@ -64,5 +64,18 @@ material_core_tested = {
     'N49': 'R16.0X9.6X6.3',
     'N87': 'R34.0X20.5X12.5',
 }
+material_core_params = {
+    # material => (le, Ae, N)
+    '3C90': (0.06018, 4.89e-05, 7),
+    '3C94': (0.0436, 3.36e-05, 7),
+    '3E6': (0.0542, 2.48e-05, 4),
+    '3F4': (0.0351, 0.00013, 5),
+    '77': (0.062, 4e-05, 7),
+    '78': (0.054, 5.2e-05, 6),
+    'N27': (0.04355, 3.363e-05, 8),
+    'N30': (0.05415, 2.617e-05, 6),
+    'N49': (0.03852, 1.973e-05, 10),
+    'N87': (0.08206, 8.26e-05, 5),
+}
 
-material_names = list(materials.keys())
+material_list = list(material_steinmetz_param.keys())

@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 
 from magnet import config as c
-from magnet.constants import material_names, material_manufacturers, materials_extra
+from magnet.constants import material_list, material_manufacturers, material_extra
 from magnet.io import load_dataframe, load_metadata
 from magnet.plots import scatter_plot, waveform_visualization_2axes, cycle_points_sinusoidal, cycle_points_trapezoidal
 
@@ -29,7 +29,7 @@ def ui_core_loss_db(m):
     with col1:
         material = st.selectbox(
             f'Material:',
-            material_names,
+            material_list,
             key=f'material {m}')
     with col1:
         # temperature = st.sidebar.radio(
@@ -43,8 +43,6 @@ def ui_core_loss_db(m):
             key=f'temp {m}')
 
     df = load_dataframe(material)  # To find the range of the variables
-
-    st.write()
 
     with col1:
         [freq_min_aux, freq_max_aux] = st.slider(
@@ -75,7 +73,7 @@ def ui_core_loss_db(m):
             flux_bias = 0
             st.write(f'Only data without DC bias is available'),
         else:
-            mu_relative = materials_extra[material][0]
+            mu_relative = material_extra[material][0]
             dc_bias = st.slider(
                 f'DC bias (A/m)',
                 0,
