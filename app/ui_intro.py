@@ -11,8 +11,6 @@ from magnet import config as c
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
-mu0 = 4e-7 * np.pi
-
 
 @st.cache
 def convert_df(df):
@@ -49,10 +47,10 @@ def ui_intro(m):
 
         if temp < min(dataset['Temperature']):
             st.warning(
-                f"For temperature below {round(min(dataset['Temperature']))} C, results are potentially extrapolated.")
+                f"For temperature below {round(min(dataset['Temperature']))} C. Results are potentially extrapolated.")
         if temp > max(dataset['Temperature']):
             st.warning(
-                f"For temperature above {round(max(dataset['Temperature']))} C, results are potentially extrapolated.")
+                f"For temperature above {round(max(dataset['Temperature']))} C. Results are potentially extrapolated.")
 
     with col1:
         freq = st.slider(
@@ -67,19 +65,21 @@ def ui_intro(m):
 
         if freq < min(dataset['Frequency']):
             st.warning(
-                f"For frequency below {round(min(dataset['Frequency']) * 1e-3)} kHz, results are potentially extrapolated.")
+                f"For frequency below {round(min(dataset['Frequency']) * 1e-3)} kHz. "
+                f"Results are potentially extrapolated.")
         if freq > max(dataset['Frequency']):
             st.warning(
-                f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz, results are potentially extrapolated.")
+                f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz. "
+                f"Results are potentially extrapolated.")
 
     with col3:
         st.subheader('User-defined Waveform (Unit: mT)')  # Create an example Bac input file
-        bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, 128))
+        bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
         output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
         st.write("Describe the single cycle waveform of Bac. Here's a template for your reference:")
         st.download_button(
-            "Download an Example 128-Step 100 mT Sinusoidal Bac Waveform CSV File",
+            f"Download an Example {c.streamlit.n_nn}-Step 100 mT Sinusoidal Bac Waveform CSV File",
             data=csv,
             file_name='B-Input.csv',
             mime='text/csv',
@@ -89,7 +89,7 @@ def ui_intro(m):
             "Upload the User-defined CSV File Here:",
             type='csv',
             key=f'bfile {m}',
-            help="Expected for a 128-points array that describes the waveform in a single cycle of steady state. \n "
+            help=f"Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. \n "
                  "Arrays with other lengths will be automatically interpolated."
         )
 
@@ -140,10 +140,11 @@ def ui_intro(m):
                 5.0,
                 format='%f',
                 key=f'phase_trap {m}',
-                help='Shift the waveform horizontally. Theoretically, this won\'t change the B-H loop nor the core loss.') / 360.0
+                help='Shift the waveform horizontally. '
+                     'Theoretically, this won\'t change the B-H loop nor the core loss.') / 360.0
 
             bdata_start0 = bdata_generation(flux, duty)
-            bdata = np.roll(bdata_start0, np.int_(phase * 128))
+            bdata = np.roll(bdata_start0, np.int_(phase * c.streamlit.n_nn))
 
         if inputB is not None:  # user input
             df = pd.read_csv(inputB)
@@ -152,7 +153,7 @@ def ui_intro(m):
             st.write(
                 "To remove the uploaded file and reactivate the default input, click on the cross on the right side")
             bdata_read = df["B [mT]"].to_numpy()
-            bdata = np.interp(np.linspace(0, 1, 128), np.linspace(0, 1, len(bdata_read)), bdata_read * 1e-3)
+            bdata = np.interp(np.linspace(0, 1, c.streamlit.n_nn), np.linspace(0, 1, len(bdata_read)), bdata_read * 1e-3)
 
             flag_minor_loop = 0  # Detection of minor loops TODO test it once data is read
             if np.argmin(bdata) < np.argmax(bdata):  # min then max
@@ -177,12 +178,13 @@ def ui_intro(m):
                         flag_minor_loop = 1
             if flag_minor_loop == 1:
                 st.warning(
-                    f"The models has not been trained for waveforms with minor loops. Results are potentially unreliable.")
+                    f"The models has not been trained for waveforms with minor loops. "
+                    f"Results are potentially unreliable.")
 
         with col1:
             if inputB is not None:  # user input
-                bias = np.average(bdata) / (mu_relative * mu0)
-                bdata = bdata - bias * mu_relative * mu0  # Removing the average B for the NN
+                bias = np.average(bdata) / (mu_relative * c.streamlit.mu_0)
+                bdata = bdata - bias * mu_relative * c.streamlit.mu_0  # Removing the average B for the NN
                 st.write(f'DC Bias of {round(bias)} A/m based on input B waveform and mu={mu_relative}')
             else:
                 bias = st.slider(
@@ -202,22 +204,22 @@ def ui_intro(m):
                 f"For bias above {round(max(dataset['DC_Bias']))} A/m, results are potentially extrapolated.")
 
         with col2:
-            if max(abs(bdata)) + bias * mu_relative * mu0 > max(dataset['Flux_Density']):
+            if max(abs(bdata)) + bias * mu_relative * c.streamlit.mu_0 > max(dataset['Flux_Density']):
                 st.warning(
                     f"For peak flux densities above {round(max(dataset['Flux_Density']) * 1e3)} mT, results are potentially extrapolated"
-                    f" (Bac={round((max(bdata)-min(bdata))/2 * 1e3)} mT, Bdc={round(bias * mu_relative * mu0 * 1e3)} mT).")
+                    f" (Bac={round((max(bdata)-min(bdata))/2 * 1e3)} mT, Bdc={round(bias * mu_relative * c.streamlit.mu_0 * 1e3)} mT).")
 
             flag_dbdt_high = 0  # Detection of large dB/dt
             dbdt_max = c.streamlit.vpkpk_max/(material_core_params[material][2] * material_core_params[material][1])
             for i in range(0, len(bdata) - 1):
-                if abs(bdata[i + 1] - bdata[i]) * freq * 128 > dbdt_max:  # dbdt_max=vpkpk_max/N/Ae
+                if abs(bdata[i + 1] - bdata[i]) * freq * c.streamlit.n_nn > dbdt_max:  # dbdt_max=vpkpk_max/N/Ae
                     flag_dbdt_high = 1
             if flag_dbdt_high == 1:
                 st.warning(f"For dB/dt above {round(dbdt_max * 1e-3)} mT/ns, results are potentially extrapolated.")
 
     hdata = BH_Transformer(material, freq, temp, bias, bdata)
-    output = {'B [mT]': bdata + bias * mu_relative * mu0 * np.ones(128),
-              'H [A/m]': hdata + bias * np.ones(128)}
+    output = {'B [mT]': bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn),
+              'H [A/m]': hdata + bias * np.ones(c.streamlit.n_nn)}
     loss = loss_BH(bdata, hdata, freq)
 
     csv = convert_df(pd.DataFrame(output))
@@ -230,32 +232,32 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128) / 128,
-                y=(bdata + bias * mu_relative * mu0 * np.ones(128)) * 1e3,
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=(bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
                 line=dict(color='mediumslateblue', width=4),
                 name="B [mT]"),
             secondary_y=False,
         )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128) / 128,
-                y=(bias * mu_relative * mu0 * np.ones(128)) * 1e3,
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=(bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
                 line=dict(color='mediumslateblue', dash='longdash', width=2),
                 name="Bdc [mT]"),
             secondary_y=False,
         )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128) / 128,
-                y=hdata + bias * np.ones(128),
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=hdata + bias * np.ones(c.streamlit.n_nn),
                 line=dict(color='firebrick', width=4),
                 name="H [A/m]"),
             secondary_y=True,
         )
         fig.add_trace(
             go.Scatter(
-                x=np.linspace(1, 128, num=128) / 128,
-                y=bias * np.ones(128),
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=bias * np.ones(c.streamlit.n_nn),
                 line=dict(color='firebrick', dash='longdash', width=2),
                 name="Hdc [A/m]"),
             secondary_y=True,
@@ -273,16 +275,16 @@ def ui_intro(m):
         fig = make_subplots(specs=[[{"secondary_y": False}]])
         fig.add_trace(
             go.Scatter(
-                x=np.tile(hdata + bias * np.ones(128), 2),
-                y=np.tile((bdata + bias * mu_relative * mu0 * np.ones(128)) * 1e3, 2),
+                x=np.tile(hdata + bias * np.ones(c.streamlit.n_nn), 2),
+                y=np.tile((bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3, 2),
                 line=dict(color='mediumslateblue', width=4),
                 name="Predicted B-H Loop"),
             secondary_y=False,
         )
         fig.add_trace(
             go.Scatter(
-                x=[min(bdata) / mu_relative / mu0 + bias, max(bdata) / mu_relative / mu0 + bias],
-                y=[(min(bdata) + bias * mu_relative * mu0) * 1e3, (max(bdata) + bias * mu_relative * mu0) * 1e3],
+                x=[min(bdata) / mu_relative / c.streamlit.mu_0 + bias, max(bdata) / mu_relative / c.streamlit.mu_0 + bias],
+                y=[(min(bdata) + bias * mu_relative * c.streamlit.mu_0) * 1e3, (max(bdata) + bias * mu_relative * c.streamlit.mu_0) * 1e3],
                 line=dict(color='firebrick', dash='longdash', width=2),
                 name="Calculated Bdc = mu * Hdc"),
             secondary_y=False,
@@ -308,7 +310,6 @@ def ui_intro(m):
             data=csv,
             file_name='BH-Loop.csv',
             mime='text/csv',
-
             )
 
     st.markdown("""---""")
@@ -332,4 +333,3 @@ def ui_intro(m):
         IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
     """)
     st.markdown("""---""")
-    

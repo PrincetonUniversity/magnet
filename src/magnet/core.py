@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-from magnet.constants import material_list, material_steinmetz_param
 from magnet.net import model, model_lstm, model_transformer
+from magnet import config as c
 
 
 def default_units(prop):  # Probably we are not going to need the default units
@@ -38,74 +38,19 @@ def plot_title(prop):
     }[prop]
 
 
-def core_loss_sinusoidal(material, freq, flux, duty=None):
-    nn = model(material=material, waveform='Sinusoidal')
-    core_loss = 10.0 ** nn(
-        torch.from_numpy(
-            np.array([
-                np.log10(float(freq)),
-                np.log10(float(flux))
-            ])
-        )
-    ).item()
+def core_loss_default(material, freq, flux, temp, bias, duty=None):
+    bdata = bdata_generation(flux, duty)
+    hdata = BH_Transformer(material, freq, temp, bias, bdata)
+    core_loss = loss_BH(bdata, hdata, freq)
     return core_loss
 
 
-def core_loss_triangular(material, freq, flux, duty):
-    nn = model(material=material, waveform='Trapezoidal')
-    core_loss = 10.0 ** nn(
-        torch.from_numpy(
-            np.array([
-                np.log10(float(freq)),
-                np.log10(float(flux)),
-                duty,
-                0,
-                1-duty,
-                0
-            ])
-        )
-    ).item()
+def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
+    bdata_pre = np.interp(np.linspace(0, 1, c.streamlit.n_nn), np.array(duty), np.array(flux))
+    bdata = bdata_pre - np.average(bdata_pre)
+    hdata = BH_Transformer(material, freq, temp, bias, bdata)
+    core_loss = loss_BH(bdata, hdata, freq)
     return core_loss
-
-
-def core_loss_trapezoidal(material, freq, flux, duty):
-    nn = model(material=material, waveform='Trapezoidal')
-    core_loss = 10.0 ** nn(
-        torch.from_numpy(
-            np.array([
-                np.log10(float(freq)),
-                np.log10(float(flux)),
-                duty[0],
-                duty[2],
-                duty[1],
-                duty[2]
-            ])
-        )
-    ).item()
-    return core_loss
-
-
-def core_loss_arbitrary(material, freq, flux, duty):
-    nn = model_lstm(material=material)
-    Num = 100
-    period = 1/freq
-    time = np.linspace(start=0, stop=period, num=Num)
-    flux_interpolated = np.interp(time, np.multiply(duty, period), flux)
-    
-    # Manually get rid of the dc-bias in the flux, for now
-    # print(np.average(flux_interpolated))
-    flux_interpolated = flux_interpolated - np.average(flux_interpolated)
-    
-    flux_interpolated = torch.from_numpy(flux_interpolated).view(-1, Num, 1)
-    freq = torch.from_numpy(np.asarray(np.log10(freq))).view(-1, 1)
-    core_loss = 10.0 ** nn(flux_interpolated, freq).item()
-    return core_loss
-
-
-def loss(waveform, **kwargs):
-    assert waveform.lower() in ('sinusoidal', 'triangular', 'trapezoidal', 'arbitrary'), f'Unknown waveform {waveform}'
-    fn = globals()[f'core_loss_{waveform.lower()}']
-    return fn(**kwargs)
 
 
 def BH_Transformer(material, freq, temp, bias, bdata):
@@ -150,7 +95,7 @@ def loss_BH(bdata, hdata, freq):
     return loss
 
 
-def bdata_generation(flux, duty=None, n_points=128):
+def bdata_generation(flux, duty=None, n_points=c.streamlit.n_nn):
     # Here duty is not needed, but it is convenient to call the function recursively
 
     if duty is None:  # Sinusoidal

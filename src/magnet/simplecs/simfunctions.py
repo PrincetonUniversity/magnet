@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 from magnet.simplecs.classes import CircuitModel, MagModel, CoreMaterial
-from magnet.core import loss
+from magnet.core import core_loss_arbitrary
 from magnet.constants import material_list, material_extra, material_steinmetz_param
 
 
@@ -105,10 +105,9 @@ def SimulationPLECS(m):
 
     col1, col2 = st.columns(2)
     with col1:
-        Material_list = material_list
         Material_type = st.selectbox(
             "Material:",
-            Material_list,
+            material_list,
             index=9,
             key='Material'
         )
@@ -139,44 +138,33 @@ def SimulationPLECS(m):
         
             st.header("Simulation Results")
             
-            Flux, Time = circuit.steadyRun(path)
+            flux, time = circuit.steadyRun(path)
             
-            Flux = np.array(Flux)
-            Time = np.array(Time)
-            Duty = np.multiply(Time, Param['fsw'])
+            flux = np.array(flux)
+            time = np.array(time)
+            Duty = np.multiply(time, Param['fsw'])
             
             temp = (Duty <= 1)
-            Flux = Flux[temp]
+            flux = flux[temp]
             Duty = Duty[temp]
             
-            Flux_amp = (np.max(Flux) - np.min(Flux)) / 2
-    
-            Loss_iGSE = loss(
-                waveform="Arbitrary", 
-                algorithm="iGSE", 
+            flux_amp = (np.max(flux) - np.min(flux)) / 2
+
+            Loss_ML = core_loss_arbitrary(
                 material=Material_type, 
                 freq=Param['fsw'], 
-                flux=Flux, 
-                duty=Duty) / 1e3
-            
-            Loss_ML = loss(
-                waveform="Arbitrary", 
-                algorithm="ML", 
-                material=Material_type, 
-                freq=Param['fsw'], 
-                flux=Flux, 
+                flux=flux,
                 duty=Duty) / 1e3
 
             st.header("Simulated Core Loss")
-            st.subheader(f'{round(Loss_iGSE*Vc*1e3,2)} W  ({round(Loss_iGSE,2)} kW/m^3) - iGSE')
             st.subheader(f'{round(Loss_ML*Vc*1e3,2)} W ({round(Loss_ML,2)} kW/m^3) - ML')
             
-            if Flux_amp < 0.01:
+            if flux_amp < 0.01:
                 st.write("""
                          **Caution**: The simulated amplitude of flux density is **too small** under the given 
                          parameter configurations. The predicted core loss result may be inaccurate!
                          """)
-            elif Flux_amp > 0.3:
+            elif flux_amp > 0.3:
                 st.write("""
                          **Caution**: The simulated amplitude of flux density is **too large** under the given 
                          parameter configurations. The predicted core loss result may be inaccurate!
