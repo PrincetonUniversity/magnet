@@ -167,11 +167,9 @@ def ui_core_loss_predict(m):
             if duty[i] >= duty[i+1]:
                 flag_inputs_ok = 0
 
-
-
-    # Core loss based on iGSE or ML
+    # Core loss based on ML
     core_loss_ML = 0.0 if flag_inputs_ok == 0 else loss(
-        waveform=excitation, material=material, freq=freq, flux=flux, duty=duty)
+waveform=excitation, material=material, freq=freq, flux=flux, duty=duty)
 
     # Representation of the waveform
     with col2:

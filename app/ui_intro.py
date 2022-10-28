@@ -3,10 +3,11 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from magnet.constants import material_list, material_extra
+from magnet.constants import material_list, material_extra, material_core_params
 from magnet.io import load_dataframe
 import numpy as np
 from magnet.core import BH_Transformer, loss_BH, bdata_generation
+from magnet import config as c
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -33,8 +34,9 @@ def ui_intro(m):
         mu_relative = material_extra[material][0]
         st.write(f'Initial Relative Permeability (mu) of {material} is set to {mu_relative} to determine the center of the B-H loop.')
 
-        dataset = load_dataframe(material)  # To find the range of the variables
+    dataset = load_dataframe(material)  # To find the range of the variables
 
+    with col1:
         temp = st.slider(
             "Temperature [C]",
             -50.0,
@@ -52,6 +54,7 @@ def ui_intro(m):
             st.warning(
                 f"For temperature above {round(max(dataset['Temperature']))} C, results are potentially extrapolated.")
 
+    with col1:
         freq = st.slider(
             "Frequency [kHz]",
             10.0,
@@ -69,29 +72,14 @@ def ui_intro(m):
             st.warning(
                 f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz, results are potentially extrapolated.")
 
-        bias = st.slider(
-            "Hdc Bias [A/m]",
-            -20.0,
-            60.0,
-            0.0,
-            2.0,
-            format='%f',
-            key=f'bias {m}',
-            help='Determined by the bias dc current')
-
-        if bias < 0:
-            st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
-        if bias > max(dataset['DC_Bias']):
-            st.warning(f"For bias above {round(max(dataset['DC_Bias']))} A/m, results are potentially extrapolated.")
-
     with col3:
-        st.subheader('User-defined Waveform')  # Create an example Bac input file
+        st.subheader('User-defined Waveform (Unit: mT)')  # Create an example Bac input file
         bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, 128))
         output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
         st.write("Describe the single cycle waveform of Bac. Here's a template for your reference:")
         st.download_button(
-            "Download an Example 128-Step Bac Waveform CSV File. Default: 100 mT Sinusoidal.",
+            "Download an Example 128-Step 100 mT Sinusoidal Bac Waveform CSV File",
             data=csv,
             file_name='B-Input.csv',
             mime='text/csv',
@@ -106,12 +94,11 @@ def ui_intro(m):
         )
 
     with col2:
-        st.subheader('Waveform Input (Unit: mT)')  # Create an example Bac input file
-        default = st.radio(  # TODO disable radio button and make horizontal with new streamlit version
-            "Select one of the default inputs for a quick start 🡻, or provide your user-defined waveform 🡺",
-            ["Sinusoidal", "Triangular", "Trapezoidal"])
-
+        st.subheader('Waveform Input')  # Create an example Bac input file
         if inputB is None:  # default input for display
+            default = st.radio(  # TODO disable radio button and make horizontal with new streamlit version
+                "Select one of the default inputs for a quick start 🡻",
+                ["Sinusoidal", "Triangular", "Trapezoidal"])
             flux = st.slider(
                 "Bac Amplitude [mT]",
                 10.0,
@@ -132,7 +119,7 @@ def ui_intro(m):
                     0.02,
                     format='%f',
                     key=f'duty_tri {m}',
-                    help='Duty ratio of the rising part.')
+                    help='Duty cycle of the rising part.')
             if default == "Trapezoidal":
                 duty_0 = st.slider(
                     "Duty Cycle",
@@ -158,33 +145,15 @@ def ui_intro(m):
             bdata_start0 = bdata_generation(flux, duty)
             bdata = np.roll(bdata_start0, np.int_(phase * 128))
 
-            hdata = BH_Transformer(material, freq, temp, bias, bdata)
-            output = {'B [mT]': bdata + bias * mu_relative * mu0 * np.ones(128),
-                      'H [A/m]': hdata + bias * np.ones(128)}
-            loss = loss_BH(bdata, hdata, freq)
-            csv = convert_df(pd.DataFrame(output))
-
         if inputB is not None:  # user input
             df = pd.read_csv(inputB)
             st.write("Default inputs have been disabled as the following user-defined waveform is uploaded:")
-            st.write(df)
+            st.write(df.T)
             st.write(
-                "To remove the uploaded file and reactivate the default input, click on the cross on the right side🡽")
-            bdata = df["B [mT]"].to_numpy()
-            bdata = np.interp(np.linspace(0, 1, 128), np.linspace(0, 1, len(bdata)), bdata)
+                "To remove the uploaded file and reactivate the default input, click on the cross on the right side")
+            bdata_read = df["B [mT]"].to_numpy()
+            bdata = np.interp(np.linspace(0, 1, 128), np.linspace(0, 1, len(bdata_read)), bdata_read * 1e-3)
 
-            if max(abs(bdata)) > max(dataset['Flux_Density']) * 1e3:
-                st.warning(
-                    f"For peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT, results are potentially extrapolated.")
-
-            flag_dbdt_high = 0  # Detection of large dB/dt TODO test this limit and check if this is the case
-            for i in range(0, len(bdata) - 1):
-                if abs(bdata[i + 1] - bdata[i]) * freq / 128 > 3e6:
-                    flag_dbdt_high = 1
-            if flag_dbdt_high == 1:
-                st.warning(
-                    f"For dB/dt above 3 mT/ns, results are potentially extrapolated.")
-                    
             flag_minor_loop = 0  # Detection of minor loops TODO test it once data is read
             if np.argmin(bdata) < np.argmax(bdata):  # min then max
                 for i in range(np.argmin(bdata), np.argmax(bdata)):
@@ -210,12 +179,48 @@ def ui_intro(m):
                 st.warning(
                     f"The models has not been trained for waveforms with minor loops. Results are potentially unreliable.")
 
-            hdata = BH_Transformer(material, freq, temp, bias, bdata)
-            output = {'B [mT]': bdata + bias * mu_relative * mu0 * 1e3 * np.ones(128),
-                      'H [A/m]': hdata + bias * np.ones(128)}
-            loss = loss_BH(bdata, hdata, freq)
+        with col1:
+            if inputB is not None:  # user input
+                bias = np.average(bdata) / (mu_relative * mu0)
+                bdata = bdata - bias * mu_relative * mu0  # Removing the average B for the NN
+                st.write(f'DC Bias of {round(bias)} A/m based on input B waveform and mu={mu_relative}')
+            else:
+                bias = st.slider(
+                    "Hdc Bias [A/m]",
+                    -20.0,
+                    60.0,
+                    0.0,
+                    2.0,
+                    format='%f',
+                    key=f'bias {m}',
+                    help='Determined by the bias dc current')
 
-            csv = convert_df(pd.DataFrame(output))
+        if bias < 0:
+            st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
+        if bias > max(dataset['DC_Bias']):
+            st.warning(
+                f"For bias above {round(max(dataset['DC_Bias']))} A/m, results are potentially extrapolated.")
+
+        with col2:
+            if max(abs(bdata)) + bias * mu_relative * mu0 > max(dataset['Flux_Density']):
+                st.warning(
+                    f"For peak flux densities above {round(max(dataset['Flux_Density']) * 1e3)} mT, results are potentially extrapolated"
+                    f" (Bac={round((max(bdata)-min(bdata))/2 * 1e3)} mT, Bdc={round(bias * mu_relative * mu0 * 1e3)} mT).")
+
+            flag_dbdt_high = 0  # Detection of large dB/dt
+            dbdt_max = c.streamlit.vpkpk_max/(material_core_params[material][2] * material_core_params[material][1])
+            for i in range(0, len(bdata) - 1):
+                if abs(bdata[i + 1] - bdata[i]) * freq * 128 > dbdt_max:  # dbdt_max=vpkpk_max/N/Ae
+                    flag_dbdt_high = 1
+            if flag_dbdt_high == 1:
+                st.warning(f"For dB/dt above {round(dbdt_max * 1e-3)} mT/ns, results are potentially extrapolated.")
+
+    hdata = BH_Transformer(material, freq, temp, bias, bdata)
+    output = {'B [mT]': bdata + bias * mu_relative * mu0 * np.ones(128),
+              'H [A/m]': hdata + bias * np.ones(128)}
+    loss = loss_BH(bdata, hdata, freq)
+
+    csv = convert_df(pd.DataFrame(output))
 
     st.markdown("""---""")
     st.header('MagNet AI Predicted Results')
@@ -226,7 +231,7 @@ def ui_intro(m):
         fig.add_trace(
             go.Scatter(
                 x=np.linspace(1, 128, num=128) / 128,
-                y=(bdata + bias * mu_relative * mu0 * np.ones(128)) * 1e3 ,
+                y=(bdata + bias * mu_relative * mu0 * np.ones(128)) * 1e3,
                 line=dict(color='mediumslateblue', width=4),
                 name="B [mT]"),
             secondary_y=False,
@@ -327,3 +332,4 @@ def ui_intro(m):
         IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
     """)
     st.markdown("""---""")
+    
