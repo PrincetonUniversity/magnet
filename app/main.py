@@ -8,7 +8,11 @@ from ui_predict import ui_core_loss_predict
 from ui_raw import ui_download_data
 from ui_faq import ui_faq
 from ui_intro import ui_intro
+from ui_mc import ui_mc
 from magnet.simplecs.simfunctions import SimulationPLECS
+from magnet.constants import material_list, material_manufacturers
+from magnet.io import load_metadata
+from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -39,16 +43,17 @@ if __name__ == '__main__':
     st.sidebar.markdown('by Princeton-Dartmouth-Plexim')
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | '
                         '[Princeton Power Electronics](https://www.princeton.edu/~minjie/)')
+    st.sidebar.header('MagNet Function')
     function_select = st.sidebar.radio(
-        'Select a Function:',
-        ('MagNet AI', 'MagNet Visualization', 'MagNet Prediction',
-         'MagNet Simulation', 'MagNet Download', 'MagNet Help')
+        'Select One:',
+        ('MagNet AI', 'MagNet Database', 'MagNet Prediction',
+         'MagNet Simulation', 'MagNet Download', 'MagNet Challenge', 'MagNet Help')
     )
 
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    if function_select in ['MagNet Visualization', 'MagNet Prediction']:
+    if function_select in ['MagNet Database', 'MagNet Prediction']:
         clicked = st.sidebar.button("Add Another Case")
         if clicked:
             st.session_state.n_material += 1
@@ -57,14 +62,13 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_intro)
         st.session_state.n_material = 1  # Resets the number of plots
 
-    if function_select == 'MagNet Visualization':
+    if function_select == 'MagNet Database':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
 
     if function_select == 'MagNet Prediction':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':
-        st.title('MagNet Simulation - Simulate Magnetics in SPICE')
         ui_multiple_materials(SimulationPLECS)
         st.session_state.n_material = 1  # Resets the number of plots
             
@@ -72,10 +76,22 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_download_data, streamlit_root=STREAMLIT_ROOT)
         st.session_state.n_material = 1  # Resets the number of plots
         
+    if function_select == 'MagNet Challenge':
+        ui_multiple_materials(ui_mc)
+        st.session_state.n_material = 1  # Resets the number of plots
+            
     if function_select == 'MagNet Help':
         ui_multiple_materials(ui_faq)
         st.session_state.n_material = 1  # Resets the number of plots
 
+    st.sidebar.header('MagNet Status')
+    n_tot = 0
+    for material in material_list:
+        n_tot = n_tot + len(load_dataframe(material))
+    st.sidebar.write(f'Number of data points: {n_tot}')
+    st.sidebar.write(f'Number of materials: {len(material_list)}')
+        
+        
     st.header('MagNet Research Team')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg')), width=1000)
     st.header('MagNet Sponsors')

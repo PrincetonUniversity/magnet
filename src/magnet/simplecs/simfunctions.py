@@ -11,6 +11,8 @@ from magnet.constants import material_list, material_extra, material_steinmetz_p
 def SimulationPLECS(m):
     path = os.path.dirname(os.path.realpath(__file__))
     
+    st.title('MagNet Simulation')
+    
     col1, col2 = st.columns(2)
     with col1:
         # Select topology
