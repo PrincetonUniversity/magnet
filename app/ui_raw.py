@@ -10,7 +10,7 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 def ui_download_data(m, streamlit_root):
 
-    st.title('MagNet Download')
+    st.title('MagNet Download for Open Data Sharing')
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -91,11 +91,11 @@ def ui_download_data(m, streamlit_root):
     st.markdown("""---""")
             
     st.header('Terms of Access:')
-    st.write("""
-    By downloading the MagNet data you, by default, agree to the following terms of access:
+    st.subheader("""
+    By downloading the MagNet data you by default agree:
     """)
     st.write("""
-    [RESEARCHER_FULLNAME] (the "Researcher") has requested permission to use the MagNet database (the "Database") at Princeton University. In exchange for such permission, Researcher hereby agrees to the following terms and conditions:
+    RESEARCHER_FULLNAME (the "Researcher") has requested permission to use the MagNet database (the "Database") at Princeton University. In exchange for such permission, Researcher hereby agrees to the following terms and conditions:
 
     Researcher shall use the Database only for non-commercial research and educational purposes. Princeton University make no representations or warranties regarding the Database, including but not limited to warranties of non-infringement or fitness for a particular purpose.
     

@@ -18,11 +18,11 @@ def convert_df(df):
 
 
 def ui_intro(m):
-    st.title('MagNet AI')
+    st.title('MagNet AI for Education and Design')
     st.markdown("""---""")
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with col1:
-        st.subheader('Input Information')
+        st.header('MagNet AI Input')
         material = st.selectbox(
             f'Material:',
             material_list,
@@ -32,9 +32,8 @@ def ui_intro(m):
         mu_relative = material_extra[material][0]
         st.write(f'Initial Relative Permeability (mu) of {material} is set to {mu_relative} to determine the center of the B-H loop.')
 
-    dataset = load_dataframe(material)  # To find the range of the variables
+        dataset = load_dataframe(material)  # To find the range of the variables
 
-    with col1:
         temp = st.slider(
             "Temperature [C]",
             -50.0,
@@ -52,7 +51,6 @@ def ui_intro(m):
             st.warning(
                 f"For temperature above {round(max(dataset['Temperature']))} C. Results are potentially extrapolated.")
 
-    with col1:
         freq = st.slider(
             "Frequency [kHz]",
             10.0,
@@ -71,13 +69,13 @@ def ui_intro(m):
             st.warning(
                 f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz. "
                 f"Results are potentially extrapolated.")
-
-    with col3:
-        st.subheader('User-defined Waveform (Unit: mT)')  # Create an example Bac input file
+            
+    with col2:
+        st.subheader('Option 1: Arbitrary B Input')  # Create an example Bac input file
         bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
         output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
-        st.write("Describe the single cycle waveform of Bac. Here's a template for your reference:")
+        st.write(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
         st.download_button(
             f"Download an Example {c.streamlit.n_nn}-Step 100 mT Sinusoidal Bac Waveform CSV File",
             data=csv,
@@ -88,13 +86,10 @@ def ui_intro(m):
         inputB = st.file_uploader(
             "Upload the User-defined CSV File Here:",
             type='csv',
-            key=f'bfile {m}',
-            help=f"Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. \n "
-                 "Arrays with other lengths will be automatically interpolated."
+            key=f'bfile {m}'
         )
 
-    with col2:
-        st.subheader('Waveform Input')  # Create an example Bac input file
+        st.subheader('Option 2: Standard B Input')  # Create an example Bac input file
         if inputB is None:  # default input for display
             default = st.radio(  # TODO disable radio button and make horizontal with new streamlit version
                 "Select one of the default inputs for a quick start 🡻",
@@ -197,6 +192,7 @@ def ui_intro(m):
                     key=f'bias {m}',
                     help='Determined by the bias dc current')
 
+            st.write('The next step is to describe the B waveform.')
         if bias < 0:
             st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
         if bias > max(dataset['DC_Bias']):
@@ -225,7 +221,7 @@ def ui_intro(m):
     csv = convert_df(pd.DataFrame(output))
 
     st.markdown("""---""")
-    st.header('MagNet AI Predicted Results')
+    st.header('MagNet AI Output')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('B-H Waveform')

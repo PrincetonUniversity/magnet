@@ -42,7 +42,7 @@ if __name__ == '__main__':
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
     st.sidebar.markdown('by Princeton-Dartmouth-Plexim')
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | '
-                        '[Princeton Power Electronics](https://www.princeton.edu/~minjie/)')
+                        '[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
     st.sidebar.header('MagNet Function')
     function_select = st.sidebar.radio(
         'Select One:',
@@ -69,6 +69,7 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':
+        st.title('MagNet Simulation for Circuit Analysis')
         ui_multiple_materials(SimulationPLECS)
         st.session_state.n_material = 1  # Resets the number of plots
             

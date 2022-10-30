@@ -30,7 +30,7 @@ def ui_faq(m):
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.subheader('MagNet Visualization')
+        st.subheader('MagNet Database')
         st.write("""
             In this section, the MagNet database can be visualized in terms of core losses.
             

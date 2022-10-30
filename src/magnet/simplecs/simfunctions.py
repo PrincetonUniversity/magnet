@@ -11,7 +11,7 @@ from magnet.constants import material_list, material_extra, material_steinmetz_p
 def SimulationPLECS(m):
     path = os.path.dirname(os.path.realpath(__file__))
     
-    st.title('MagNet Simulation')
+    
     
     col1, col2 = st.columns(2)
     with col1:
@@ -36,7 +36,7 @@ def SimulationPLECS(m):
         'duty': 0,
         'ph': 0
     }
-
+    
     st.header("Circuit Parameters")
     col1, col2, col3, col4 = st.columns(4)
     with col1:

@@ -15,7 +15,7 @@ def ui_core_loss_dbs(n=1):
 
 def ui_core_loss_db(m):
 
-    st.title('MagNet Database')
+    st.title('MagNet Database for Sharing and Visualization')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     

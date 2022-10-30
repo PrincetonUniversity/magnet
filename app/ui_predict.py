@@ -11,7 +11,7 @@ from magnet.core import core_loss_default, core_loss_arbitrary
 
 
 def ui_core_loss_predict(m):
-    st.title('MagNet Prediction')
+    st.title('MagNet Prediction as Interactive Datasheet')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     col1, col2 = st.columns(2)

@@ -11,7 +11,7 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 def ui_mc(m):
 
-    st.title('MagNet Challenge')
+    st.title('MagNet Challenge to Advance Models Together')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'mclogo.jpg')), width=300)
     
     st.header('MagNet Competition')
@@ -24,7 +24,9 @@ def ui_mc(m):
     """)
     st.header('MagNet Database')
     st.write("""
-    You can find extensive data on power magnetic materials from this website under the "MagNet Database" and "MagNet Download" page. These data can be used to develop analytical model or train numerical models for modeling power magnetic material characteristics.
+    You can find extensive data on power magnetic materials from this website under the "MagNet Database" and "MagNet Download" page. These data can be used for developing analytical model or training numerical models for modeling power magnetic material characteristics.
+    
+    Contact us if you have high quality data to share with the community.
     """)
     st.header('MagNet Evaluation Server')
     st.write("""
