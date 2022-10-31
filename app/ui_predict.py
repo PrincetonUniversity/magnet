@@ -11,7 +11,7 @@ from magnet.core import core_loss_default, core_loss_arbitrary
 
 
 def ui_core_loss_predict(m):
-    st.title('MagNet Prediction as Interactive Datasheet')
+    st.title('MagNet Prediction for Creating Design Graphs')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     col1, col2 = st.columns(2)
@@ -293,196 +293,208 @@ def ui_core_loss_predict(m):
         if excitation == "Trapezoidal":
             subtitle_plot = f' and the selected duty cycles'
 
+        plot_bar = st.progress(0)
+        with st.spinner('MagNet AI is Plotting the Design Graphs, Please Wait...'):
+        
         # vs frequency
-        with col1:
-            plot_core_loss(
-                st,
-                x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
-                y=[1e-3 * core_loss_default(material=material, freq=i, flux=flux, temp=temp, bias=bias, duty=duty)
-                    for i in c.streamlit.core_loss_freq],
-                y_upper=[1e-3 * core_loss_default(material=material, freq=i, flux=flux*2, temp=temp, bias=bias, duty=duty)
-                         for i in c.streamlit.core_loss_freq],
-                y_lower=[1e-3 * core_loss_default(material=material, freq=i, flux=flux/2, temp=temp, bias=bias, duty=duty)
-                         for i in c.streamlit.core_loss_freq],
-                x0=list([freq / 1e3]),
-                y0=list([1e-3 * loss]),
-                legend=f'{round(flux * 1e3)} mT',
-                legend_upper=f'{round(flux * 2 * 1e3)} mT',
-                legend_lower=f'{round(flux / 2 * 1e3)} mT',
-                title=f'<b> Core Loss Sweeping Frequency </b>'
-                      f'<br> at a Few Flux Densities {subtitle_plot}',
-                x_title='Frequency [kHz]'
-            )
-        # vs flux density
-        with col2:
-            plot_core_loss(
-                st,
-                x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
-                y=[1e-3 * core_loss_default(material=material, freq=freq, flux=i, temp=temp, bias=bias, duty=duty)
-                    for i in c.streamlit.core_loss_flux],
-                y_upper=[1e-3 * core_loss_default(material=material, freq=freq * 2, flux=i, temp=temp, bias=bias, duty=duty)
-                   for i in c.streamlit.core_loss_flux],
-                y_lower=[1e-3 * core_loss_default(material=material, freq=freq / 2, flux=i, temp=temp, bias=bias, duty=duty)
-                   for i in c.streamlit.core_loss_flux],
-                x0=list([flux * 1e3]),
-                y0=list([1e-3 * loss]),
-                legend=f'{round(freq * 1e-3)} kHz',
-                legend_upper=f'{round(freq * 2 * 1e-3)} kHz',
-                legend_lower=f'{round(freq / 2 * 1e-3)} kHz',
-                title=f'<b> Core Loss Sweeping Flux Density </b>'
-                      f'<br> at a fixed Frequency {subtitle_plot}',
-                x_title='AC Flux Density [mT]'
-            )
+            with col1:
+                plot_core_loss(
+                    st,
+                    x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
+                    y=[1e-3 * core_loss_default(material=material, freq=i, flux=flux, temp=temp, bias=bias, duty=duty)
+                        for i in c.streamlit.core_loss_freq],
+                    y_upper=[1e-3 * core_loss_default(material=material, freq=i, flux=flux*2, temp=temp, bias=bias, duty=duty)
+                             for i in c.streamlit.core_loss_freq],
+                    y_lower=[1e-3 * core_loss_default(material=material, freq=i, flux=flux/2, temp=temp, bias=bias, duty=duty)
+                             for i in c.streamlit.core_loss_freq],
+                    x0=list([freq / 1e3]),
+                    y0=list([1e-3 * loss]),
+                    legend=f'{round(flux * 1e3)} mT',
+                    legend_upper=f'{round(flux * 2 * 1e3)} mT',
+                    legend_lower=f'{round(flux / 2 * 1e3)} mT',
+                    title=f'<b> Core Loss Sweeping Frequency </b>'
+                          f'<br> at a Few Flux Densities {subtitle_plot}',
+                    x_title='Frequency [kHz]'
+                )
+                plot_bar.progress(10)
+            # vs flux density
+            with col2:
+                plot_core_loss(
+                    st,
+                    x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
+                    y=[1e-3 * core_loss_default(material=material, freq=freq, flux=i, temp=temp, bias=bias, duty=duty)
+                        for i in c.streamlit.core_loss_flux],
+                    y_upper=[1e-3 * core_loss_default(material=material, freq=freq * 2, flux=i, temp=temp, bias=bias, duty=duty)
+                       for i in c.streamlit.core_loss_flux],
+                    y_lower=[1e-3 * core_loss_default(material=material, freq=freq / 2, flux=i, temp=temp, bias=bias, duty=duty)
+                       for i in c.streamlit.core_loss_flux],
+                    x0=list([flux * 1e3]),
+                    y0=list([1e-3 * loss]),
+                    legend=f'{round(freq * 1e-3)} kHz',
+                    legend_upper=f'{round(freq * 2 * 1e-3)} kHz',
+                    legend_lower=f'{round(freq / 2 * 1e-3)} kHz',
+                    title=f'<b> Core Loss Sweeping Flux Density </b>'
+                          f'<br> at a fixed Frequency {subtitle_plot}',
+                    x_title='AC Flux Density [mT]'
+                )
+                plot_bar.progress(20)
 
-            if excitation == "Triangular":
-                # vs duty at a few flux densities
+                if excitation == "Triangular":
+                    # vs duty at a few flux densities
+                    with col1:
+                        plot_core_loss(
+                            st,
+                            x=c.streamlit.core_loss_duty,
+                            y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=bias, duty=i)
+                                for i in c.streamlit.core_loss_duty],
+                            y_upper=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=temp, bias=bias, duty=i)
+                               for i in c.streamlit.core_loss_duty],
+                            y_lower=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=temp, bias=bias, duty=i)
+                               for i in c.streamlit.core_loss_duty],
+                            x0=list([duty_p]),
+                            y0=list([1e-3 * loss]),
+                            legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 2 * 1e3)} mT',
+                            legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                            title=f'<b> Core Loss Sweeping Duty Ratio </b>'
+                                  f'<br> at a fixed Frequency',
+                            x_title='Duty Ratio',
+                            x_log=False,
+                            y_log=True
+                        )
+                        plot_bar.progress(30)
+                    with col2:
+                        # vs duty at a few frequencies
+                        plot_core_loss(
+                            st,
+                            x=c.streamlit.core_loss_duty,
+                            y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=bias, duty=i)
+                               for i in c.streamlit.core_loss_duty],
+                            y_upper=[1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=temp, bias=bias, duty=i)
+                                     for i in c.streamlit.core_loss_duty],
+                            y_lower=[1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=temp, bias=bias, duty=i)
+                                     for i in c.streamlit.core_loss_duty],
+                            x0=list([duty_p]),
+                            y0=list([1e-3 * loss]),
+                            legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_upper=f'{round(freq * 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_lower=f'{round(freq / 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            title=f'<b> Core Loss Sweeping Duty Ratio </b>'
+                                  f'<br> at a fixed Flux Density',
+                            x_title='Duty Ratio',
+                            x_log=False,
+                            y_log=True
+                        )
+                        plot_bar.progress(40)
+                # vs dc bias at a few flux densities
                 with col1:
                     plot_core_loss(
                         st,
-                        x=c.streamlit.core_loss_duty,
-                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=bias, duty=i)
-                            for i in c.streamlit.core_loss_duty],
-                        y_upper=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=temp, bias=bias, duty=i)
-                           for i in c.streamlit.core_loss_duty],
-                        y_lower=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=temp, bias=bias, duty=i)
-                           for i in c.streamlit.core_loss_duty],
-                        x0=list([duty_p]),
+                        x=c.streamlit.core_loss_bias,
+                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=i, duty=duty)
+                           for i in c.streamlit.core_loss_bias],
+                        y_upper=[
+                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=temp, bias=i, duty=duty)
+                            for i in c.streamlit.core_loss_bias],
+                        y_lower=[
+                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=temp, bias=i, duty=duty)
+                            for i in c.streamlit.core_loss_bias],
+                        x0=list([bias]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 2 * 1e3)} mT',
                         legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
-                        title=f'<b> Core Loss Sweeping Duty Ratio </b>'
+                        title=f'<b> Core Loss Sweeping DC Bias </b>'
                               f'<br> at a fixed Frequency',
-                        x_title='Duty Ratio',
+                        x_title='DC Bias [A/m]',
                         x_log=False,
                         y_log=True
                     )
+                    plot_bar.progress(50)
+                # vs dc bias at a few frequencies
                 with col2:
-                    # vs duty at a few frequencies
                     plot_core_loss(
                         st,
-                        x=c.streamlit.core_loss_duty,
-                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=bias, duty=i)
-                           for i in c.streamlit.core_loss_duty],
-                        y_upper=[1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=temp, bias=bias, duty=i)
-                                 for i in c.streamlit.core_loss_duty],
-                        y_lower=[1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=temp, bias=bias, duty=i)
-                                 for i in c.streamlit.core_loss_duty],
-                        x0=list([duty_p]),
+                        x=c.streamlit.core_loss_bias,
+                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=i,
+                                                    duty=duty)
+                           for i in c.streamlit.core_loss_bias],
+                        y_upper=[
+                            1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=temp, bias=i,
+                                                     duty=duty)
+                            for i in c.streamlit.core_loss_bias],
+                        y_lower=[
+                            1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=temp, bias=i,
+                                                     duty=duty)
+                            for i in c.streamlit.core_loss_bias],
+                        x0=list([bias]),
+                        y0=list([1e-3 * loss]),
+                        legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq*2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_lower=f'{round(freq/2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        title=f'<b> Core Loss Sweeping DC Bias </b>'
+                              f'<br> at a fixed Flux Density',
+                        x_title='DC Bias [A/m]',
+                        x_log=False,
+                        y_log=True
+                    )
+                    plot_bar.progress(60)
+                # vs temperature at a few flux densities
+                with col1:
+                    plot_core_loss(
+                        st,
+                        x=c.streamlit.core_loss_temp,
+                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=i, bias=bias,
+                                                    duty=duty)
+                           for i in c.streamlit.core_loss_temp],
+                        y_upper=[
+                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=i, bias=bias,
+                                                     duty=duty)
+                            for i in c.streamlit.core_loss_temp],
+                        y_lower=[
+                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=i, bias=bias,
+                                                     duty=duty)
+                            for i in c.streamlit.core_loss_temp],
+                        x0=list([temp]),
+                        y0=list([1e-3 * loss]),
+                        legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq * 1e-3)} kHz, {round(2 * flux * 1e3)} mT',
+                        legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                        title=f'<b> Core Loss Sweeping Temperature </b>'
+                              f'<br> at a fixed Frequency',
+                        x_title='Temperature [C]',
+                        x_log=False,
+                        y_log=True
+                    )
+                    plot_bar.progress(70)
+                # vs temperature at a few frequencies
+                with col2:
+                    plot_core_loss(
+                        st,
+                        x=c.streamlit.core_loss_temp,
+                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=i, bias=bias,
+                                                    duty=duty)
+                           for i in c.streamlit.core_loss_temp],
+                        y_upper=[
+                            1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=i, bias=bias,
+                                                     duty=duty)
+                            for i in c.streamlit.core_loss_temp],
+                        y_lower=[
+                            1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=i, bias=bias,
+                                                     duty=duty)
+                            for i in c.streamlit.core_loss_temp],
+                        x0=list([temp]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         legend_upper=f'{round(freq * 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         legend_lower=f'{round(freq / 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        title=f'<b> Core Loss Sweeping Duty Ratio </b>'
+                        title=f'<b> Core Loss Sweeping Temperature </b>'
                               f'<br> at a fixed Flux Density',
-                        x_title='Duty Ratio',
+                        x_title='Temperature [C]',
                         x_log=False,
                         y_log=True
                     )
-            # vs dc bias at a few flux densities
-            with col1:
-                plot_core_loss(
-                    st,
-                    x=c.streamlit.core_loss_bias,
-                    y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=i, duty=duty)
-                       for i in c.streamlit.core_loss_bias],
-                    y_upper=[
-                        1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=temp, bias=i, duty=duty)
-                        for i in c.streamlit.core_loss_bias],
-                    y_lower=[
-                        1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=temp, bias=i, duty=duty)
-                        for i in c.streamlit.core_loss_bias],
-                    x0=list([bias]),
-                    y0=list([1e-3 * loss]),
-                    legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 2 * 1e3)} mT',
-                    legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
-                    title=f'<b> Core Loss Sweeping DC Bias </b>'
-                          f'<br> at a fixed Frequency',
-                    x_title='DC Bias [A/m]',
-                    x_log=False,
-                    y_log=True
-                )
-            # vs dc bias at a few frequencies
-            with col2:
-                plot_core_loss(
-                    st,
-                    x=c.streamlit.core_loss_bias,
-                    y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=i,
-                                                duty=duty)
-                       for i in c.streamlit.core_loss_bias],
-                    y_upper=[
-                        1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=temp, bias=i,
-                                                 duty=duty)
-                        for i in c.streamlit.core_loss_bias],
-                    y_lower=[
-                        1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=temp, bias=i,
-                                                 duty=duty)
-                        for i in c.streamlit.core_loss_bias],
-                    x0=list([bias]),
-                    y0=list([1e-3 * loss]),
-                    legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    legend_upper=f'{round(freq*2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    legend_lower=f'{round(freq/2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    title=f'<b> Core Loss Sweeping DC Bias </b>'
-                          f'<br> at a fixed Flux Density',
-                    x_title='DC Bias [A/m]',
-                    x_log=False,
-                    y_log=True
-                )
-            # vs temperature at a few flux densities
-            with col1:
-                plot_core_loss(
-                    st,
-                    x=c.streamlit.core_loss_temp,
-                    y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=i, bias=bias,
-                                                duty=duty)
-                       for i in c.streamlit.core_loss_temp],
-                    y_upper=[
-                        1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=i, bias=bias,
-                                                 duty=duty)
-                        for i in c.streamlit.core_loss_temp],
-                    y_lower=[
-                        1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=i, bias=bias,
-                                                 duty=duty)
-                        for i in c.streamlit.core_loss_temp],
-                    x0=list([temp]),
-                    y0=list([1e-3 * loss]),
-                    legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    legend_upper=f'{round(freq * 1e-3)} kHz, {round(2 * flux * 1e3)} mT',
-                    legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
-                    title=f'<b> Core Loss Sweeping Temperature </b>'
-                          f'<br> at a fixed Frequency',
-                    x_title='Temperature [C]',
-                    x_log=False,
-                    y_log=True
-                )
-            # vs temperature at a few frequencies
-            with col2:
-                plot_core_loss(
-                    st,
-                    x=c.streamlit.core_loss_temp,
-                    y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=i, bias=bias,
-                                                duty=duty)
-                       for i in c.streamlit.core_loss_temp],
-                    y_upper=[
-                        1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=i, bias=bias,
-                                                 duty=duty)
-                        for i in c.streamlit.core_loss_temp],
-                    y_lower=[
-                        1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=i, bias=bias,
-                                                 duty=duty)
-                        for i in c.streamlit.core_loss_temp],
-                    x0=list([temp]),
-                    y0=list([1e-3 * loss]),
-                    legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    legend_upper=f'{round(freq * 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    legend_lower=f'{round(freq / 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                    title=f'<b> Core Loss Sweeping Temperature </b>'
-                          f'<br> at a fixed Flux Density',
-                    x_title='Temperature [C]',
-                    x_log=False,
-                    y_log=True
-                )
+                    plot_bar.progress(100)
+            st.success('Done!')
 
     st.markdown("""---""")

@@ -88,7 +88,9 @@ def ui_intro(m):
             type='csv',
             key=f'bfile {m}'
         )
-
+        
+        st.markdown("""---""")
+        
         st.subheader('Option 2: Standard B Input')  # Create an example Bac input file
         if inputB is None:  # default input for display
             default = st.radio(  # TODO disable radio button and make horizontal with new streamlit version
@@ -282,7 +284,7 @@ def ui_intro(m):
                 x=[min(bdata) / mu_relative / c.streamlit.mu_0 + bias, max(bdata) / mu_relative / c.streamlit.mu_0 + bias],
                 y=[(min(bdata) + bias * mu_relative * c.streamlit.mu_0) * 1e3, (max(bdata) + bias * mu_relative * c.streamlit.mu_0) * 1e3],
                 line=dict(color='firebrick', dash='longdash', width=2),
-                name="Calculated Bdc = mu * Hdc"),
+                name="Bdc = mu * Hdc"),
             secondary_y=False,
         )
         fig.add_trace(
@@ -314,17 +316,17 @@ def ui_intro(m):
     st.write("""
         If you used MagNet, please cite us with the following:
 
-        [1] D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), 2022, pp. 1-8.
+        [4] D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), 2022, pp. 1-8.
 
-        [2] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
+        [3] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
         "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," 
         IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
 
-        [3] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
+        [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
         "Transfer Learning Methods for Magnetic Core Loss Modeling,” 
         IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
 
-        [4] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
+        [1] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
         "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
         IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
     """)

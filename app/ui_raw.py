@@ -35,59 +35,60 @@ def ui_download_data(m, streamlit_root):
         st.write('Data-processing information:')
         st.write(metadata['info_processing'])
 
-    if selection == 'Voltage and Current Data':
-        st.subheader('Original measured voltage and current data')
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            if os.path.isfile(os.path.join(
-                    streamlit_root, c.streamlit.data_file.format(material=material, excitation='measurements'))):
-                data_file_raw = os.path.join(
-                    streamlit_root, c.streamlit.data_file.format(material=material, excitation='measurements'))
-                with open(data_file_raw, 'rb') as file:
-                    st.download_button(f'Download zip file',
-                                       file,
-                                       os.path.basename(data_file_raw),
-                                       key=[m, 'Raw'])
-            else:
-                st.subheader('Download data missing, please contact us')
-            st.write("""
-            This .zip file contains a .txt file with information regarding the setup and core tested and three .csv files.
-    
-            The .csv files contain the current and voltage waveforms saved from the oscilloscope. 
-            Each row is a different measurement (i.e. a data point with a different frequency, flux density, etc.) 
-            and each column is a sample. There are 10.000 samples per waveform. 
-    
-            The sampling time, provided as a separate .csv file, is the same for each waveform (8 ns).
-            """)
-        with col2:
-            st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_raw.png')), width=500)
+    with st.spinner('MagNet AI is Collecting the Data, Please Wait...'):
+        if selection == 'Voltage and Current Data':
+            st.subheader('Original measured voltage and current data')
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                if os.path.isfile(os.path.join(
+                        streamlit_root, c.streamlit.data_file.format(material=material, excitation='measurements'))):
+                    data_file_raw = os.path.join(
+                        streamlit_root, c.streamlit.data_file.format(material=material, excitation='measurements'))
+                    with open(data_file_raw, 'rb') as file:
+                        st.download_button(f'Download zip file',
+                                           file,
+                                           os.path.basename(data_file_raw),
+                                           key=[m, 'Raw'])
+                else:
+                    st.subheader('Download data missing, please contact us')
+                st.write("""
+                This .zip file contains a .txt file with information regarding the setup and core tested and three .csv files.
 
-    if selection == 'Single Cycle B and H':
-        st.subheader('Single switching cycle post-processed B-H data')
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            if os.path.isfile(os.path.join(
-                    streamlit_root, c.streamlit.data_file.format(material=material, excitation='cycle'))):
-                data_file_cycle = os.path.join(
-                    streamlit_root, c.streamlit.data_file.format(material=material, excitation='cycle'))
-                with open(data_file_cycle, 'rb') as file:
-                    st.download_button(f'Download zip file',
-                                       file,
-                                       os.path.basename(data_file_cycle),
-                                       key=[m, 'Cycle'])
-            else:
-                st.subheader('Download data missing, please contact us')
-            st.write("""
-            This .zip file contains a .txt file contains information regarding the setup, core under test, and post-processing information.
-    
-            Two .cvs file include the B and H waveform, where each row is a data point, and each column is a sample. 
-            1024 samples are saved per data point. Additionally, a .csv file contains the information of the sampling time, 
-            where each row corresponds to the data-point of the B and H files. 
-            In this case, the sampling time depends on the frequency of the waveform, as a single cycle is provided.
+                The .csv files contain the current and voltage waveforms saved from the oscilloscope. 
+                Each row is a different measurement (i.e. a data point with a different frequency, flux density, etc.) 
+                and each column is a sample. There are 10.000 samples per waveform. 
+
+                The sampling time, provided as a separate .csv file, is the same for each waveform (8 ns).
                 """)
-        with col2:
-            st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_single.png')), width=500)
+            with col2:
+                st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_raw.png')), width=500)
 
+        if selection == 'Single Cycle B and H':
+            st.subheader('Single switching cycle post-processed B-H data')
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                if os.path.isfile(os.path.join(
+                        streamlit_root, c.streamlit.data_file.format(material=material, excitation='cycle'))):
+                    data_file_cycle = os.path.join(
+                        streamlit_root, c.streamlit.data_file.format(material=material, excitation='cycle'))
+                    with open(data_file_cycle, 'rb') as file:
+                        st.download_button(f'Download zip file',
+                                           file,
+                                           os.path.basename(data_file_cycle),
+                                           key=[m, 'Cycle'])
+                else:
+                    st.subheader('Download data missing, please contact us')
+                st.write("""
+                This .zip file contains a .txt file contains information regarding the setup, core under test, and post-processing information.
+
+                Two .cvs file include the B and H waveform, where each row is a data point, and each column is a sample. 
+                1024 samples are saved per data point. Additionally, a .csv file contains the information of the sampling time, 
+                where each row corresponds to the data-point of the B and H files. 
+                In this case, the sampling time depends on the frequency of the waveform, as a single cycle is provided.
+                    """)
+            with col2:
+                st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_single.png')), width=500)
+    st.success('Done!')
     st.markdown("""---""")
             
     st.header('Terms of Access:')
