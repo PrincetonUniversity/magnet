@@ -210,7 +210,7 @@ def ui_core_loss_db(m):
                 key=m,
                 help='Download a .csv file containing the flux, frequency, and '
                      'power loss for the depicted data points')
-
+            st.write('Units: F [Hz], B [mT], Pv [W/m^3]')
             c_axis = st.selectbox(
                 f'Select Color-Axis for the Plots:',
                 ['Flux Density', 'Frequency', 'Power Loss'],
