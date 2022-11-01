@@ -10,8 +10,7 @@ from ui_faq import ui_faq
 from ui_intro import ui_intro
 from ui_mc import ui_mc
 from magnet.simplecs.simfunctions import SimulationPLECS
-from magnet.constants import material_list, material_manufacturers
-from magnet.io import load_metadata
+from magnet.constants import material_list
 from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)

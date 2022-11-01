@@ -216,11 +216,7 @@ def ui_intro(m):
                 st.warning(f"For dB/dt above {round(dbdt_max * 1e-3)} mT/ns, results are potentially extrapolated.")
 
     hdata = BH_Transformer(material, freq, temp, bias, bdata)
-    output = {'B [mT]': bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn),
-              'H [A/m]': hdata + bias * np.ones(c.streamlit.n_nn)}
     loss = loss_BH(bdata, hdata, freq)
-
-    csv = convert_df(pd.DataFrame(output))
 
     st.markdown("""---""")
     st.header('MagNet AI Output')
@@ -303,6 +299,11 @@ def ui_intro(m):
     with col1:
         st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
     with col2:
+
+        output = {'B [mT]': (bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
+                  'H [A/m]': hdata + bias * np.ones(c.streamlit.n_nn)}
+        csv = convert_df(pd.DataFrame(output))
+
         st.download_button(
             "Download the B-H Loop as a CSV File",
             data=csv,

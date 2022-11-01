@@ -84,12 +84,8 @@ def ui_faq(m):
 
     st.header('MagNet Status')
     st.write("")
-    n_tot = 0
-    for material in material_list:
-        n_tot = n_tot + len(load_dataframe(material))
-    st.subheader(f'Total number of data points: {n_tot}; number of materials added: {len(material_list)}')
+    st.write("Materials added so far")
     st.write("")
-
     df = pd.DataFrame({'Manufacturer': material_manufacturers})
     df['Material'] = material_steinmetz_param.keys()
     df['Applications'] = pd.DataFrame({'Applications': material_applications})

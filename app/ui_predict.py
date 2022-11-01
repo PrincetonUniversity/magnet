@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import streamlit as st
+import pandas as pd
 
 from magnet import config as c
 from magnet.constants import material_list, material_manufacturers, material_extra
@@ -8,6 +9,11 @@ from magnet.io import load_dataframe
 from magnet.plots import waveform_visualization, waveform_visualization_2axes, plot_core_loss, \
     cycle_points_sinusoidal, cycle_points_trapezoidal
 from magnet.core import core_loss_default, core_loss_arbitrary
+
+
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
 
 
 def ui_core_loss_predict(m):
@@ -62,29 +68,23 @@ def ui_core_loss_predict(m):
             flag_inputs_ok = 1  # To avoid errors when inputs are not ok
             if len(duty_vector) != len(flux_vector):
                 flag_inputs_ok = 0
+                st.error('The Flux and Duty vectors should have the same length, please fix it to proceed.')
             if max(duty_vector) > 1:
                 flag_inputs_ok = 0
+                st.error('Duty cycle should be below 100%, please fix it to proceed.')
             if min(duty_vector) < 0:
                 flag_inputs_ok = 0
+                st.error('Please provide only positive values for the Duty cycle, fix it to proceed.')
+            flag_duty_wrong = 0
             for i in range(0, len(duty_vector) - 1):
                 if duty_vector[i] >= duty_vector[i + 1]:
-                    flag_inputs_ok = 0
+                    flag_duty_wrong = 1
+            if flag_duty_wrong == 1:
+                flag_inputs_ok = 0
+                st.error('Only increasing duty cycles allowed, fix it to proceed. \n'
+                         'Please remove the 100% duty cycle value, the flux is assigned to the value at Duty=0%.')
             if flag_inputs_ok == 0:
-                if len(duty_vector) != len(flux_vector):
-                    st.error('The Flux and Duty vectors should have the same length, please fix it to proceed.')
-                if max(duty_vector) > 1:
-                    st.error('Duty cycle should be below 100%, please fix it to proceed.')
-                if min(duty_vector) < 0:
-                    st.error('Please provide only positive values for the Duty cycle, fix it to proceed.')
-                flag_duty_wrong = 0
-                for i in range(0, len(duty_vector) - 1):
-                    if duty_vector[i] >= duty_vector[i + 1]:
-                        flag_duty_wrong = 1
-                if flag_duty_wrong == 1:
-                    st.error('Only increasing duty cycles allowed, fix it to proceed. \n'
-                             'Please remove the 100% duty cycle value, the flux is assigned to the value at Duty=0%.')
                 st.subheader('Waveform set to 0, fix the above errors to proceed.')
-
                 duty_vector = [0, 1]
                 flux_vector = [0, 0]
 
@@ -258,55 +258,65 @@ def ui_core_loss_predict(m):
     # DUT and operation point and core losses
 
     st.header(f'Output: Case {m}: {round(loss / 1e3 ,2)} kW/m^3')
-    if excitation == "Sinusoidal":
-        st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={bias} A/m, '
+    info_string = f'{material_manufacturers[material]} - {material}, {excitation} excitation, ' \
+                  f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={round(bias)} A/m, '
+    if excitation in ["Sinusoidal", "Arbitrary"]:
+        st.write(f'{info_string}, '
                  f'T={round(temp)} C')
     if excitation == "Triangular":
-        st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={bias} A/m, '
+        st.write(f'{info_string}, '
                  f'D={round(duty_p, 2)}, '
                  f'T={round(temp)} C')
     if excitation == "Trapezoidal":
-        st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={bias} A/m, '
+        st.write(f'{info_string}, '
                  f'D1={round(duty_p, 2)}, D2={round(duty_0, 2)}, D3={round(duty_n, 2)}, D4={round(duty_0, 2)}, '
                  f'T={round(temp)} C')
-    if excitation == "Arbitrary":
-        st.write(f'{material_manufacturers[material]} - {material}, {excitation} excitation, '
-                 f'f={round(freq / 1e3)} kHz, Bac={round(1 * 1e3)} mT, Bias={round(bias, 2)} A/m, '  # TODO mT PLACEHOLDER
-                 f'T={round(temp)} C')
+
     st.write("")
     if excitation == "Arbitrary":
-        st.write('Please bear in mind that the neural network has been trained using '
-                 'trapezoidal, triangular and sinusoidal data. '
-                 'The accuracy for waveforms very different from those used for training cannot be guaranteed.')
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write('Please bear in mind that the neural network has been trained using '
+                     'trapezoidal, triangular and sinusoidal data. '
+                     'The accuracy for waveforms very different from those used for training cannot be guaranteed.')
+        with col2:
+            bdata = np.interp(np.linspace(0, 1, c.streamlit.n_nn), np.array(duty_vector), np.array(flux_vector + flux_bias)) * 1e3
+            output = {'B [mT]': bdata}
+            csv = convert_df(pd.DataFrame(output))
+            st.download_button(
+                f"Download This Waveform as {c.streamlit.n_nn}-Step CSV File",
+                data=csv,
+                file_name='B-Input.csv',
+                mime='text/csv',
+            )
 
     else:
         # Plots for different sweeps
         col1, col2 = st.columns(2)
 
         if excitation == "Sinusoidal":
-            subtitle_plot = ''
+            subtitle_plot = ', for a fixed Temperature and Bias'
         if excitation == "Triangular":
-            subtitle_plot = f' and duty cycle ({duty})'
+            subtitle_plot = f' for a fixed Duty Cycle ({duty}), Temperature and Bias'
         if excitation == "Trapezoidal":
-            subtitle_plot = f' and the selected duty cycles'
+            subtitle_plot = f' for a fixed Temperature, Bias, and the Selected Duty Cycles'
 
         plot_bar = st.progress(0)
         with st.spinner('MagNet AI is Plotting the Design Graphs, Please Wait...'):
-        
-        # vs frequency
-            with col1:
+
+            with col1:  # vs frequency
                 plot_core_loss(
                     st,
                     x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
-                    y=[1e-3 * core_loss_default(material=material, freq=i, flux=flux, temp=temp, bias=bias, duty=duty)
+                    y=[
+                        1e-3 * core_loss_default(material=material, freq=i, flux=flux, temp=temp, bias=bias, duty=duty)
                         for i in c.streamlit.core_loss_freq],
-                    y_upper=[1e-3 * core_loss_default(material=material, freq=i, flux=flux*2, temp=temp, bias=bias, duty=duty)
-                             for i in c.streamlit.core_loss_freq],
-                    y_lower=[1e-3 * core_loss_default(material=material, freq=i, flux=flux/2, temp=temp, bias=bias, duty=duty)
-                             for i in c.streamlit.core_loss_freq],
+                    y_upper=[
+                        1e-3 * core_loss_default(material=material, freq=i, flux=flux*2, temp=temp, bias=bias, duty=duty)
+                        for i in c.streamlit.core_loss_freq],
+                    y_lower=[
+                        1e-3 * core_loss_default(material=material, freq=i, flux=flux/2, temp=temp, bias=bias, duty=duty)
+                        for i in c.streamlit.core_loss_freq],
                     x0=list([freq / 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(flux * 1e3)} mT',
@@ -317,17 +327,20 @@ def ui_core_loss_predict(m):
                     x_title='Frequency [kHz]'
                 )
                 plot_bar.progress(10)
-            # vs flux density
-            with col2:
+
+            with col2:  # vs flux density
                 plot_core_loss(
                     st,
                     x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
-                    y=[1e-3 * core_loss_default(material=material, freq=freq, flux=i, temp=temp, bias=bias, duty=duty)
+                    y=[
+                        1e-3 * core_loss_default(material, freq, i, temp, bias, duty)
                         for i in c.streamlit.core_loss_flux],
-                    y_upper=[1e-3 * core_loss_default(material=material, freq=freq * 2, flux=i, temp=temp, bias=bias, duty=duty)
-                       for i in c.streamlit.core_loss_flux],
-                    y_lower=[1e-3 * core_loss_default(material=material, freq=freq / 2, flux=i, temp=temp, bias=bias, duty=duty)
-                       for i in c.streamlit.core_loss_flux],
+                    y_upper=[
+                        1e-3 * core_loss_default(material, freq * 2, i, temp, bias, duty)
+                        for i in c.streamlit.core_loss_flux],
+                    y_lower=[
+                        1e-3 * core_loss_default(material, freq / 2, i, temp, bias, duty)
+                        for i in c.streamlit.core_loss_flux],
                     x0=list([flux * 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(freq * 1e-3)} kHz',
@@ -340,64 +353,69 @@ def ui_core_loss_predict(m):
                 plot_bar.progress(20)
 
                 if excitation == "Triangular":
-                    # vs duty at a few flux densities
-                    with col1:
+                    with col1:  # vs duty at a few flux densities
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
-                            y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=bias, duty=i)
+                            y=[
+                                1e-3 * core_loss_default(material, freq, flux, temp, bias, i)
                                 for i in c.streamlit.core_loss_duty],
-                            y_upper=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=temp, bias=bias, duty=i)
-                               for i in c.streamlit.core_loss_duty],
-                            y_lower=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=temp, bias=bias, duty=i)
-                               for i in c.streamlit.core_loss_duty],
+                            y_upper=[
+                                1e-3 * core_loss_default(material, freq, flux * 2, temp, bias, i)
+                                for i in c.streamlit.core_loss_duty],
+                            y_lower=[
+                                1e-3 * core_loss_default(material, freq, flux / 2, temp, bias, i)
+                                for i in c.streamlit.core_loss_duty],
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
                             legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 2 * 1e3)} mT',
                             legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
-                            title=f'<b> Core Loss Sweeping Duty Ratio </b>'
-                                  f'<br> at a fixed Frequency',
-                            x_title='Duty Ratio',
+                            title=f'<b> Core Loss Sweeping Duty Cycle </b>'
+                                  f'<br> at a fixed Frequency, Temperature, and Bias',
+                            x_title='Duty Cycle',
                             x_log=False,
                             y_log=True
                         )
                         plot_bar.progress(30)
-                    with col2:
-                        # vs duty at a few frequencies
+                    with col2: # vs duty at a few frequencies
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
-                            y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=bias, duty=i)
-                               for i in c.streamlit.core_loss_duty],
-                            y_upper=[1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=temp, bias=bias, duty=i)
-                                     for i in c.streamlit.core_loss_duty],
-                            y_lower=[1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=temp, bias=bias, duty=i)
-                                     for i in c.streamlit.core_loss_duty],
+                            y=[
+                                1e-3 * core_loss_default(material, freq, flux, temp, bias, i)
+                                for i in c.streamlit.core_loss_duty],
+                            y_upper=[
+                                1e-3 * core_loss_default(material, freq * 2, flux, temp, bias, i)
+                                for i in c.streamlit.core_loss_duty],
+                            y_lower=[
+                                1e-3 * core_loss_default(material, freq / 2, flux, temp, bias, i)
+                                for i in c.streamlit.core_loss_duty],
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
                             legend_upper=f'{round(freq * 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                             legend_lower=f'{round(freq / 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                            title=f'<b> Core Loss Sweeping Duty Ratio </b>'
-                                  f'<br> at a fixed Flux Density',
-                            x_title='Duty Ratio',
+                            title=f'<b> Core Loss Sweeping Duty Cycle </b>'
+                                  f'<br> at a fixed Flux Density, Temperature, and Bias',
+                            x_title='Duty Cycle',
                             x_log=False,
                             y_log=True
                         )
                         plot_bar.progress(40)
-                # vs dc bias at a few flux densities
-                with col1:
+
+                with col1:  # vs dc bias at a few flux densities
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
-                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=i, duty=duty)
-                           for i in c.streamlit.core_loss_bias],
+                        y=[
+                            1e-3 * core_loss_default(material, freq, flux, temp, i, duty)
+                            for i in c.streamlit.core_loss_bias],
                         y_upper=[
-                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=temp, bias=i, duty=duty)
+                            1e-3 * core_loss_default(material, freq, flux * 2, temp, i, duty)
                             for i in c.streamlit.core_loss_bias],
                         y_lower=[
-                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=temp, bias=i, duty=duty)
+                            1e-3 * core_loss_default(material, freq, flux / 2, temp, i, duty)
                             for i in c.streamlit.core_loss_bias],
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
@@ -411,21 +429,19 @@ def ui_core_loss_predict(m):
                         y_log=True
                     )
                     plot_bar.progress(50)
-                # vs dc bias at a few frequencies
-                with col2:
+
+                with col2:  # vs dc bias at a few frequencies
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
-                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=temp, bias=i,
-                                                    duty=duty)
-                           for i in c.streamlit.core_loss_bias],
+                        y=[
+                            1e-3 * core_loss_default(material, freq, flux, temp, i, duty)
+                            for i in c.streamlit.core_loss_bias],
                         y_upper=[
-                            1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=temp, bias=i,
-                                                     duty=duty)
+                            1e-3 * core_loss_default(material, freq * 2, flux, temp, i, duty)
                             for i in c.streamlit.core_loss_bias],
                         y_lower=[
-                            1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=temp, bias=i,
-                                                     duty=duty)
+                            1e-3 * core_loss_default(material, freq / 2, flux, temp, i, duty)
                             for i in c.streamlit.core_loss_bias],
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
@@ -439,21 +455,19 @@ def ui_core_loss_predict(m):
                         y_log=True
                     )
                     plot_bar.progress(60)
-                # vs temperature at a few flux densities
-                with col1:
+
+                with col1:  # vs temperature at a few flux densities
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
-                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=i, bias=bias,
-                                                    duty=duty)
-                           for i in c.streamlit.core_loss_temp],
+                        y=[
+                            1e-3 * core_loss_default(material, freq, flux, i, bias, duty)
+                            for i in c.streamlit.core_loss_temp],
                         y_upper=[
-                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux * 2, temp=i, bias=bias,
-                                                     duty=duty)
+                            1e-3 * core_loss_default(material, freq, flux * 2, i, bias, duty)
                             for i in c.streamlit.core_loss_temp],
                         y_lower=[
-                            1e-3 * core_loss_default(material=material, freq=freq, flux=flux / 2, temp=i, bias=bias,
-                                                     duty=duty)
+                            1e-3 * core_loss_default(material, freq, flux / 2, i, bias, duty)
                             for i in c.streamlit.core_loss_temp],
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),
@@ -467,21 +481,19 @@ def ui_core_loss_predict(m):
                         y_log=True
                     )
                     plot_bar.progress(70)
-                # vs temperature at a few frequencies
-                with col2:
+
+                with col2:  # vs temperature at a few frequencies
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
-                        y=[1e-3 * core_loss_default(material=material, freq=freq, flux=flux, temp=i, bias=bias,
-                                                    duty=duty)
-                           for i in c.streamlit.core_loss_temp],
+                        y=[
+                            1e-3 * core_loss_default(material, freq, flux, i, bias, duty)
+                            for i in c.streamlit.core_loss_temp],
                         y_upper=[
-                            1e-3 * core_loss_default(material=material, freq=freq * 2, flux=flux, temp=i, bias=bias,
-                                                     duty=duty)
+                            1e-3 * core_loss_default(material, freq * 2, flux, i, bias, duty)
                             for i in c.streamlit.core_loss_temp],
                         y_lower=[
-                            1e-3 * core_loss_default(material=material, freq=freq / 2, flux=flux, temp=i, bias=bias,
-                                                     duty=duty)
+                            1e-3 * core_loss_default(material, freq / 2, flux, i, bias, duty)
                             for i in c.streamlit.core_loss_temp],
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),

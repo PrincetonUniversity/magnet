@@ -35,7 +35,7 @@ def ui_download_data(m, streamlit_root):
         st.write('Data-processing information:')
         st.write(metadata['info_processing'])
 
-    st.write('Units: V [V], I [A], B [mT], H [A/m]')
+    st.write('Units: V [V], I [A], B [T], H [A/m], Ts [s], Temp [C]')
     
     with st.spinner('MagNet AI is Collecting the Data, Please Wait...'):
         if selection == 'Voltage and Current Data':

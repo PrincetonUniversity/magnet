@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
+from magnet import config as c
 import os
 
 from magnet.simplecs.classes import CircuitModel, MagModel, CoreMaterial
@@ -10,9 +10,7 @@ from magnet.constants import material_list, material_extra, material_steinmetz_p
 
 def SimulationPLECS(m):
     path = os.path.dirname(os.path.realpath(__file__))
-    
-    
-    
+
     col1, col2 = st.columns(2)
     with col1:
         # Select topology
@@ -144,40 +142,36 @@ def SimulationPLECS(m):
             
             flux = np.array(flux)
             time = np.array(time)
-            Duty = np.multiply(time, Param['fsw'])
+            time_vector = np.multiply(time, Param['fsw'])
             
-            temp = (Duty <= 1)
+            temp = (time_vector <= 1)
             flux = flux[temp]
-            Duty = Duty[temp]
+            bias = np.average(flux) / (material.mu_r * c.streamlit.mu_0)
+            time_vector = time_vector[temp]
             
             flux_amp = (np.max(flux) - np.min(flux)) / 2
 
-            Loss_ML = core_loss_arbitrary(
+            loss = core_loss_arbitrary(
                 material=Material_type, 
                 freq=Param['fsw'], 
                 flux=flux,
-                duty=Duty) / 1e3
+                temp=25.0,
+                bias=bias,
+                duty=time_vector)
 
-            st.header("Simulated Core Loss")
-            st.subheader(f'{round(Loss_ML*Vc*1e3,2)} W ({round(Loss_ML,2)} kW/m^3) - ML')
+            st.header("Core Loss Based on Simulated Waveform at 25 C")
+            st.subheader(f'{round(loss*Vc,2)} W ({round(loss / 1e3,2)} kW/m^3)')
             
             if flux_amp < 0.01:
-                st.write("""
-                         **Caution**: The simulated amplitude of flux density is **too small** under the given 
+                st.warning("""
+                         The simulated amplitude of flux density is **too small** under the given 
                          parameter configurations. The predicted core loss result may be inaccurate!
                          """)
             elif flux_amp > 0.3:
-                st.write("""
-                         **Caution**: The simulated amplitude of flux density is **too large** under the given 
+                st.warning("""
+                         The simulated amplitude of flux density is **too large** under the given 
                          parameter configurations. The predicted core loss result may be inaccurate!
                          """)
-            
-            if topology_type in ["Buck", "Boost", "Flyback"]:  # TODO add new models with DC bias
-                st.write(f"""
-                         **Note**: The selected {topology_type} topology is very likely to result in a **dc-biased** 
-                         flux density, which is not yet taken into consideration by the model.""")
-                st.write("""
-                         Models for **dc-biased** condition will be coming soon in the next release!""")
             elif topology_type == "DAB":
                 st.write(f"""
                          **Note**: This core loss result stands for the loss in the magnetic core of the **transformer**, 

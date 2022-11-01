@@ -1,15 +1,11 @@
 import os.path
 from PIL import Image
 import streamlit as st
-import pandas as pd
-from magnet.constants import material_list, material_manufacturers, material_applications, material_extra, \
-    material_core_tested, material_steinmetz_param
-from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
 
-def ui_mc(m):
+def ui_mc():
 
     st.title('MagNet Challenge for Advanced Models')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'mclogo.jpg')), width=300)
@@ -32,6 +28,5 @@ def ui_mc(m):
     st.write("""
     The MagNet evaluation server can be used to evaluate magnetic modeling results on the test set of the past competition.
     """)
-    
-    
+
     st.markdown("""---""")
