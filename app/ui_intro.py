@@ -118,17 +118,25 @@ def ui_intro(m):
                     key=f'duty_tri {m}',
                     help='Duty cycle of the rising part.')
             if default == "Trapezoidal":
-                duty_0 = st.slider(
-                    "Duty Cycle",
-                    0.0,
-                    0.5,
+                duty_p = st.slider(
+                    "Duty Cycle (Rising)",
+                    0.02,
+                    1-0.02,
                     0.2,
                     0.02,
                     format='%f',
-                    key=f'duty_trap {m}',
-
-                    help='Duty cycle of the rising / falling part.')
-                duty = [(1-2*duty_0)/2, (1-2*duty_0)/2, duty_0]
+                    key=f'duty_trap_p {m}',
+                    help='Duty cycle of the rising part.')
+                duty_n = st.slider(
+                    "Duty Cycle (Falling)",
+                    0.02,
+                    1-duty_p,
+                    0.2,
+                    0.02,
+                    format='%f',
+                    key=f'duty_trap_p {m}',
+                    help='Duty cycle of the falling part.')
+                duty = [duty_p, duty_n, (1-duty_p-duty_n)/2]
             phase = st.slider(
                 "Starting Phase",
                 0.0,

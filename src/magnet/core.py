@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from magnet.net import model, model_lstm, model_transformer
 from magnet import config as c
+import time
 
 
 def default_units(prop):  # Probably we are not going to need the default units
@@ -54,6 +55,9 @@ def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
 
 
 def BH_Transformer(material, freq, temp, bias, bdata):
+    
+    start = time.time()
+    material = 'N87' #####################just for now########################
     net_encoder, net_decoder, norm = model_transformer(material)
         
     bdata = torch.from_numpy(np.array(bdata)).float()
@@ -86,6 +90,8 @@ def BH_Transformer(material, freq, temp, bias, bdata):
     outputs = net_decoder(src, tgt, torch.cat((freq, temp, bias), dim=1))
     
     hdata = (outputs[:, :-1, :]*norm[9]+norm[8]).squeeze(2).squeeze(0).detach().numpy()
+    end = time.time()
+    print((end-start)*1e3)
     
     return hdata
 

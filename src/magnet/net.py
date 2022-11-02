@@ -293,9 +293,7 @@ def generate_square_subsequent_mask(sz1: int, sz2: int) -> Tensor:
 
 @functools.lru_cache(maxsize=8)
 def model_transformer(material, device='cpu'):
-    
-    material = 'N87' #just for now
-    
+        
     with path('magnet.models', f'Model_{material}_Transformer.sd') as sd_file:
         device = torch.device('cpu')
         state_dict = torch.load(sd_file, map_location=device)

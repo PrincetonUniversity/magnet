@@ -259,7 +259,7 @@ def ui_core_loss_predict(m):
 
     st.header(f'Output: Case {m}: {round(loss / 1e3 ,2)} kW/m^3')
     info_string = f'{material_manufacturers[material]} - {material}, {excitation} excitation, ' \
-                  f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={round(bias)} A/m, '
+                  f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={round(bias)} A/m'
     if excitation in ["Sinusoidal", "Arbitrary"]:
         st.write(f'{info_string}, '
                  f'T={round(temp)} C')
