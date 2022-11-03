@@ -66,7 +66,6 @@ def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
 
 def BH_Transformer(material, freq, temp, bias, bdata):
     
-    start = time.time()
     material = 'N87' #####################just for now########################
     net_encoder, net_decoder, norm = model_transformer(material)
         
@@ -117,9 +116,6 @@ def BH_Transformer(material, freq, temp, bias, bdata):
         hdata = hdata.squeeze(2).squeeze(0).detach().numpy()
     else:
         hdata = hdata.squeeze(2).detach().numpy()
-        
-    end = time.time()
-    print((end-start)*1e3)
     
     return hdata
 
