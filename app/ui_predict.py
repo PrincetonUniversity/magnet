@@ -2,6 +2,7 @@ import re
 import numpy as np
 import streamlit as st
 import pandas as pd
+import time
 
 from magnet import config as c
 from magnet.constants import material_list, material_manufacturers, material_extra
@@ -305,30 +306,25 @@ def ui_core_loss_predict(m):
         with st.spinner('MagNet AI is Plotting the Design Graphs, Please Wait...'):
 
             with col1:  # vs frequency
+                start = time.time()
+                d_freq = np.tile(np.array(c.streamlit.core_loss_freq), 3)
+                d_flux = np.concatenate(
+                    (np.tile(flux, len(c.streamlit.core_loss_freq)),
+                     np.tile(flux*2, len(c.streamlit.core_loss_freq)),
+                     np.tile(flux/2, len(c.streamlit.core_loss_freq))))
+                d_temp = np.tile(temp, len(c.streamlit.core_loss_freq)*3)
+                d_bias = np.tile(bias, len(c.streamlit.core_loss_freq)*3)
+                d_duty = [duty]*len(c.streamlit.core_loss_freq)*3
+                d_loss = core_loss_default(material=material, 
+                                         freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                         batched = True)
+                
                 plot_core_loss(
                     st,
                     x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
-                    y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.array(c.streamlit.core_loss_freq), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_freq)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_freq)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_freq)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_freq),
-                                                 batched = True),
-                    y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.array(c.streamlit.core_loss_freq), 
-                                                 flux=np.tile(flux*2, len(c.streamlit.core_loss_freq)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_freq)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_freq)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_freq),
-                                                 batched = True),
-                    y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.array(c.streamlit.core_loss_freq), 
-                                                 flux=np.tile(flux/2, len(c.streamlit.core_loss_freq)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_freq)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_freq)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_freq),
-                                                 batched = True),
+                    y=1e-3 * d_loss[0:len(c.streamlit.core_loss_freq)],
+                    y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_freq):2*len(c.streamlit.core_loss_freq)],
+                    y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_freq):3*len(c.streamlit.core_loss_freq)],
                     x0=list([freq / 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(flux * 1e3)} mT',
@@ -339,32 +335,27 @@ def ui_core_loss_predict(m):
                     x_title='Frequency [kHz]'
                 )
                 plot_bar.progress(10)
+                end = time.time()
+                print((end-start)*1e3)
 
             with col2:  # vs flux density
+                d_freq = np.concatenate(
+                    (np.tile(freq, len(c.streamlit.core_loss_flux)),
+                     np.tile(freq*2, len(c.streamlit.core_loss_flux)),
+                     np.tile(freq/2, len(c.streamlit.core_loss_flux))))
+                d_flux = np.tile(np.array(c.streamlit.core_loss_flux), 3)
+                d_temp = np.tile(temp, len(c.streamlit.core_loss_flux)*3)
+                d_bias = np.tile(bias, len(c.streamlit.core_loss_flux)*3)
+                d_duty = [duty]*len(c.streamlit.core_loss_flux)*3
+                d_loss = core_loss_default(material=material, 
+                                         freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                         batched = True)
                 plot_core_loss(
                     st,
                     x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
-                    y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_flux)), 
-                                                 flux=np.array(c.streamlit.core_loss_flux), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_flux)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_flux)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_flux),
-                                                 batched = True),
-                    y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq*2, len(c.streamlit.core_loss_flux)), 
-                                                 flux=np.array(c.streamlit.core_loss_flux), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_flux)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_flux)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_flux),
-                                                 batched = True),
-                    y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq/2, len(c.streamlit.core_loss_flux)), 
-                                                 flux=np.array(c.streamlit.core_loss_flux), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_flux)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_flux)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_flux),
-                                                 batched = True),
+                    y=1e-3 * d_loss[0:len(c.streamlit.core_loss_flux)],
+                    y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_flux):2*len(c.streamlit.core_loss_flux)],
+                    y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_flux):3*len(c.streamlit.core_loss_flux)],
                     x0=list([flux * 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(freq * 1e-3)} kHz',
@@ -378,30 +369,23 @@ def ui_core_loss_predict(m):
 
                 if excitation == "Triangular":
                     with col1:  # vs duty at a few flux densities
+                        d_freq = np.tile(freq, len(c.streamlit.core_loss_duty)*3)
+                        d_flux = np.concatenate(
+                            (np.tile(flux, len(c.streamlit.core_loss_duty)),
+                             np.tile(flux*2, len(c.streamlit.core_loss_duty)),
+                             np.tile(flux/2, len(c.streamlit.core_loss_duty))))
+                        d_temp = np.tile(temp, len(c.streamlit.core_loss_duty)*3)
+                        d_bias = np.tile(bias, len(c.streamlit.core_loss_duty)*3)
+                        d_duty = np.tile(np.array(c.streamlit.core_loss_duty), 3)
+                        d_loss = core_loss_default(material=material, 
+                                                 freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                                 batched = True)
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
-                            y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_duty)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_duty)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_duty)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_duty)), 
-                                                 duty=np.array(c.streamlit.core_loss_duty),
-                                                 batched = True),
-                            y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_duty)), 
-                                                 flux=np.tile(flux*2, len(c.streamlit.core_loss_duty)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_duty)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_duty)), 
-                                                 duty=np.array(c.streamlit.core_loss_duty),
-                                                 batched = True),
-                            y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_duty)), 
-                                                 flux=np.tile(flux/2, len(c.streamlit.core_loss_duty)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_duty)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_duty)), 
-                                                 duty=np.array(c.streamlit.core_loss_duty),
-                                                 batched = True),
+                            y=1e-3 * d_loss[0:len(c.streamlit.core_loss_duty)],
+                            y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_duty):2*len(c.streamlit.core_loss_duty)],
+                            y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_duty):3*len(c.streamlit.core_loss_duty)],
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
@@ -415,30 +399,23 @@ def ui_core_loss_predict(m):
                         )
                         plot_bar.progress(30)
                     with col2: # vs duty at a few frequencies
+                        d_freq = np.concatenate(
+                            (np.tile(freq, len(c.streamlit.core_loss_duty)),
+                             np.tile(freq*2, len(c.streamlit.core_loss_duty)),
+                             np.tile(freq/2, len(c.streamlit.core_loss_duty))))
+                        d_flux = np.tile(flux, len(c.streamlit.core_loss_duty)*3)
+                        d_temp = np.tile(temp, len(c.streamlit.core_loss_duty)*3)
+                        d_bias = np.tile(bias, len(c.streamlit.core_loss_duty)*3)
+                        d_duty = np.tile(np.array(c.streamlit.core_loss_duty), 3)
+                        d_loss = core_loss_default(material=material, 
+                                                 freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                                 batched = True)
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
-                            y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_duty)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_duty)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_duty)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_duty)), 
-                                                 duty=np.array(c.streamlit.core_loss_duty),
-                                                 batched = True),
-                            y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq*2, len(c.streamlit.core_loss_duty)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_duty)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_duty)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_duty)), 
-                                                 duty=np.array(c.streamlit.core_loss_duty),
-                                                 batched = True),
-                            y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq/2, len(c.streamlit.core_loss_duty)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_duty)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_duty)), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_duty)), 
-                                                 duty=np.array(c.streamlit.core_loss_duty),
-                                                 batched = True),
+                            y=1e-3 * d_loss[0:len(c.streamlit.core_loss_duty)],
+                            y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_duty):2*len(c.streamlit.core_loss_duty)],
+                            y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_duty):3*len(c.streamlit.core_loss_duty)],
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
@@ -453,30 +430,23 @@ def ui_core_loss_predict(m):
                         plot_bar.progress(40)
 
                 with col1:  # vs dc bias at a few flux densities
+                    d_freq = np.tile(freq, len(c.streamlit.core_loss_bias)*3)
+                    d_flux = np.concatenate(
+                        (np.tile(flux, len(c.streamlit.core_loss_bias)),
+                         np.tile(flux*2, len(c.streamlit.core_loss_bias)),
+                         np.tile(flux/2, len(c.streamlit.core_loss_bias))))
+                    d_temp = np.tile(temp, len(c.streamlit.core_loss_bias)*3)
+                    d_bias = np.tile(np.array(c.streamlit.core_loss_bias), 3)
+                    d_duty = [duty]*len(c.streamlit.core_loss_bias)*3
+                    d_loss = core_loss_default(material=material, 
+                                             freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                             batched = True)
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
-                        y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_bias)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_bias)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_bias)), 
-                                                 bias=np.array(c.streamlit.core_loss_bias), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_bias),
-                                                 batched = True),
-                        y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_bias)), 
-                                                 flux=np.tile(flux*2, len(c.streamlit.core_loss_bias)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_bias)), 
-                                                 bias=np.array(c.streamlit.core_loss_bias), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_bias),
-                                                 batched = True),
-                        y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_bias)), 
-                                                 flux=np.tile(flux/2, len(c.streamlit.core_loss_bias)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_bias)), 
-                                                 bias=np.array(c.streamlit.core_loss_bias), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_bias),
-                                                 batched = True),
+                        y=1e-3 * d_loss[0:len(c.streamlit.core_loss_bias)],
+                        y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_bias):2*len(c.streamlit.core_loss_bias)],
+                        y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_bias):3*len(c.streamlit.core_loss_bias)],
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
@@ -491,30 +461,23 @@ def ui_core_loss_predict(m):
                     plot_bar.progress(50)
 
                 with col2:  # vs dc bias at a few frequencies
+                    d_freq = np.concatenate(
+                        (np.tile(freq, len(c.streamlit.core_loss_bias)),
+                         np.tile(freq*2, len(c.streamlit.core_loss_bias)),
+                         np.tile(freq/2, len(c.streamlit.core_loss_bias))))
+                    d_flux = np.tile(flux, len(c.streamlit.core_loss_bias)*3)
+                    d_temp = np.tile(temp, len(c.streamlit.core_loss_bias)*3)
+                    d_bias = np.tile(np.array(c.streamlit.core_loss_bias), 3)
+                    d_duty = [duty]*len(c.streamlit.core_loss_bias)*3
+                    d_loss = core_loss_default(material=material, 
+                                             freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                             batched = True)
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
-                        y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_bias)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_bias)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_bias)), 
-                                                 bias=np.array(c.streamlit.core_loss_bias), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_bias),
-                                                 batched = True),
-                        y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq*2, len(c.streamlit.core_loss_bias)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_bias)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_bias)), 
-                                                 bias=np.array(c.streamlit.core_loss_bias), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_bias),
-                                                 batched = True),
-                        y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq/2, len(c.streamlit.core_loss_bias)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_bias)), 
-                                                 temp=np.tile(temp, len(c.streamlit.core_loss_bias)), 
-                                                 bias=np.array(c.streamlit.core_loss_bias), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_bias),
-                                                 batched = True),
+                        y=1e-3 * d_loss[0:len(c.streamlit.core_loss_bias)],
+                        y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_bias):2*len(c.streamlit.core_loss_bias)],
+                        y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_bias):3*len(c.streamlit.core_loss_bias)],
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
@@ -529,30 +492,23 @@ def ui_core_loss_predict(m):
                     plot_bar.progress(60)
 
                 with col1:  # vs temperature at a few flux densities
+                    d_freq = np.tile(freq, len(c.streamlit.core_loss_temp)*3)
+                    d_flux = np.concatenate(
+                        (np.tile(flux, len(c.streamlit.core_loss_temp)),
+                         np.tile(flux*2, len(c.streamlit.core_loss_temp)),
+                         np.tile(flux/2, len(c.streamlit.core_loss_temp))))
+                    d_temp = np.tile(np.array(c.streamlit.core_loss_temp), 3)
+                    d_bias = np.tile(bias, len(c.streamlit.core_loss_temp)*3)
+                    d_duty = [duty]*len(c.streamlit.core_loss_temp)*3
+                    d_loss = core_loss_default(material=material, 
+                                             freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                             batched = True)
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
-                        y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_temp)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_temp)), 
-                                                 temp=np.array(c.streamlit.core_loss_temp), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_temp)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_temp),
-                                                 batched = True),
-                        y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_temp)), 
-                                                 flux=np.tile(flux*2, len(c.streamlit.core_loss_temp)), 
-                                                 temp=np.array(c.streamlit.core_loss_temp), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_temp)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_temp),
-                                                 batched = True),
-                        y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_temp)), 
-                                                 flux=np.tile(flux/2, len(c.streamlit.core_loss_temp)), 
-                                                 temp=np.array(c.streamlit.core_loss_temp), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_temp)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_temp),
-                                                 batched = True),
+                        y=1e-3 * d_loss[0:len(c.streamlit.core_loss_temp)],
+                        y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_temp):2*len(c.streamlit.core_loss_temp)],
+                        y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_temp):3*len(c.streamlit.core_loss_temp)],
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
@@ -567,30 +523,23 @@ def ui_core_loss_predict(m):
                     plot_bar.progress(70)
 
                 with col2:  # vs temperature at a few frequencies
+                    d_freq = np.concatenate(
+                        (np.tile(freq, len(c.streamlit.core_loss_temp)),
+                         np.tile(freq*2, len(c.streamlit.core_loss_temp)),
+                         np.tile(freq/2, len(c.streamlit.core_loss_temp))))
+                    d_flux = np.tile(flux, len(c.streamlit.core_loss_temp)*3)
+                    d_temp = np.tile(np.array(c.streamlit.core_loss_temp), 3)
+                    d_bias = np.tile(bias, len(c.streamlit.core_loss_temp)*3)
+                    d_duty = [duty]*len(c.streamlit.core_loss_temp)*3
+                    d_loss = core_loss_default(material=material, 
+                                             freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
+                                             batched = True)
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
-                        y=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq, len(c.streamlit.core_loss_temp)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_temp)), 
-                                                 temp=np.array(c.streamlit.core_loss_temp), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_temp)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_temp),
-                                                 batched = True),
-                        y_upper=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq*2, len(c.streamlit.core_loss_temp)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_temp)), 
-                                                 temp=np.array(c.streamlit.core_loss_temp), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_temp)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_temp),
-                                                 batched = True),
-                        y_lower=1e-3 * core_loss_default(material=material, 
-                                                 freq=np.tile(freq/2, len(c.streamlit.core_loss_temp)), 
-                                                 flux=np.tile(flux, len(c.streamlit.core_loss_temp)), 
-                                                 temp=np.array(c.streamlit.core_loss_temp), 
-                                                 bias=np.tile(bias, len(c.streamlit.core_loss_temp)), 
-                                                 duty=[duty]*len(c.streamlit.core_loss_temp),
-                                                 batched = True),
+                        y=1e-3 * d_loss[0:len(c.streamlit.core_loss_temp)],
+                        y_upper=1e-3 * d_loss[len(c.streamlit.core_loss_temp):2*len(c.streamlit.core_loss_temp)],
+                        y_lower=1e-3 * d_loss[2*len(c.streamlit.core_loss_temp):3*len(c.streamlit.core_loss_temp)],
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
