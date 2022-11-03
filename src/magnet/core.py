@@ -39,11 +39,21 @@ def plot_title(prop):
     }[prop]
 
 
-def core_loss_default(material, freq, flux, temp, bias, duty=None):
-    bdata = bdata_generation(flux, duty)
-    hdata = BH_Transformer(material, freq, temp, bias, bdata)
-    core_loss = loss_BH(bdata, hdata, freq)
-    return core_loss
+def core_loss_default(material, freq, flux, temp, bias, duty=None, batched = False):
+    if not batched:
+        bdata = bdata_generation(flux, duty)
+        hdata = BH_Transformer(material, freq, temp, bias, bdata)
+        core_loss = loss_BH(bdata, hdata, freq)
+        return core_loss
+    else:
+        bdata = np.zeros(shape=(len(freq), c.streamlit.n_nn))
+        for k in range(len(freq)):
+            bdata[k,:] = bdata_generation(flux[k], duty[k])
+        hdata = BH_Transformer(material, freq, temp, bias, bdata)
+        core_loss = np.zeros(shape=len(freq))
+        for k in range(len(freq)):
+            core_loss[k] = loss_BH(bdata[k,:], hdata[k,:], freq[k])
+        return core_loss
 
 
 def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
@@ -62,25 +72,37 @@ def BH_Transformer(material, freq, temp, bias, bdata):
         
     bdata = torch.from_numpy(np.array(bdata)).float()
     bdata = (bdata-norm[0])/norm[1]
-    bdata = bdata.unsqueeze(0).unsqueeze(2)
     
     freq = np.log10(freq)
     freq = torch.from_numpy(np.array(freq)).float()
     freq = (freq-norm[2])/norm[3]
-    freq = freq.unsqueeze(0).unsqueeze(1)
     
     temp = torch.from_numpy(np.array(temp)).float()
     temp = (temp-norm[4])/norm[5]
-    temp = temp.unsqueeze(0).unsqueeze(1)
     
     bias = torch.from_numpy(np.array(bias)).float()
     bias = (bias-norm[6])/norm[7]
-    bias = bias.unsqueeze(0).unsqueeze(1)
         
-    outputs = torch.zeros(1, bdata.size()[1]+1, 1)
-    tgt = (torch.rand(1, bdata.size()[1]+1, 1)*2-1)
-    tgt[:, 0, :] = 0.1*torch.ones(tgt[:, 0, :].size())
+    if bdata.dim()==1:
+        BATCHED = False
+    else:
+        BATCHED = True
     
+    if not BATCHED:
+        bdata = bdata.unsqueeze(0).unsqueeze(2)
+        freq = freq.unsqueeze(0).unsqueeze(1)
+        temp = temp.unsqueeze(0).unsqueeze(1)
+        bias = bias.unsqueeze(0).unsqueeze(1)
+    else:
+        bdata = bdata.unsqueeze(2)
+        freq = freq.unsqueeze(1)
+        temp = temp.unsqueeze(1)
+        bias = bias.unsqueeze(1)
+        
+    outputs = torch.zeros(bdata.size()[0], bdata.size()[1]+1, 1)
+    tgt = (torch.rand(bdata.size()[0], bdata.size()[1]+1, 1)*2-1)
+    tgt[:, 0, :] = 0.1*torch.ones(tgt[:, 0, :].size())
+        
     src = net_encoder(src=bdata, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
     
     for t in range(1, bdata.size()[1]+1):   
@@ -89,7 +111,13 @@ def BH_Transformer(material, freq, temp, bias, bdata):
         
     outputs = net_decoder(src, tgt, torch.cat((freq, temp, bias), dim=1))
     
-    hdata = (outputs[:, :-1, :]*norm[9]+norm[8]).squeeze(2).squeeze(0).detach().numpy()
+    hdata = outputs[:, :-1, :]*norm[9]+norm[8]
+        
+    if not BATCHED:
+        hdata = hdata.squeeze(2).squeeze(0).detach().numpy()
+    else:
+        hdata = hdata.squeeze(2).detach().numpy()
+        
     end = time.time()
     print((end-start)*1e3)
     
