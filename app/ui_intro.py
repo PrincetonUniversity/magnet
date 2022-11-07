@@ -228,9 +228,10 @@ def ui_intro(m):
 
     st.markdown("""---""")
     st.header('MagNet AI Output')
+    st.write('Component-level behavior including material characteristics and measurement parasitics')
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader('B-H Waveform')
+        st.subheader('Effective B-H Waveform')
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Scatter(
@@ -273,7 +274,7 @@ def ui_intro(m):
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.subheader('B-H Loop')
+        st.subheader('Effective B-H Loop')
         fig = make_subplots(specs=[[{"secondary_y": False}]])
         fig.add_trace(
             go.Scatter(
