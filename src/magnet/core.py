@@ -66,7 +66,6 @@ def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
 
 def BH_Transformer(material, freq, temp, bias, bdata):
     
-    material = 'N87' #####################just for now########################
     net_encoder, net_decoder, norm = model_transformer(material)
         
     bdata = torch.from_numpy(np.array(bdata)).float()
@@ -111,7 +110,7 @@ def BH_Transformer(material, freq, temp, bias, bdata):
     outputs = net_decoder(src, tgt, torch.cat((freq, temp, bias), dim=1))
     
     hdata = outputs[:, :-1, :]*norm[9]+norm[8]
-        
+            
     if not BATCHED:
         hdata = hdata.squeeze(2).squeeze(0).detach().numpy()
     else:
@@ -129,7 +128,8 @@ def bdata_generation(flux, duty=None, n_points=c.streamlit.n_nn):
     # Here duty is not needed, but it is convenient to call the function recursively
 
     if duty is None:  # Sinusoidal
-        bdata = flux * np.sin(np.linspace(0.0, 2 * np.pi, n_points))
+        bdata = flux * np.sin(np.linspace(0.0, 2 * np.pi, n_points+1))
+        bdata = bdata[:-1]
     elif type(duty) is list:  # Trapezoidal
         assert len(duty) == 3, 'Please specify 3 values as the Duty Ratios'
         assert np.all((0 <= np.array(duty)) & (np.array(duty) <= 1)), 'Duty ratios should be between 0 and 1'
@@ -143,11 +143,13 @@ def bdata_generation(flux, duty=None, n_points=c.streamlit.n_nn):
             bn = flux  # proportional to (-1-dP+dN)*dN
             bp = -bn * ((1 - duty[0] + duty[1]) * duty[0]) / (
                     (-1 - duty[0] + duty[1]) * duty[1])  # proportional to (1-dP+dN)*dP
-        bdata = np.interp(np.linspace(0, 1, n_points),
+        bdata = np.interp(np.linspace(0, 1, n_points+1),
                           np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1]),
                           np.array([-bp, bp, bn, -bn, -bp]))
+        bdata = bdata[:-1]
     else:  # type(duty) == 'float' -> Triangular
         assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
-        bdata = np.interp(np.linspace(0, 1, n_points), np.array([0, duty, 1]), np.array([-flux, flux, -flux]))
+        bdata = np.interp(np.linspace(0, 1, n_points+1), np.array([0, duty, 1]), np.array([-flux, flux, -flux]))
+        bdata = bdata[:-1]
 
     return bdata
