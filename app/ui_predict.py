@@ -2,7 +2,6 @@ import re
 import numpy as np
 import streamlit as st
 import pandas as pd
-import time
 
 from magnet import config as c
 from magnet.constants import material_list, material_manufacturers, material_extra
@@ -306,7 +305,6 @@ def ui_core_loss_predict(m):
         with st.spinner('MagNet AI is Plotting the Design Graphs, Please Wait...'):
 
             with col1:  # vs frequency
-                start = time.time()
                 d_freq = np.tile(np.array(c.streamlit.core_loss_freq), 3)
                 d_flux = np.concatenate(
                     (np.tile(flux, len(c.streamlit.core_loss_freq)),
@@ -335,8 +333,6 @@ def ui_core_loss_predict(m):
                     x_title='Frequency [kHz]'
                 )
                 plot_bar.progress(10)
-                end = time.time()
-                print((end-start)*1e3)
 
             with col2:  # vs flux density
                 d_freq = np.concatenate(
