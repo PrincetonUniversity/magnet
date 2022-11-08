@@ -40,7 +40,7 @@ def ui_core_loss_predict(m):
         freq = st.slider(
             "Frequency (kHz)",
             10,
-            1000,
+            500,
             100,
             step=1,
             key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
