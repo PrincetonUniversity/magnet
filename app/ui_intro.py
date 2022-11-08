@@ -36,8 +36,8 @@ def ui_intro(m):
 
         temp = st.slider(
             "Temperature [C]",
-            -50.0,
-            200.0,
+            0.0,
+            150.0,
             25.0,
             1.0,
             format='%f',
@@ -195,7 +195,7 @@ def ui_intro(m):
                 bias = st.slider(
                     "Hdc Bias [A/m]",
                     -20.0,
-                    60.0,
+                    40.0,
                     0.0,
                     2.0,
                     format='%f',
