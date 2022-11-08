@@ -69,7 +69,7 @@ def ui_intro(m):
             st.warning(
                 f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz. "
                 f"Results are potentially extrapolated.")
-            
+        
     with col2:
         st.subheader('Option 1: Arbitrary B Input')  # Create an example Bac input file
         bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
@@ -201,8 +201,14 @@ def ui_intro(m):
                     format='%f',
                     key=f'bias {m}',
                     help='Determined by the bias dc current')
-
+        
             st.write('The next step is to describe the B waveform.')
+            st.markdown("""---""")
+            st.subheader('Error Margin for this Material')
+            st.write(f'95th % Core Loss Error: +/- {np.round(10)} %')
+            st.write(f'95th % B-H Loop RMS Error: +/- {np.round(5)} %')
+            st.write('* Estimated weighted average error across entire database based on error analysis from MagNet team.')
+            
         if bias < 0:
             st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
         if bias > max(dataset['DC_Bias']):
