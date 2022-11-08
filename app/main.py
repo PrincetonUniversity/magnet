@@ -1,6 +1,7 @@
 import os.path
 from PIL import Image
 import streamlit as st
+import streamlit_analytics
 
 from magnet import __version__
 from ui_db import ui_core_loss_db
@@ -37,18 +38,16 @@ def contributor(name, email):
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-    st.sidebar.header('Welcome to MagNet')
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
-    st.sidebar.markdown('by Princeton-Dartmouth-Plexim')
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [API Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
     st.sidebar.markdown('[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
-    st.sidebar.header('MagNet Function')
+    st.sidebar.header('MagNet Functions')
     function_select = st.sidebar.radio(
         'Select One:',
         ('MagNet AI', 'MagNet Database', 'MagNet Prediction',
          'MagNet Simulation', 'MagNet Download', 'MagNet Challenge', 'MagNet Help')
     )
-
+    
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
@@ -84,14 +83,6 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_faq)
         st.session_state.n_material = 1  # Resets the number of plots
 
-    st.sidebar.header('MagNet Status')
-    n_tot = 0
-    for material in material_list:
-        n_tot = n_tot + len(load_dataframe(material))
-    st.sidebar.write(f'Number of data points: {n_tot}')
-    st.sidebar.write(f'Number of materials: {len(material_list)}')
-        
-        
     st.header('MagNet Research Team')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetteam.jpg')), width=1000)
     st.header('MagNet Sponsors')
@@ -100,6 +91,19 @@ if __name__ == '__main__':
     st.markdown('---')
     st.markdown(f"<h6>MAGNet v{__version__}</h6>", unsafe_allow_html=True)
 
+    st.sidebar.header('Feedback to Us')
+    with streamlit_analytics.track():
+        st.sidebar.text_input("Name/Email Address?")
+        st.sidebar.text_input("Comments?")
+        st.sidebar.button("Submit")
+        
+    st.sidebar.header('MagNet Status')
+    n_tot = 0
+    for material in material_list:
+        n_tot = n_tot + len(load_dataframe(material))
+    st.sidebar.write(f'Number of data points: {n_tot}')
+    st.sidebar.write(f'Number of materials: {len(material_list)}')
+        
     st.sidebar.header('MagNet Team')
     contributor('Haoran Li', 'haoranli@princeton.edu')
     contributor('Diego Serrano', 'ds9056@princeton.edu')
@@ -111,3 +115,5 @@ if __name__ == '__main__':
     contributor('Niraj Jha', 'jha@princeton.edu')
     contributor('Charles R. Sullivan', 'charles.r.sullivan@dartmouth.edu')
     contributor('Minjie Chen', 'minjie@princeton.edu')
+        
+        
