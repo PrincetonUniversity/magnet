@@ -39,7 +39,7 @@ def ui_intro(m):
             0.0,
             150.0,
             25.0,
-            1.0,
+            5.0,
             format='%f',
             key=f'temp {m}',
             help='Device surface temperature')
@@ -56,7 +56,7 @@ def ui_intro(m):
             10.0,
             600.0,
             100.0,
-            10.0,
+            5.0,
             format='%f',
             key=f'freq {m}',
             help='Fundamental frequency of the excitation') * 1e3
