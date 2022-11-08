@@ -37,11 +37,11 @@ def contributor(name, email):
 if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
-    st.sidebar.header('Welcome to Princeton MagNet')
+    st.sidebar.header('Welcome to MagNet')
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
     st.sidebar.markdown('by Princeton-Dartmouth-Plexim')
-    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | '
-                        '[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
+    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [API Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
+    st.sidebar.markdown('[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
     st.sidebar.header('MagNet Function')
     function_select = st.sidebar.radio(
         'Select One:',
