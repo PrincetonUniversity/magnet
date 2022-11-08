@@ -101,7 +101,7 @@ def ui_intro(m):
                 10.0,
                 350.0,
                 100.0,
-                2.0,
+                1.0,
                 format='%f',
                 key=f'flux_sine {m}',
                 help='Half of the peak-to-peak flux density') / 1e3
@@ -113,7 +113,7 @@ def ui_intro(m):
                     0.0,
                     1.0,
                     0.5,
-                    0.02,
+                    0.01,
                     format='%f',
                     key=f'duty_tri {m}',
                     help='Duty cycle of the rising part.')
@@ -123,7 +123,7 @@ def ui_intro(m):
                     0.02,
                     1-0.02,
                     0.2,
-                    0.02,
+                    0.01,
                     format='%f',
                     key=f'duty_trap_p {m}',
                     help='Duty cycle of the rising part.')
@@ -132,7 +132,7 @@ def ui_intro(m):
                     0.02,
                     1-duty_p,
                     0.2,
-                    0.02,
+                    0.01,
                     format='%f',
                     key=f'duty_trap_p {m}',
                     help='Duty cycle of the falling part.')
@@ -142,7 +142,7 @@ def ui_intro(m):
                 0.0,
                 360.0,
                 0.0,
-                5.0,
+                1.0,
                 format='%f',
                 key=f'phase_trap {m}',
                 help='Shift the waveform horizontally. '
@@ -197,7 +197,7 @@ def ui_intro(m):
                     -20.0,
                     40.0,
                     0.0,
-                    2.0,
+                    1.0,
                     format='%f',
                     key=f'bias {m}',
                     help='Determined by the bias dc current')
