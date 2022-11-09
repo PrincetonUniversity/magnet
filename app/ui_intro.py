@@ -11,15 +11,13 @@ from magnet import config as c
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
-
 @st.cache
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
-
 def ui_intro(m):
     st.title('MagNet AI for Research, Education and Design')
-    st.write('"Are you still using the 1892 Steinmetz Equations in 2022?" -- MagNet AI')
+    st.markdown('"Are you still using the Steinmetz Equation (1892) in 2022?" - MagNet AI')
     st.caption('We created MagNet AI to advance power magnetics research, education, and design. The mission of MagNet AI is to replace the traditional curve-fitting models (e.g., Steinmetz Equations and Jiles-Atherton Models) with state-of-the-art data-driven methods such as neural networks and machine learning. MagNet AI is open, transparent, fast, smart, versatile, and is continously getting better. It is a new tool to design power magnetics and can do lots of things that traditional methods cannnot do.')
     st.markdown("""---""")
     
