@@ -19,8 +19,12 @@ def convert_df(df):
 
 def ui_intro(m):
     st.title('MagNet AI for Education and Design')
+    st.caption('"It is time to upgrade Steinmetz equations (1892) and J-A models (1984) in power magnetics research, education, and design" -- MagNet AI')
+    st.caption('We created MagNet AI to advance power magnetics research, education, and design. The mission of MagNet AI is to replace the traditional curve-fitting models (e.g., Steinmetz Equations and Jiles-Atherton Models) with state-of-the-art data-driven methods such as neural networks and machine learning. MagNet AI is open, transparent, fast, smart, versatile, and is continously getting better. It is a new tool to design power magnetics and can do lots of things that traditional methods cannnot do.')
     st.markdown("""---""")
-    st.caption('MagNet AI functions as a combination of Steinmetz Equation and Jiles-Atherton Model to jointly predict volumetric core loss and effective B-H loop of a material in a particular operating condition (e.g., frequency, waveform, temperature, dc-bias). Multi-dimensional regression, smoothing, interpolation, and inference are automatically performed by the neural networks. It is an interactive datasheet for magnetic material.')
+    
+
+    
     col1, col2 = st.columns(2)
     with col1:
         st.header('MagNet AI Input')
