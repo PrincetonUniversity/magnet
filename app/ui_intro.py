@@ -205,9 +205,9 @@ def ui_intro(m):
             st.write('The next step is to describe the B waveform.')
             st.markdown("""---""")
             st.subheader('How does MagNet AI work?')
-            st.write('from data acquisition, error analysis, to machine learning')
-            st.write('* Diego Serrano et al., Quantifying the Complexity of Modeling Power Magnetic Material Characteristics [Paper 1: Why MagNet](https://doi.org/10.36227/techrxiv.21340989.v2)')
-            st.write('* Haoran Li et al., Machine Learning Framework for Modeling Power Magnetic Material Characteristics [Paper 2: How MagNet](https://doi.org/10.36227/techrxiv.21340998.v2)')
+            st.caption('from data acquisition, error analysis, data visualization, to machine learning')
+            st.write('- Diego Serrano et al., "Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340989.v2) - Why MagNet AI?')
+            st.write('- Haoran Li et al., "Machine Learning Framework for Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340998.v2) - How MagNet AI?')
 
             
         if bias < 0:
@@ -235,7 +235,7 @@ def ui_intro(m):
 
     st.markdown("""---""")
     st.header('MagNet AI Output')
-    st.write('Component-level behavior including material characteristics and measurement parasitics')
+    st.caption('component-level behavior model with material characteristics and measurement parasitics')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('Effective B-H Waveform')
@@ -331,20 +331,14 @@ def ui_intro(m):
 
     st.header('How to Cite')
     st.write("""
-        If you used MagNet, please cite us with the following:
+        If you find MagNet as useful, please cite the following:
 
-        [4] D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), 2022.
+        - [4] D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
 
-        [3] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
-        "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," 
-        IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
+        - [3] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
 
-        [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
-        "Transfer Learning Methods for Magnetic Core Loss Modeling,” 
-        IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
+        - [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021. [Paper](https://ieeexplore.ieee.org/document/9646065)
 
-        [1] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
-        "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
-        IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
+        - [1] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020. [Paper](https://ieeexplore.ieee.org/document/9265869)
     """)
     st.markdown("""---""")
