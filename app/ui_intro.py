@@ -76,7 +76,7 @@ def ui_intro(m):
         bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
         output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
-        st.caption(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
+        st.write(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
         st.download_button(
             f"Download an Example {c.streamlit.n_nn}-Step 100 mT Sinusoidal Bac Waveform CSV File",
             data=csv,

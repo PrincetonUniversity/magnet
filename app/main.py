@@ -97,12 +97,12 @@ if __name__ == '__main__':
         st.sidebar.text_input("Comments?")
         st.sidebar.button("Submit")
         
-    st.sidebar.header('MagNet Status')
+    st.sidebar.header('MagNet Data Status')
     n_tot = 0
     for material in material_list:
         n_tot = n_tot + len(load_dataframe(material))
-    st.sidebar.caption(f'- Number of data points: {n_tot}')
-    st.sidebar.caption(f'- Number of materials: {len(material_list)}')
+    st.sidebar.write(f'- Number of data points: {n_tot}')
+    st.sidebar.write(f'- Number of materials: {len(material_list)}')
         
     st.sidebar.header('MagNet Team')
     contributor('Haoran Li', 'haoranli@princeton.edu')
