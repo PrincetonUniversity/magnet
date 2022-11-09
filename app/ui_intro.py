@@ -125,7 +125,7 @@ def ui_intro(m):
                     0.2,
                     0.01,
                     format='%f',
-                    key=f'duty_trap_p {m}',
+                    key=f'duty_trap_p1 {m}',
                     help='Duty cycle of the rising part.')
                 duty_n = st.slider(
                     "Duty Cycle (Falling)",
@@ -134,7 +134,7 @@ def ui_intro(m):
                     0.2,
                     0.01,
                     format='%f',
-                    key=f'duty_trap_p {m}',
+                    key=f'duty_trap_p2 {m}',
                     help='Duty cycle of the falling part.')
                 duty = [duty_p, duty_n, (1-duty_p-duty_n)/2]
             phase = st.slider(
