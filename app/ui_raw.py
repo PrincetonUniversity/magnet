@@ -100,7 +100,7 @@ def ui_download_data(m, streamlit_root):
     st.subheader("""
     By downloading the MagNet data you by default agree:
     """)
-    st.write("""
+    st.caption("""
     RESEARCHER_FULLNAME (the "Researcher") has requested permission to use the MagNet database (the "Database") at Princeton University. In exchange for such permission, Researcher hereby agrees to the following terms and conditions:
 
     Researcher shall use the Database only for non-commercial research and educational purposes. Princeton University make no representations or warranties regarding the Database, including but not limited to warranties of non-infringement or fitness for a particular purpose.

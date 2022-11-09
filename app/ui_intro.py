@@ -20,6 +20,7 @@ def convert_df(df):
 def ui_intro(m):
     st.title('MagNet AI for Education and Design')
     st.markdown("""---""")
+    st.caption('MagNet AI functions as a combination of Steinmetz Equation and Jiles-Atherton Model to jointly predict volumetric core loss and effective B-H loop of a material in a particular operating condition (e.g., frequency, waveform, temperature, dc-bias). Multi-dimensional regression, smoothing, interpolation, and inference are automatically performed by the neural networks. It is an interactive datasheet for magnetic material.')
     col1, col2 = st.columns(2)
     with col1:
         st.header('MagNet AI Input')
@@ -30,7 +31,7 @@ def ui_intro(m):
             help='select from a list of available materials')
         
         mu_relative = material_extra[material][0]
-        st.write(f'Initial Relative Permeability (mu) of {material} is set to {mu_relative} to determine the center of the B-H loop.')
+        st.caption(f'Initial Relative Permeability (mu) of {material} is set to {mu_relative} to determine the center of the predicted B-H loop.')
 
         dataset = load_dataframe(material)  # To find the range of the variables
 
@@ -75,7 +76,7 @@ def ui_intro(m):
         bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
         output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
-        st.write(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
+        st.caption(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
         st.download_button(
             f"Download an Example {c.streamlit.n_nn}-Step 100 mT Sinusoidal Bac Waveform CSV File",
             data=csv,
@@ -202,7 +203,7 @@ def ui_intro(m):
                     key=f'bias {m}',
                     help='Determined by the bias dc current')
         
-            st.write('The next step is to describe the B waveform.')
+            st.write('The next step is to describe the B waveform with two options.')
             st.markdown("""---""")
             st.subheader('How does MagNet AI work?')
             st.caption('from data acquisition, error analysis, data visualization, to machine learning')
@@ -235,7 +236,7 @@ def ui_intro(m):
 
     st.markdown("""---""")
     st.header('MagNet AI Output')
-    st.caption('component-level behavior model with material characteristics and measurement parasitics')
+    st.caption('predicted component-level behavior model with material characteristics and measurement parasitics')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('Effective B-H Waveform')
@@ -333,9 +334,9 @@ def ui_intro(m):
     st.write("""
         If you find MagNet as useful, please cite the following:
 
-        - D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
+        - D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, Israel, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
 
-        - H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
+        - H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, USA, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
 
         - E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021. [Paper](https://ieeexplore.ieee.org/document/9646065)
 

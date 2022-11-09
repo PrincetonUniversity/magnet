@@ -12,26 +12,14 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 def ui_faq(m):
 
     st.title('MagNet AI Overview')
-    st.write("""
-        MagNet is a large-scale dataset designed to enable researchers modeling power magnetics with real measurement data.
-        
-        MagNet AI is a pre-trained smart agent that can predict the behavior of power magnetics with neural networks.
-        
-        The dataset contains a large amount of voltage and current data (B and H) of different magnetic components with different shapes of waveforms and different properties measured in the real world.
-        
-        Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss in design.
-        
-        MagNet is continuously being maintained and updated with new data.
-        
-        With this webpage, you can visualize and download the collected data for different magnetic materials and excitations or calculate core losses for your specific design conditions using Neural Networks integrated into the webpage.
-        
-        Please select one of these functions on the left menu to start exploring the webpage.
+    st.caption("""
+        MagNet is a large-scale dataset designed to enable researchers modeling power magnetics with real measurement data. MagNet AI is a pre-trained smart agent that can predict the behavior of power magnetics with neural networks. The dataset contains a large amount of voltage and current data (B and H) of different magnetic components with different shapes of waveforms and different properties measured in the real world. Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss in design. MagNet is continuously being maintained and updated with new data. With this webpage, you can visualize and download the collected data for different magnetic materials and excitations or calculate core losses for your specific design conditions using Neural Networks integrated into the webpage. Please select one of these functions on the left menu to start exploring the webpage.
     """)
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.subheader('MagNet Database')
-        st.write("""
+        st.caption("""
             In this section, the MagNet database can be visualized in terms of core losses.
             
             Select the desired material and excitation to visualize the core loss as a function of the frequency and flux density.
@@ -45,7 +33,7 @@ def ui_faq(m):
         """)
     with col2:
         st.subheader('MagNet Prediction')
-        st.write("""
+        st.caption("""
             In this section, volumetric core losses are calculated using Machine Learning for any desired operation point.
             
             The material and operation point can be configured with the menu and the voltage and flux as a function of time are depicted for the selected conditions. 
@@ -59,14 +47,14 @@ def ui_faq(m):
         """)
     with col3:
         st.subheader('MagNet Simulation')
-        st.write("""
+        st.caption("""
             This PLECs toolbox allows you to simulate conventional power converters with the selected material and core shape to obtain the desired waveforms.
             The waveforms are then used to compute the core losses using iGSE and Machine Learning.
             We are working on including the DC bias into the calculations.
         """)
     with col4:
         st.subheader('MagNet Download')
-        st.write("""
+        st.caption("""
             In this section, the measurement and post-processed data are available for download.
             
             For each material and excitation, there are two .zip files available:
