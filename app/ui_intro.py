@@ -204,10 +204,11 @@ def ui_intro(m):
         
             st.write('The next step is to describe the B waveform.')
             st.markdown("""---""")
-            st.subheader('Error Margin for this Material')
-            st.write(f'95th % Core Loss Error: +/- {np.round(10)} %')
-            st.write(f'95th % B-H Loop RMS Error: +/- {np.round(5)} %')
-            st.write('* Estimated weighted average error across entire database based on error analysis from MagNet team.')
+            st.subheader('How does MagNet AI work?')
+            st.write('from data acquisition, error analysis, to machine learning')
+            st.write('* Diego Serrano et al., Quantifying the Complexity of Modeling Power Magnetic Material Characteristics [Paper 1: Why MagNet](https://doi.org/10.36227/techrxiv.21340989.v2)')
+            st.write('* Haoran Li et al., Machine Learning Framework for Modeling Power Magnetic Material Characteristics [Paper 2: How MagNet](https://doi.org/10.36227/techrxiv.21340998.v2)')
+
             
         if bias < 0:
             st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
