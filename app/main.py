@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     st.set_page_config(page_title='MagNet', layout='wide')
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
-    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [API Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
+    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
     st.sidebar.markdown('[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
     st.sidebar.header('MagNet Functions')
     function_select = st.sidebar.radio(
@@ -101,8 +101,8 @@ if __name__ == '__main__':
     n_tot = 0
     for material in material_list:
         n_tot = n_tot + len(load_dataframe(material))
-    st.sidebar.write(f'Number of data points: {n_tot}')
-    st.sidebar.write(f'Number of materials: {len(material_list)}')
+    st.sidebar.caption(f'- Number of data points: {n_tot}')
+    st.sidebar.caption(f'- Number of materials: {len(material_list)}')
         
     st.sidebar.header('MagNet Team')
     contributor('Haoran Li', 'haoranli@princeton.edu')

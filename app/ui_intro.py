@@ -333,12 +333,12 @@ def ui_intro(m):
     st.write("""
         If you find MagNet as useful, please cite the following:
 
-        - [4] D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
+        - D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
 
-        - [3] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
+        - H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
 
-        - [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021. [Paper](https://ieeexplore.ieee.org/document/9646065)
+        - E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021. [Paper](https://ieeexplore.ieee.org/document/9646065)
 
-        - [1] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020. [Paper](https://ieeexplore.ieee.org/document/9265869)
+        - H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020. [Paper](https://ieeexplore.ieee.org/document/9265869)
     """)
     st.markdown("""---""")
