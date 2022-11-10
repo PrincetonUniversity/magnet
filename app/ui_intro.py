@@ -121,8 +121,8 @@ def ui_intro(m):
             if default == "Trapezoidal":
                 duty_p = st.slider(
                     "Duty Cycle (Rising)",
-                    0.02,
-                    1-0.02,
+                    0.01,
+                    1-0.01,
                     0.2,
                     0.01,
                     format='%f',
@@ -130,9 +130,9 @@ def ui_intro(m):
                     help='Duty cycle of the rising part.')
                 duty_n = st.slider(
                     "Duty Cycle (Falling)",
-                    0.02,
-                    1-duty_p,
-                    0.2,
+                    0.01,
+                    round((1-duty_p)/0.01)*0.01,
+                    duty_p if duty_p<=0.5 else round((1-duty_p)/2/0.01-1)*0.01,
                     0.01,
                     format='%f',
                     key=f'duty_trap_p2 {m}',
