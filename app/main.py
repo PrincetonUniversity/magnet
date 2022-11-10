@@ -41,8 +41,15 @@ if __name__ == '__main__':
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
     st.sidebar.markdown('[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
-    st.sidebar.header('MagNet Project')
     st.sidebar.caption('by Princeton-Dartmouth-Plexim')
+    st.sidebar.header('[Feedback to Us](https://forms.gle/6SHLF45V8vdkiPENA)')
+    st.sidebar.header('MagNet Toolkit')
+    
+#    with streamlit_analytics.track():
+#        st.sidebar.text_input("Name/Email Address?")
+#        st.sidebar.text_input("Comments?")
+#        st.sidebar.button("Submit")
+    
     function_select = st.sidebar.radio(
         'Select One:',
         ('MagNet AI', 'MagNet Database', 'MagNet Prediction',
@@ -91,13 +98,6 @@ if __name__ == '__main__':
 
     st.markdown('---')
     st.markdown(f"<h6>MAGNet v{__version__}</h6>", unsafe_allow_html=True)
-
-    st.sidebar.header('[Feedback to Us](https://forms.gle/6SHLF45V8vdkiPENA)')
-    
-#    with streamlit_analytics.track():
-#        st.sidebar.text_input("Name/Email Address?")
-#        st.sidebar.text_input("Comments?")
-#        st.sidebar.button("Submit")
         
     st.sidebar.header('MagNet Data Status')
     n_tot = 0

@@ -18,6 +18,8 @@ def convert_df(df):
 
 def ui_core_loss_predict(m):
     st.title('MagNet Prediction for Creating Design Graphs')
+    st.subheader('"Are you tired of multi-dimentional interpolation when designing power magnetics?" - Try this smart MagNet datasheet and help us to make it smarter!')
+    st.caption('Traditional magnetics datasheet only provide limited information. Multi-dimensional interporation is always a headache. We created smart MagNet datasheet to rapidly generate the needed information for what you need in the design process. No more graph reading, no more multi-dimensional interporation.')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     col1, col2 = st.columns(2)
