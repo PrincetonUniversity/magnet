@@ -42,7 +42,7 @@ if __name__ == '__main__':
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
     st.sidebar.markdown('[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
     st.sidebar.caption('by Princeton-Dartmouth-Plexim')
-    st.sidebar.header('[Feedback to Us](https://forms.gle/6SHLF45V8vdkiPENA)')
+    st.sidebar.header('[Contact Us](https://forms.gle/6SHLF45V8vdkiPENA) | [Report Error](https://docs.google.com/spreadsheets/d/1YPfv8w0kzO4UhrgpV7L3LixFJpvesBvC1CmkdJ9fGe0/edit?usp=sharing)')
     st.sidebar.header('MagNet Toolkit')
     
 #    with streamlit_analytics.track():
@@ -52,14 +52,14 @@ if __name__ == '__main__':
     
     function_select = st.sidebar.radio(
         'Select One:',
-        ('MagNet AI', 'MagNet Database', 'MagNet Prediction',
+        ('MagNet AI', 'MagNet Database', 'MagNet Smartsheet',
          'MagNet Simulation', 'MagNet Download', 'MagNet Challenge', 'MagNet Help')
     )
     
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    if function_select in ['MagNet Database', 'MagNet Prediction']:
+    if function_select in ['MagNet Database', 'MagNet Smartsheet']:
         clicked = st.sidebar.button("Add Another Case")
         if clicked:
             st.session_state.n_material += 1
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     if function_select == 'MagNet Database':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
 
-    if function_select == 'MagNet Prediction':
+    if function_select == 'MagNet Smartsheet':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':

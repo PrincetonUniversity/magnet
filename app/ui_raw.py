@@ -10,7 +10,7 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 def ui_download_data(m, streamlit_root):
 
-    st.title('MagNet Download for Open Data Sharing')
+    st.title('MagNet Download for Open-Source Sharing')
 
     col1, col2, col3 = st.columns(3)
     with col1:
