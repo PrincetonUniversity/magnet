@@ -236,7 +236,7 @@ def ui_intro(m):
 
     st.markdown("""---""")
     st.header('MagNet AI Output')
-    st.caption('predicted component-level behavior model with material characteristics and measurement parasitics')
+    st.caption('The data contains measurement artifacts. The B-H loop and volumetric core losses describe component-level behaviors. Material characteristics and measurement parasitics both have impact.')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('Effective B-H Waveform')
