@@ -17,7 +17,7 @@ def ui_core_loss_db(m):
 
     st.title('MagNet Database for Sharing and Visualization')
     st.subheader('"Are you looking for high quality core loss data to better understand power magnetics?" - Join us to share the data and make it open-source!')
-    st.caption('A key bottleneck in power magnetics research is the lack of high quality data, and the lack of standards, transparency and documentation in the data collection process. We created the MagNet Database as a standard process to share the data for power magnetics modeling.')
+    st.caption('A key bottleneck in power magnetics research is the lack of high quality data, and the lack of standards, transparency and documentation in the data collection process. We created the MagNet Database as a standard process to share the data for power magnetics modeling. If you want to open-source your data, let us know!')
     st.markdown("""---""")
     st.header(f'Input: Case {m}')
     
