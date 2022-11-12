@@ -47,9 +47,9 @@ def ui_core_loss_predict(m):
             step=1,
             key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
         if freq < min(df['Frequency']):
-            st.warning(f"The model has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz")
+            st.warning(f"The model has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz. MagNet AI is doing the inference.")
         if freq > max(df['Frequency']):
-            st.warning(f"The model has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz")
+            st.warning(f"The model has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz. MagNet AI is doing the inference.")
 
         if excitation == "Arbitrary":
             flux_string_militesla = st.text_input(
@@ -134,9 +134,9 @@ def ui_core_loss_predict(m):
                 help=f'Amplitude of the AC signal, not peak to peak') / 1e3
 
         if flux < min(df['Flux_Density']):
-            st.warning(f"The model has not been trained for peak flux densities below {round(min(df['Flux_Density']) * 1e3)} mT")
+            st.warning(f"The model has not been trained for peak flux densities below {round(min(df['Flux_Density']) * 1e3)} mT. MagNet AI is doing the inference.")
         if flux > max(df['Flux_Density']):
-            st.warning(f"The model has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT")
+            st.warning(f"The model has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT. MagNet AI is doing the inference.")
 
         if excitation != "Arbitrary":  # For sinusoidal, triangular or trapezoidal waveforms
 
@@ -177,9 +177,9 @@ def ui_core_loss_predict(m):
                 duty = [duty_p, duty_n, duty_0]
             if excitation in ["Triangular", "Trapezoidal"]:
                 if duty_p < min(df['Duty_P']) or duty_n < min(df['Duty_N']):
-                    st.warning(f"The model has not been trained for duty cycles below {round(min(df['Duty_P']), 2)}")
+                    st.warning(f"The model has not been trained for duty cycles below {round(min(df['Duty_P']), 2)}. MagNet AI is doing the inference.")
                 if duty_p > max(df['Duty_P']) or duty_n > max(df['Duty_N']):
-                    st.warning(f"The model has not been trained for duty cycles above {round(max(df['Duty_P']), 2)}")
+                    st.warning(f"The model has not been trained for duty cycles above {round(max(df['Duty_P']), 2)}. MagNet AI is doing the inference.")
 
 
         # TODO add limitations to max B and dB/dt warning
@@ -210,9 +210,9 @@ def ui_core_loss_predict(m):
             flux_bias = bias * mu_relative * c.streamlit.mu_0
 
         if bias < 0:
-            st.warning(f"The model has not been trained for bias below 0 A/m")
+            st.warning(f"The model has not been trained for bias below 0 A/m. MagNet AI is doing the inference.")
         if bias > max(df['DC_Bias']):
-            st.warning(f"The model has not been trained for bias above {round(max(df['DC_Bias']))} A/m")
+            st.warning(f"The model has not been trained for bias above {round(max(df['DC_Bias']))} A/m. MagNet AI is doing the inference.")
 
         temp = st.slider(
             f'Temperature (C)',
@@ -222,9 +222,9 @@ def ui_core_loss_predict(m):
             step=5,
             key=f'temp {m}')
         if temp < min(df['Temperature']):
-            st.warning(f"The model has not been trained for temperature below {round(min(df['Temperature']))} C")
+            st.warning(f"The model has not been trained for temperature below {round(min(df['Temperature']))} C. MagNet AI is doing the inference.")
         if temp > max(df['Temperature']):
-            st.warning(f"The model has not been trained for temperature above {round(max(df['Temperature']))} C")
+            st.warning(f"The model has not been trained for temperature above {round(max(df['Temperature']))} C. MagNet AI is doing the inference.")
 
     # Variables that are function of the sliders, different type depending on the excitation
 
