@@ -47,10 +47,10 @@ def ui_intro(m):
 
         if temp < min(dataset['Temperature']):
             st.warning(
-                f"For temperature below {round(min(dataset['Temperature']))} C. Results are potentially extrapolated.")
+                f"For temperature below {round(min(dataset['Temperature']))} C. Results are potentially extrapolated. MagNet AI is doing the inference.")
         if temp > max(dataset['Temperature']):
             st.warning(
-                f"For temperature above {round(max(dataset['Temperature']))} C. Results are potentially extrapolated.")
+                f"For temperature above {round(max(dataset['Temperature']))} C. Results are potentially extrapolated. MagNet AI is doing the inference.")
 
         freq = st.slider(
             "Frequency [kHz]",
@@ -65,11 +65,11 @@ def ui_intro(m):
         if freq < min(dataset['Frequency']):
             st.warning(
                 f"For frequency below {round(min(dataset['Frequency']) * 1e-3)} kHz. "
-                f"Results are potentially extrapolated.")
+                f"Results are potentially extrapolated. MagNet AI is doing the inference.")
         if freq > max(dataset['Frequency']):
             st.warning(
                 f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz. "
-                f"Results are potentially extrapolated.")
+                f"Results are potentially extrapolated. MagNet AI is doing the inference.")
         
     with col2:
         st.subheader('Option 1: Arbitrary B Input')  # Create an example Bac input file
@@ -184,8 +184,8 @@ def ui_intro(m):
                         flag_minor_loop = 1
             if flag_minor_loop == 1:
                 st.warning(
-                    f"The models has not been trained for waveforms with minor loops. "
-                    f"Results are potentially unreliable.")
+                    f"The models has not been trained by waveforms with minor loops. "
+                    f"MagNet AI is doing the inference.")
 
         with col1:
             if inputB is not None:  # user input
@@ -212,15 +212,15 @@ def ui_intro(m):
 
             
         if bias < 0:
-            st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
+            st.warning(f"For bias below 0 A/m, results are potentially extrapolated. MagNet AI is doing the inference.")
         if bias > max(dataset['DC_Bias']):
             st.warning(
-                f"For bias above {round(max(dataset['DC_Bias']))} A/m, results are potentially extrapolated.")
+                f"For bias above {round(max(dataset['DC_Bias']))} A/m, results are potentially extrapolated. MagNet AI is doing the inference.")
 
         with col2:
             if max(abs(bdata)) + bias * mu_relative * c.streamlit.mu_0 > max(dataset['Flux_Density']):
                 st.warning(
-                    f"For peak flux densities above {round(max(dataset['Flux_Density']) * 1e3)} mT, results are potentially extrapolated"
+                    f"For peak flux densities above {round(max(dataset['Flux_Density']) * 1e3)} mT, results are potentially extrapolated. MagNet AI is doing the inference."
                     f" (Bac={round((max(bdata)-min(bdata))/2 * 1e3)} mT, Bdc={round(bias * mu_relative * c.streamlit.mu_0 * 1e3)} mT).")
 
             flag_dbdt_high = 0  # Detection of large dB/dt
@@ -229,14 +229,14 @@ def ui_intro(m):
                 if abs(bdata[i + 1] - bdata[i]) * freq * c.streamlit.n_nn > dbdt_max:  # dbdt_max=vpkpk_max/N/Ae
                     flag_dbdt_high = 1
             if flag_dbdt_high == 1:
-                st.warning(f"For dB/dt above {round(dbdt_max * 1e-3)} mT/ns, results are potentially extrapolated.")
+                st.warning(f"For dB/dt above {round(dbdt_max * 1e-3)} mT/ns, results are potentially extrapolated. MagNet AI is doing the inference.")
 
     hdata = BH_Transformer(material, freq, temp, bias, bdata)
     loss = loss_BH(bdata, hdata, freq)
 
     st.markdown("""---""")
     st.header('MagNet AI Output')
-    st.caption('The data contains measurement artifacts. The B-H loop and volumetric core losses describe component-level behaviors. Material characteristics and measurement parasitics both have impact.')
+    st.caption('The data contains measurement artifacts. The B-H loop and volumetric core losses describe component-level behaviors. Material characteristics, parasitics, and measurement error all impact the results.')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('Effective B-H Waveform')

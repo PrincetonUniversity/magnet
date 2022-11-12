@@ -134,9 +134,9 @@ def ui_core_loss_predict(m):
                 help=f'Amplitude of the AC signal, not peak to peak') / 1e3
 
         if flux < min(df['Flux_Density']):
-            st.warning(f"The model has not been trained for peak flux densities  below {round(min(df['Flux_Density']) * 1e3)} mT")
+            st.warning(f"The model has not been trained for peak flux densities below {round(min(df['Flux_Density']) * 1e3)} mT")
         if flux > max(df['Flux_Density']):
-            st.warning(f"The model has not been trained for peak flux densities  above {round(max(df['Flux_Density']) * 1e3)} mT")
+            st.warning(f"The model has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT")
 
         if excitation != "Arbitrary":  # For sinusoidal, triangular or trapezoidal waveforms
 
