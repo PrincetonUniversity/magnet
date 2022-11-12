@@ -55,7 +55,7 @@ def ui_intro(m):
         freq = st.slider(
             "Frequency [kHz]",
             10.0,
-            500.0,
+            1000.0,
             100.0,
             1.0,
             format='%f',
