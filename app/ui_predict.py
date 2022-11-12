@@ -217,7 +217,7 @@ def ui_core_loss_predict(m):
         temp = st.slider(
             f'Temperature (C)',
             0,
-            150,
+            120,
             25,
             step=5,
             key=f'temp {m}')

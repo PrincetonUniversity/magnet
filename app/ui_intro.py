@@ -38,7 +38,7 @@ def ui_intro(m):
         temp = st.slider(
             "Temperature [C]",
             0.0,
-            150.0,
+            120.0,
             25.0,
             1.0,
             format='%f',
