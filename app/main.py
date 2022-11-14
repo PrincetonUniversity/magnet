@@ -75,7 +75,7 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':
-        st.title('MagNet Simulation for Circuit Analysis')
+        st.title('MagNet Simulation for Circuit Analysis [pending]')
         ui_multiple_materials(SimulationPLECS)
         st.session_state.n_material = 1  # Resets the number of plots
             

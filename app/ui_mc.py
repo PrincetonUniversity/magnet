@@ -7,7 +7,7 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 def ui_mc(m):
 
-    st.title('MagNet Challenge for Advanced Models')
+    st.title('MagNet Challenge for Advanced Models [pending]')
     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'mclogo.jpg')), width=300)
     
     st.header('MagNet Competition')
