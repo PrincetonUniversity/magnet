@@ -31,9 +31,9 @@ jobs:
 
       - name: Install global pyenv dependencies
         run: |
-          python -m pip install --upgrade pip 
-          python -m pip install --upgrade virtualenv
-          python -m pip install --upgrade nox 
+          python3 -m pip install --upgrade pip 
+          python3 -m pip install --upgrade virtualenv
+          python3 -m pip install --upgrade nox 
 
       - name: Warm up virtualenv cache
         run: |
@@ -41,4 +41,4 @@ jobs:
 
       - name: Test with nox
         run: |
-          python -m nox 
+          python3 -m nox 
