@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-10.15]
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -41,4 +41,4 @@ jobs:
 
       - name: Test with nox
         run: |
-          nox 
+          python -m nox 
