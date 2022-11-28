@@ -41,14 +41,41 @@ def plot_title(prop):
 
 def core_loss_default(material, freq, flux, temp, bias, duty=None, batched = False):
     if not batched:
+        if duty is None:  # Sinusoidal
+            phase = 0
+        elif type(duty) is list:  # Trapezoidal
+            if duty[0] <= duty[1]:
+                phase = 0.5 - duty[0]/2
+            else:
+                phase = -duty[0]/2
+        else:  # type(duty) == 'float' -> Triangular
+            if duty <= 0.5:
+                phase = 0.5 - duty/2
+            else:
+                phase = -duty/2
+        
         bdata = bdata_generation(flux, duty)
+        bdata = np.roll(bdata, np.int_(phase * c.streamlit.n_nn))
         hdata = BH_Transformer(material, freq, temp, bias, bdata)
         core_loss = loss_BH(bdata, hdata, freq)
         return core_loss
     else:
         bdata = np.zeros(shape=(len(freq), c.streamlit.n_nn))
         for k in range(len(freq)):
+            if duty[k] is None:  # Sinusoidal
+                phase = 0
+            elif type(duty[k]) is list:  # Trapezoidal
+                if duty[k][0] <= duty[k][1]:
+                    phase = 0.5 - duty[k][0]/2
+                else:
+                    phase = -duty[k][0]/2
+            else:  # type(duty) == 'float' -> Triangular
+                if duty[k] <= 0.5:
+                    phase = 0.5 - duty[k]/2
+                else:
+                    phase = -duty[k]/2
             bdata[k,:] = bdata_generation(flux[k], duty[k])
+            bdata[k,:] = np.roll(bdata[k,:], np.int_(phase * c.streamlit.n_nn))
         hdata = BH_Transformer(material, freq, temp, bias, bdata)
         core_loss = np.zeros(shape=len(freq))
         for k in range(len(freq)):
