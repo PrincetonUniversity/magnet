@@ -24,9 +24,9 @@ jobs:
           submodules: recursive 
 
       - name: Setup pyenv
-        uses: "gabrielfalcao/pyenv-action@v7"
+        uses: "gabrielfalcao/pyenv-action@v10"
         with:
-          default: 3.6.8
+          default: 3.7.9
           versions: 3.7.9, 3.8.6, 3.9.0
 
       - name: Install global pyenv dependencies
