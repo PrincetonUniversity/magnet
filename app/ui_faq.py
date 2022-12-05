@@ -55,7 +55,7 @@ def ui_faq(m):
     st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
     st.table(df)
 
-    st.write(f'*iGSE parameters obtained from sinusoidal measurements at 25 C without bias; with Pv, f, and B in W/m^3, Hz and T respectively.')
+    st.write(f'*iGSE parameters obtained from sinusoidal measurements at 25 C without bias using a least-squares curve fitting method for log10(Pv); with Pv, f, and B in W/m^3, Hz and T respectively.')
 
     st.markdown("""---""")
 
@@ -82,7 +82,7 @@ def ui_faq(m):
         st.error("Since GaN switches are employed, the dv/dt and ringing during the transitions between different voltage levels is high. These switching transitions impact the data. Capacitances (either as a part of the core under test or parasitic) generate dips in the current waveform during the transition affecting the shape of B-H loopa and measured losses. The bandwidth in the oscilloscope is set to 20 MHz for the measurements to limit the impact of ringing. Please note that these effects are intrinsic to power converters and are present in the real operation of power transformers and inductors.")
         st.write("The voltage and current measurements are available for download for users interested in the nonidealities of the excitation.")
     with st.expander("4. How is the DC bias applied?"):
-        st.write("With this setup, the bias can be controlled by adding a constant current in the primary side. This current is added using a voltage supply using in current mode control connected between the DC blocking capacitor and the device under test. Additionally, a mirror transformer and a series inductor are added to minimize unwanted current ripples. Details will be available in a future paper.")
+        st.write("With this setup, the bias can be controlled by adding a constant current in the primary side. This current is added using a voltage supply using in current mode control connected between the DC blocking capacitor and the device under test. Additionally, a mirror transformer and a series inductor are added to minimize unwanted current ripples. Details will be available in a future paper (APEC 2023).")
         st.warning("The bias is applied in the current, leading to a dc value in the H field rather the B field. For ungapped cores, the relation between Bdc and Hdc is not unique. Bdc is not included in the data as it is not measured. Please refer to [this paper](https://ieeexplore.ieee.org/document/9383254) for further discussion.")
     with st.expander("5. How is the temperature controlled?"):
         st.write("The device under test is placed in an oil bath. The oil is continuously moved using a magnetic stirrer to improve heat dissipation. To maintain the oil temperature constant, it is placed inside a water tank. The temperature of the water is controlled using a water heater to set the desired temperature for the tests.")
@@ -101,108 +101,25 @@ def ui_faq(m):
         st.write("The voltage and current measurements and the time stamps from each data point measured using the oscilloscope are saved (an example of those waveforms is shown in the figure below), together with the information regarding the operating conditions for each test and the core under test. These files are processed using Matlab. First, the raw measurements are downsampled from 100,000 samples to 10,000 samples using a box car averaging. This process barely penalizes the quality of the data while reducing the size of the database by a factor of 10. The data available for download is this downsamples voltage and current measurements, with the sampling time instead of a vector for the time stamps.")
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'volt-curr.jpg')), width=500)
     with st.expander("2. How is the frequency identified?"):
-        st.write("""
-            To obtain the frequency, a Fast Fourier Transform (FFT) is not enough due to the low frequency resolution.
-            
-            The power spectral density using Welch method is used instead to obtain the frequency instead.
-            
-            In the picture below the FFT of the current in the previous example is shown; for this example, the fundamental frequency is 50 kHz.
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'fft.jpg')), width=500)
-    with st.expander("8. How are the single-cycle waveforms generated?"):
-        st.write("""
-            Besides the processed data and the raw files, the webpage also offers post-processed voltage and current waveforms containing a single switching cycle with 100 evenly spaced samples.
-            These waveforms can be useful to analyze B-H loops, generate physic-based models, or train Neural Networks.
-
-            To generate the single-cycle waveforms, the raw voltage and current waveform are split into the different switching cycles, then, for each switching cycle, 100 samples are obtained by interpolation, and, finally, the 100 samples for each cycle are averaged into a single switching cycle waveform.
-            The following simplified figure clarifies the process for obtaining a single voltage waveform; the same process is applied to the current waveform.
-        """)
+        st.write("Frequency plays a critical role on all other algorithms, so using the commanded frequency is not good enough. To obtain the frequency, a fast Fourier transform is not accurate enough due to the low frequency resolution. The power spectral density using Welch method is used instead to obtain the frequency instead, searching nearby the commanded frequency with a resolution of 10 Hz.")
+    with st.expander("3. How are the single-cycle waveforms generated?"):
+        st.write("To plot the B-H loop and train the neural networks, a single switching cycle for the B and H waveforms is needed. To obtain it, first, a single switching cycle for the measured voltage and current waveforms is obtained. The raw voltage and current waveform are split into the different switching cycles based on the calculated switching frequency, then, for each switching cycle, the waveform is interpolated into 1024 samples. Finally, the 1024 samples for each cycle are averaged into a single switching cycle waveform. The following simplified figure clarifies the process for obtaining a single voltage waveform; the same process is applied to the current waveform.")
         st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'single-cycle.jpg')), width=500)
-        st.warning("""
-                Post-processing the data in this way has some limitations.
-                First, if the frequency of the waveform is not accurately identified, some unwanted averaging effect will appear in the single-cycle waveform, leading to an inaccurate capture of the waveform.
-                Nevertheless, to ensure the quality of the data, data points where the single-cycle (before averaging) differs too much from one switching cycle to the next are discarded.
-            """)
-        st.error(f'Errors in the fundamental frequency detection affect the quality of the single-cycle data reported.')
+        st.warning("Post-processing the data in this way has some limitations. If steady-state conditions are not reached or the frequency of the waveform is not accurately identified, some unwanted averaging effect will appear in the single-cycle waveform, creating artifacts that can affect the B-H loops and losses. Nevertheless, to ensure the quality of the data, data points where the single-cycle waveform from one switching cycle (before averaging) differs too much from the resulting average waveform are discarded. More information will be included in a future paper (APEC 2023).")
     with st.expander("4. How do we get B and H?"):
-        st.write("""
-            The instantaneous flux density is the integral of the voltage waveform divided by the number of turns of the secondary winding used to measure the voltage, and also divided by the effective area specified in the datasheet.
+        st.write("The instantaneous flux density is calculated as the integral of the single-cycle voltage waveform divided by the number of turns of the secondary winding used to measure the voltage, and also divided by the effective area specified in the datasheet. One of the problems of this method is that any offset in the voltage will be integrated over time. Any small offset in the average voltage is removed first, additionally, the average value of B is removed as the initial value for B is unknown. Bdc cannot be inferred with this method.")
+        st.write("The magnetic field strength H is directly calculated as the single-cycle current multiplied by the number of turns in primary and divided by the effective length listed in the datasheet.")
+        st.write("This processed H and B data is also available for download, together with the resulting sampling time for the 1024 evenly spaced samples.")
+    with st.expander("5. How are losses and other parameters obtained?"):
+        st.write("For data visualization, core losses are obtained and plotted against Bac, f, d1, d2 or d4, d3, Hdc, T.")
+        st.write("The instantaneous power can be calculated directly as the product of the single-cycle voltage and current waveforms. The volumetric losses are the average value of the instantaneous power divided by the effective volume listed in the datasheet. The instantaneous power can be calculated directly as the product of the single-cycle voltage and current waveforms. The volumetric losses are the average value of the instantaneous power divided by the effective volume listed in the datasheet. For the calculation of core losses using the sequence-to-sequence neural network, volumetric core losses are calculated as the integral of the single-cycle H(t) over B(t) multiplied by the frequency.")
+        st.write("Parameters other than the temperature are obtained from the single-cycle waveform instead of the commanded parameters for improved data quality. The amplitude of the flux density is calculated as (max(B)-min(B))/2. Hdc is directly the average of the H waveform. The duty cycles are calculated by checking the voltage waveform. The percentage of the waveform above any voltage levels between min(V) and max(V) is calculated. Because d2=d4, and the waveform has only three levels, after filtering the noise, d1 directly corresponds to the fraction of the voltage waveform above (3(max(V)-min(V))/4) while d3 is the fraction of the voltage below (max(V)-min(V))/4. For sinusoidal waveforms, since there is no duty cycle, d1 to d4 are set to -1 or NaN.")
+        st.warning("For data visualization, Hdc is rounded to 1A/m, the duty cycles are rounded in 10% steps, and temperature is reported using the water set temperature directly")
+    st.subheader('Neural Networks:')
+    with st.expander("1. What machine learning algorithm is used?"):
+        st.write("A single type of neural network is used for all inferences on the webpage. The model calculates a single cycle for the H waveform based on the input B waveform and other scalars. This sequence-to-sequence neural network is a transformer-based encoder-projector-decoder architecture with B(t), T, f, and Hdc as the inputs and H(t) as the output as shown in the figure. The single cycle B and H waveforms post-processed from the measurements are downsampled from 1024 samples to 128 and are used to train the neural network for each material, using data augmentation and all the data points available in the database. This trained network is built into the webpage and used to obtain the B-H loop for any desired input. Volumetric core losses are calculated based on the generated B-H loop. All the details regarding the implementation will be available in a future paper (APEC 2023).")
+        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'transformer.jpg')), width=500)
+    with st.expander("2. What are the limitations of this method?"):
+        st.write("The quality of the output of a well-trained neural network is bounded by the quality and availability of the data used for training. As a result, all the errors in the measurement and processing of the data directly affect the output of the neural network. Only measured data is used for training, but the data is limited to certain ranges of operating conditions and waveform types. The quality of the output outside those ranges, or with waveform differing much from sinusoidal, triangular, or trapezoidal waveforms cannot be guaranteed. Other than that, the dimension of the neural network and training process has been designed to minimize the error in the H waveform and avoid overfitting. Finally, the network has been trained to minimize the rms error of the H waveform rather than losses, as a result, some discrepancy in the inferred core loss is also expected.")
 
-            One of the problems of this method is that any offset in the voltage will be integrated over time, as shown in red in the picture below.
-            Moreover, this "raw" integral of the voltage would have a different average value depending on the initial time the waveform is integrated.
-            These effects can be removed by subtracting the "average" flux density, or offset, from the raw signal.
-            For this purpose a moving-mean filter with a switching period length is employed, this variable represents the offset of the flux density (in blue).
-            Since the moving-mean does not use the complete period at the beginning and end of the waveform, the first and last switching cycles are removed.
-
-            Once the offset is removed, the corrected shape for the instantaneous flux density is obtained (in black)
-            The flux density amplitude is calculated from the maximum (or minimum) of the corrected waveform.
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'flux.jpg')), width=500)
-
-    with st.expander("3. How are losses obtained?"):
-        st.write("""
-            The instantaneous power can be calculated directly as the product of the voltage and current.
-            The losses are the average value of the instantaneous power.
-            
-            In fact, the drawback of the voltamperometric method used for the tests is that the reactive power is much higher than the losses.
-            Both the instantaneous power and the losses are depicted in the figure below. 
-            
-            To improve accuracy, the offset in the voltage and current are removed before computing the losses.
-            Additionally, only an entire number of switching cycles is used for this calculation, as losses may not be constant along the switching cycle.
-            Finally, the loss density is calculated as the power divided by the effective volume specified in the datasheet.
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'power.jpg')), width=500)
-    with st.expander("3. How are other parameters calculated?"):
-        st.write(""" For duty cycle, data is rounded to a decimal for visualization i nthe webpage
-
-        """)
-        st.write(""" DC bias in terms of H is rounded to 1A/m, temp is not measured, reported as commanded directly
-
-        """)
-    with st.expander("5. Other parameters"):
-        st.write("""
-
-        """)
-    with st.expander("5. How are the results plotted?"):
-        st.write("""
-            Besides the frequency, volumetric loss, and flux density amplitude, the different duty cycles for Trapezoidal and Triangular waveforms are identified too (d1 to d4).
-            For Sinusoidal waveforms, since there is no duty cycle, d1 to d4 are set to -1.
-            For Triangular and Trapezoidal, a scrip processes the voltage waveform to obtain the duty cycles.
-
-            With these values, the plots in the "Database Section" depicting the loss density against frequency and flux density can be obtained for each material and combination of duty cycles
-        """)
-    with st.expander("6. How are the Steinmetz parameters obtained?"):
-        st.write("""
-            In this webpage, the Steinmetz parameters for each materials are required to estimate the core losses with the iGSE method.
-            The parameters are obtained from the Sinusoidal results for each material.
-            
-            For each material, the parameters k, α, and β that best fit the measured data are obtained.
-            For such purpose, a least-squares curve fitting method is used ("lsqcurvefit" Matlab function).
-            To ensure that data points with large losses have the same impact as those with reduced losses, the logarithm of losses is used.
-            
-            Once k, α, and β are obtained, ki for iGSE is calculated.
-            Please note that the ki, α, and β are obtained from Sinusoidal tests, even when used for Trapezoidal or Triangular loss calculations.
-        """)
-
-    st.subheader('Neural Network:')
-    with st.expander("1. What is the algorithm that used in the core loss analysis?"):
-        st.write("""
-            Two types of algorithms are currently used: the iGSE (improved Generalized Steinmetz Equation)  model and the ML (Machine Learning) based model.
-        """)
-        st.write("""        
-            The iGSE model is calculated based on the following expressions,
-            where the Steinmetz parameters are extracted by the global fitting of entire sinusoidal excitation dataset of each material.
-            More advanced analytical model will be deployed in the future release.
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'model-igse.jpg')), width=300)
-        st.write("""          
-            The ML-based model is currently based on a feedforward neural network (FNN), as shown in the following figure. 
-            This network is a scalar-to-scalar model, which takes the fundamental frequency, AC flux density amplitude 
-            and the duty ratio (to describe the shape of the waveform) as the input, and the core loss per volume as the output.
-            It is able to calculate the core loss under sinusoidal, triangular and trapezoidal wave excitations.
-            More sequence-to-scalar and sequence-to-sequence models (based on LSTM or transformer, for example) will be deployed in the future release,
-            which are expected to predict the core loss under arbitrary waveforms without the limitation of waveform shapes.
-            Please refer to [this paper](https://doi.org/10.36227/techrxiv.21340998.v2) for more details about the ML-based magnetic core loss modeling.
-        """)
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'model-fnn.jpg')), width=400)
-    st.markdown("""---""")
+st.markdown("""---""")
