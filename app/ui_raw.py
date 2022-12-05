@@ -66,7 +66,7 @@ def ui_download_data(m, streamlit_root):
                     The sampling time, provided as a separate .csv file, is the same for each waveform (8 ns).
                     """)
                 with col2:
-                    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_raw.png')), width=500)
+                    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_raw.jpg')), width=500)
 
             if selection == 'Single Cycle B and H':
                 st.subheader('Single switching cycle post-processed B-H data')
@@ -92,7 +92,7 @@ def ui_download_data(m, streamlit_root):
                     In this case, the sampling time depends on the frequency of the waveform, as a single cycle is provided.
                         """)
                 with col2:
-                    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_single.png')), width=500)
+                    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_single.jpg')), width=500)
         st.success('Done!')
         st.markdown("""---""")
             
