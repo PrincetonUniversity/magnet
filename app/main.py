@@ -36,7 +36,7 @@ def contributor(name, email):
 
  
 if __name__ == '__main__':
-
+    
     st.set_page_config(page_title='MagNet', layout='wide')
     st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
     st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
