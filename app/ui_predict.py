@@ -293,6 +293,7 @@ def ui_core_loss_predict(m):
             )
 
     else:
+        st.warning("Warning: Data at extreme conditions is likely to be extrapolated. The neural network has not been trained by the data in the corner cases. Use these plots carefully.")
         # Plots for different sweeps
         col1, col2 = st.columns(2)
 
