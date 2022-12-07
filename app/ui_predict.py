@@ -9,6 +9,7 @@ from magnet.io import load_dataframe
 from magnet.plots import waveform_visualization, waveform_visualization_2axes, plot_core_loss, \
     cycle_points_sinusoidal, cycle_points_trapezoidal
 from magnet.core import core_loss_default, core_loss_arbitrary
+from magnet.constants import core_loss_range
 
 
 @st.cache
@@ -128,7 +129,7 @@ def ui_core_loss_predict(m):
                 f'AC Flux Density (mT)',
                 1,
                 500,
-                50,
+                100,
                 step=1,
                 key=f'flux {m}',
                 help=f'Amplitude of the AC signal, not peak to peak') / 1e3
@@ -310,16 +311,16 @@ def ui_core_loss_predict(m):
                 d_freq = np.tile(np.array(c.streamlit.core_loss_freq), 3)
                 d_flux = np.concatenate(
                     (np.tile(flux, len(c.streamlit.core_loss_freq)),
-                     np.tile(flux*2, len(c.streamlit.core_loss_freq)),
-                     np.tile(flux/2, len(c.streamlit.core_loss_freq))))
+                     np.tile(flux*1.2, len(c.streamlit.core_loss_freq)),
+                     np.tile(flux*0.8, len(c.streamlit.core_loss_freq))))
                 d_temp = np.tile(temp, len(c.streamlit.core_loss_freq)*3)
                 d_bias = np.tile(bias, len(c.streamlit.core_loss_freq)*3)
                 d_duty = [duty]*len(c.streamlit.core_loss_freq)*3
                 d_loss = core_loss_default(material=material, 
                                          freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                          batched = True)
-                d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                 plot_core_loss(
                     st,
                     x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
@@ -329,8 +330,8 @@ def ui_core_loss_predict(m):
                     x0=list([freq / 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(flux * 1e3)} mT',
-                    legend_upper=f'{round(flux * 2 * 1e3)} mT',
-                    legend_lower=f'{round(flux / 2 * 1e3)} mT',
+                    legend_upper=f'{round(flux * 1.2 * 1e3)} mT',
+                    legend_lower=f'{round(flux * 0.8 * 1e3)} mT',
                     title=f'<b> Core Loss Sweeping Frequency </b>'
                           f'<br> at a Few Flux Densities {subtitle_plot}',
                     x_title='Frequency [kHz]'
@@ -340,8 +341,8 @@ def ui_core_loss_predict(m):
             with col2:  # vs flux density
                 d_freq = np.concatenate(
                     (np.tile(freq, len(c.streamlit.core_loss_flux)),
-                     np.tile(freq*2, len(c.streamlit.core_loss_flux)),
-                     np.tile(freq/2, len(c.streamlit.core_loss_flux))))
+                     np.tile(freq*1.2, len(c.streamlit.core_loss_flux)),
+                     np.tile(freq*0.8, len(c.streamlit.core_loss_flux))))
                 d_flux = np.tile(np.array(c.streamlit.core_loss_flux), 3)
                 d_temp = np.tile(temp, len(c.streamlit.core_loss_flux)*3)
                 d_bias = np.tile(bias, len(c.streamlit.core_loss_flux)*3)
@@ -349,8 +350,8 @@ def ui_core_loss_predict(m):
                 d_loss = core_loss_default(material=material, 
                                          freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                          batched = True)
-                d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                 plot_core_loss(
                     st,
                     x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
@@ -360,8 +361,8 @@ def ui_core_loss_predict(m):
                     x0=list([flux * 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(freq * 1e-3)} kHz',
-                    legend_upper=f'{round(freq * 2 * 1e-3)} kHz',
-                    legend_lower=f'{round(freq / 2 * 1e-3)} kHz',
+                    legend_upper=f'{round(freq * 1.2 * 1e-3)} kHz',
+                    legend_lower=f'{round(freq * 0.8 * 1e-3)} kHz',
                     title=f'<b> Core Loss Sweeping Flux Density </b>'
                           f'<br> at a fixed Frequency {subtitle_plot}',
                     x_title='AC Flux Density [mT]'
@@ -373,16 +374,16 @@ def ui_core_loss_predict(m):
                         d_freq = np.tile(freq, len(c.streamlit.core_loss_duty)*3)
                         d_flux = np.concatenate(
                             (np.tile(flux, len(c.streamlit.core_loss_duty)),
-                             np.tile(flux*2, len(c.streamlit.core_loss_duty)),
-                             np.tile(flux/2, len(c.streamlit.core_loss_duty))))
+                             np.tile(flux*1.2, len(c.streamlit.core_loss_duty)),
+                             np.tile(flux*0.8, len(c.streamlit.core_loss_duty))))
                         d_temp = np.tile(temp, len(c.streamlit.core_loss_duty)*3)
                         d_bias = np.tile(bias, len(c.streamlit.core_loss_duty)*3)
                         d_duty = np.tile(np.array(c.streamlit.core_loss_duty), 3)
                         d_loss = core_loss_default(material=material, 
                                                  freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                                  batched = True)
-                        d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                        d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                        d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                        d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
@@ -392,8 +393,8 @@ def ui_core_loss_predict(m):
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                            legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 2 * 1e3)} mT',
-                            legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                            legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 1.2 * 1e3)} mT',
+                            legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux * 0.8 * 1e3)} mT',
                             title=f'<b> Core Loss Sweeping Duty Cycle </b>'
                                   f'<br> at a fixed Frequency, Temperature, and Bias',
                             x_title='Duty Cycle',
@@ -404,8 +405,8 @@ def ui_core_loss_predict(m):
                     with col2: # vs duty at a few frequencies
                         d_freq = np.concatenate(
                             (np.tile(freq, len(c.streamlit.core_loss_duty)),
-                             np.tile(freq*2, len(c.streamlit.core_loss_duty)),
-                             np.tile(freq/2, len(c.streamlit.core_loss_duty))))
+                             np.tile(freq*1.2, len(c.streamlit.core_loss_duty)),
+                             np.tile(freq*0.8, len(c.streamlit.core_loss_duty))))
                         d_flux = np.tile(flux, len(c.streamlit.core_loss_duty)*3)
                         d_temp = np.tile(temp, len(c.streamlit.core_loss_duty)*3)
                         d_bias = np.tile(bias, len(c.streamlit.core_loss_duty)*3)
@@ -413,8 +414,8 @@ def ui_core_loss_predict(m):
                         d_loss = core_loss_default(material=material, 
                                                  freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                                  batched = True)
-                        d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                        d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                        d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                        d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
@@ -424,8 +425,8 @@ def ui_core_loss_predict(m):
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                            legend_upper=f'{round(freq * 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                            legend_lower=f'{round(freq / 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_upper=f'{round(freq * 1.2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_lower=f'{round(freq * 0.8 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                             title=f'<b> Core Loss Sweeping Duty Cycle </b>'
                                   f'<br> at a fixed Flux Density, Temperature, and Bias',
                             x_title='Duty Cycle',
@@ -438,16 +439,16 @@ def ui_core_loss_predict(m):
                     d_freq = np.tile(freq, len(c.streamlit.core_loss_bias)*3)
                     d_flux = np.concatenate(
                         (np.tile(flux, len(c.streamlit.core_loss_bias)),
-                         np.tile(flux*2, len(c.streamlit.core_loss_bias)),
-                         np.tile(flux/2, len(c.streamlit.core_loss_bias))))
+                         np.tile(flux*1.2, len(c.streamlit.core_loss_bias)),
+                         np.tile(flux*0.8, len(c.streamlit.core_loss_bias))))
                     d_temp = np.tile(temp, len(c.streamlit.core_loss_bias)*3)
                     d_bias = np.tile(np.array(c.streamlit.core_loss_bias), 3)
                     d_duty = [duty]*len(c.streamlit.core_loss_bias)*3
                     d_loss = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                    d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
@@ -457,8 +458,8 @@ def ui_core_loss_predict(m):
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 2 * 1e3)} mT',
-                        legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                        legend_upper=f'{round(freq * 1e-3)} kHz, {round(flux * 1.2 * 1e3)} mT',
+                        legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux * 0.8 * 1e3)} mT',
                         title=f'<b> Core Loss Sweeping DC Bias </b>'
                               f'<br> at a fixed Frequency',
                         x_title='DC Bias [A/m]',
@@ -470,8 +471,8 @@ def ui_core_loss_predict(m):
                 with col2:  # vs dc bias at a few frequencies
                     d_freq = np.concatenate(
                         (np.tile(freq, len(c.streamlit.core_loss_bias)),
-                         np.tile(freq*2, len(c.streamlit.core_loss_bias)),
-                         np.tile(freq/2, len(c.streamlit.core_loss_bias))))
+                         np.tile(freq*1.2, len(c.streamlit.core_loss_bias)),
+                         np.tile(freq*0.8, len(c.streamlit.core_loss_bias))))
                     d_flux = np.tile(flux, len(c.streamlit.core_loss_bias)*3)
                     d_temp = np.tile(temp, len(c.streamlit.core_loss_bias)*3)
                     d_bias = np.tile(np.array(c.streamlit.core_loss_bias), 3)
@@ -479,8 +480,8 @@ def ui_core_loss_predict(m):
                     d_loss = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                    d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
@@ -490,8 +491,8 @@ def ui_core_loss_predict(m):
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_upper=f'{round(freq*2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_lower=f'{round(freq/2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq*1.2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_lower=f'{round(freq*0.8 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         title=f'<b> Core Loss Sweeping DC Bias </b>'
                               f'<br> at a fixed Flux Density',
                         x_title='DC Bias [A/m]',
@@ -504,16 +505,16 @@ def ui_core_loss_predict(m):
                     d_freq = np.tile(freq, len(c.streamlit.core_loss_temp)*3)
                     d_flux = np.concatenate(
                         (np.tile(flux, len(c.streamlit.core_loss_temp)),
-                         np.tile(flux*2, len(c.streamlit.core_loss_temp)),
-                         np.tile(flux/2, len(c.streamlit.core_loss_temp))))
+                         np.tile(flux*1.2, len(c.streamlit.core_loss_temp)),
+                         np.tile(flux*0.8, len(c.streamlit.core_loss_temp))))
                     d_temp = np.tile(np.array(c.streamlit.core_loss_temp), 3)
                     d_bias = np.tile(bias, len(c.streamlit.core_loss_temp)*3)
                     d_duty = [duty]*len(c.streamlit.core_loss_temp)*3
                     d_loss = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                    d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
@@ -523,8 +524,8 @@ def ui_core_loss_predict(m):
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_upper=f'{round(freq * 1e-3)} kHz, {round(2 * flux * 1e3)} mT',
-                        legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux / 2 * 1e3)} mT',
+                        legend_upper=f'{round(freq * 1e-3)} kHz, {round(1.2 * flux * 1e3)} mT',
+                        legend_lower=f'{round(freq * 1e-3)} kHz, {round(flux *0.8 * 1e3)} mT',
                         title=f'<b> Core Loss Sweeping Temperature </b>'
                               f'<br> at a fixed Frequency',
                         x_title='Temperature [C]',
@@ -536,8 +537,8 @@ def ui_core_loss_predict(m):
                 with col2:  # vs temperature at a few frequencies
                     d_freq = np.concatenate(
                         (np.tile(freq, len(c.streamlit.core_loss_temp)),
-                         np.tile(freq*2, len(c.streamlit.core_loss_temp)),
-                         np.tile(freq/2, len(c.streamlit.core_loss_temp))))
+                         np.tile(freq*1.2, len(c.streamlit.core_loss_temp)),
+                         np.tile(freq*0.8, len(c.streamlit.core_loss_temp))))
                     d_flux = np.tile(flux, len(c.streamlit.core_loss_temp)*3)
                     d_temp = np.tile(np.array(c.streamlit.core_loss_temp), 3)
                     d_bias = np.tile(bias, len(c.streamlit.core_loss_temp)*3)
@@ -545,8 +546,8 @@ def ui_core_loss_predict(m):
                     d_loss = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < c.streamlit.core_loss_min] = "NaN"
-                    d_loss[d_loss > c.streamlit.core_loss_max] = "NaN"
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
@@ -556,8 +557,8 @@ def ui_core_loss_predict(m):
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_upper=f'{round(freq * 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_lower=f'{round(freq / 2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq * 1.2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_lower=f'{round(freq * 0.8 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         title=f'<b> Core Loss Sweeping Temperature </b>'
                               f'<br> at a fixed Flux Density',
                         x_title='Temperature [C]',
