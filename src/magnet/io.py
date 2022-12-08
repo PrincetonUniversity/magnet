@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import numpy as np
 
 from importlib.resources import path
 
@@ -82,3 +83,9 @@ def load_metadata(material):
     with path('magnet.data', f'{material}_database.h5') as h5file:
         data, metadata = h5_load(h5file)
     return metadata
+
+@st.cache
+def load_hull(material):
+    with path('magnet.data', f'hull_{material}.npy') as npfile:
+        hull = np.load(npfile)
+    return hull
