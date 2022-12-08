@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from magnet.net import model, model_lstm, model_transformer
+from magnet.io import load_hull
 from magnet import config as c
 import time
 
@@ -40,47 +41,71 @@ def plot_title(prop):
 
 
 def core_loss_default(material, freq, flux, temp, bias, duty=None, batched = False):
+    Eq = load_hull(material)
+    
     if not batched:
         if duty is None:  # Sinusoidal
             phase = 0
+            dd = 0.5
         elif type(duty) is list:  # Trapezoidal
             if duty[0] <= duty[1]:
                 phase = 0.5 - duty[0]/2
             else:
                 phase = -duty[0]/2
+            dd = duty[0]
         else:  # type(duty) == 'float' -> Triangular
             if duty <= 0.5:
                 phase = 0.5 - duty/2
             else:
                 phase = -duty/2
+            dd = duty
         
         bdata = bdata_generation(flux, duty)
         bdata = np.roll(bdata, np.int_(phase * c.streamlit.n_nn))
         hdata = BH_Transformer(material, freq, temp, bias, bdata)
-        core_loss = loss_BH(bdata, hdata, freq)
-        return core_loss
+        core_loss = loss_BH(bdata, hdata, freq)     
+        
+        point = np.array([freq, flux, bias, temp, dd])
+        not_extrapolated = point_in_hull(point,Eq)
+        
+        return core_loss, not_extrapolated
+    
     else:
         bdata = np.zeros(shape=(len(freq), c.streamlit.n_nn))
+        dd = np.zeros(shape=(len(freq), 1))
+        not_extrapolated = [False for i in range(len(freq))]
+        
         for k in range(len(freq)):
             if duty[k] is None:  # Sinusoidal
                 phase = 0
+                dd[k] = 0.5
             elif type(duty[k]) is list:  # Trapezoidal
                 if duty[k][0] <= duty[k][1]:
                     phase = 0.5 - duty[k][0]/2
                 else:
                     phase = -duty[k][0]/2
+                dd[k] = duty[k][0]
             else:  # type(duty) == 'float' -> Triangular
                 if duty[k] <= 0.5:
                     phase = 0.5 - duty[k]/2
                 else:
                     phase = -duty[k]/2
+                dd[k] = duty[k]
+                
             bdata[k,:] = bdata_generation(flux[k], duty[k])
             bdata[k,:] = np.roll(bdata[k,:], np.int_(phase * c.streamlit.n_nn))
+            
         hdata = BH_Transformer(material, freq, temp, bias, bdata)
         core_loss = np.zeros(shape=len(freq))
+        
         for k in range(len(freq)):
             core_loss[k] = loss_BH(bdata[k,:], hdata[k,:], freq[k])
-        return core_loss
+            
+        for k in range(len(freq)):
+            point = np.array([freq[k], flux[k], bias[k], temp[k], dd[k]])
+            not_extrapolated[k] = point_in_hull(point,Eq)
+            
+        return core_loss, not_extrapolated
 
 
 def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
@@ -180,3 +205,9 @@ def bdata_generation(flux, duty=None, n_points=c.streamlit.n_nn):
         bdata = bdata[:-1]
 
     return bdata
+
+def point_in_hull(point, Eq, tolerance=1e-10):
+    # Determine whether a given point lies in the convex hull or not
+    return all(
+        (np.dot(coeff[:-1], point) + coeff[-1] <= tolerance)
+        for coeff in Eq)

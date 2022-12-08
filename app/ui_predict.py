@@ -9,7 +9,6 @@ from magnet.io import load_dataframe
 from magnet.plots import waveform_visualization, waveform_visualization_2axes, plot_core_loss, \
     cycle_points_sinusoidal, cycle_points_trapezoidal
 from magnet.core import core_loss_default, core_loss_arbitrary
-from magnet.constants import core_loss_range
 
 
 @st.cache
@@ -48,9 +47,9 @@ def ui_core_loss_predict(m):
             step=1,
             key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
         if freq < min(df['Frequency']):
-            st.warning(f"The model has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for frequencies below {round(min(df['Frequency']) * 1e-3)} kHz. MagNet AI is doing the extrapolation.")
         if freq > max(df['Frequency']):
-            st.warning(f"The model has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for frequencies above {round(max(df['Frequency']) * 1e-3)} kHz. MagNet AI is doing the extrapolation.")
 
         if excitation == "Arbitrary":
             flux_string_militesla = st.text_input(
@@ -135,9 +134,9 @@ def ui_core_loss_predict(m):
                 help=f'Amplitude of the AC signal, not peak to peak') / 1e3
 
         if flux < min(df['Flux_Density']):
-            st.warning(f"The model has not been trained for peak flux densities below {round(min(df['Flux_Density']) * 1e3)} mT. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for peak flux densities below {round(min(df['Flux_Density']) * 1e3)} mT. MagNet AI is doing the extrapolation.")
         if flux > max(df['Flux_Density']):
-            st.warning(f"The model has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for peak flux densities above {round(max(df['Flux_Density']) * 1e3)} mT. MagNet AI is doing the extrapolation.")
 
         if excitation != "Arbitrary":  # For sinusoidal, triangular or trapezoidal waveforms
 
@@ -178,9 +177,9 @@ def ui_core_loss_predict(m):
                 duty = [duty_p, duty_n, duty_0]
             if excitation in ["Triangular", "Trapezoidal"]:
                 if duty_p < min(df['Duty_P']) or duty_n < min(df['Duty_N']):
-                    st.warning(f"The model has not been trained for duty cycles below {round(min(df['Duty_P']), 2)}. MagNet AI is doing the inference.")
+                    st.warning(f"The model has not been trained for duty cycles below {round(min(df['Duty_P']), 2)}. MagNet AI is doing the extrapolation.")
                 if duty_p > max(df['Duty_P']) or duty_n > max(df['Duty_N']):
-                    st.warning(f"The model has not been trained for duty cycles above {round(max(df['Duty_P']), 2)}. MagNet AI is doing the inference.")
+                    st.warning(f"The model has not been trained for duty cycles above {round(max(df['Duty_P']), 2)}. MagNet AI is doing the extrapolation.")
 
 
         # TODO add limitations to max B and dB/dt warning
@@ -211,9 +210,9 @@ def ui_core_loss_predict(m):
             flux_bias = bias * mu_relative * c.streamlit.mu_0
 
         if bias < 0:
-            st.warning(f"The model has not been trained for bias below 0 A/m. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for bias below 0 A/m. MagNet AI is doing the extrapolation.")
         if bias > max(df['DC_Bias']):
-            st.warning(f"The model has not been trained for bias above {round(max(df['DC_Bias']))} A/m. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for bias above {round(max(df['DC_Bias']))} A/m. MagNet AI is doing the extrapolation.")
 
         temp = st.slider(
             f'Temperature (C)',
@@ -223,16 +222,16 @@ def ui_core_loss_predict(m):
             step=5,
             key=f'temp {m}')
         if temp < min(df['Temperature']):
-            st.warning(f"The model has not been trained for temperature below {round(min(df['Temperature']))} C. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for temperature below {round(min(df['Temperature']))} C. MagNet AI is doing the extrapolation.")
         if temp > max(df['Temperature']):
-            st.warning(f"The model has not been trained for temperature above {round(max(df['Temperature']))} C. MagNet AI is doing the inference.")
+            st.warning(f"The model has not been trained for temperature above {round(max(df['Temperature']))} C. MagNet AI is doing the extrapolation.")
 
     # Variables that are function of the sliders, different type depending on the excitation
 
     if excitation == 'Arbitrary':
         loss = core_loss_arbitrary(material, freq, flux_vector, temp, bias, duty_vector)
     else:
-        loss = core_loss_default(material, freq, flux, temp, bias, duty, batched = False)
+        loss, not_extrapolated = core_loss_default(material, freq, flux, temp, bias, duty, batched = False)
 
     # Representation of the waveform
     with col2:
@@ -261,6 +260,9 @@ def ui_core_loss_predict(m):
     # DUT and operation point and core losses
 
     st.header(f'Output: Case {m}: {round(loss / 1e3 ,2)} kW/m^3')
+    if not not_extrapolated:
+        st.warning("Warning: Data at extreme conditions is likely to be extrapolated. The neural network has not been trained by the specified data in the corner cases. Use these plots carefully.")
+        
     info_string = f'{material_manufacturers[material]} - {material}, {excitation} excitation, ' \
                   f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={round(bias)} A/m'
     if excitation in ["Sinusoidal", "Arbitrary"]:
@@ -294,7 +296,6 @@ def ui_core_loss_predict(m):
             )
 
     else:
-        st.warning("Warning: Data at extreme conditions is likely to be extrapolated. The neural network has not been trained by the data in the corner cases. Use these plots carefully.")
         # Plots for different sweeps
         col1, col2 = st.columns(2)
 
@@ -317,11 +318,9 @@ def ui_core_loss_predict(m):
                 d_temp = np.tile(temp, len(c.streamlit.core_loss_freq)*3)
                 d_bias = np.tile(bias, len(c.streamlit.core_loss_freq)*3)
                 d_duty = [duty]*len(c.streamlit.core_loss_freq)*3
-                d_loss = core_loss_default(material=material, 
+                d_loss, not_extrapolated = core_loss_default(material=material, 
                                          freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                          batched = True)
-                d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                 plot_core_loss(
                     st,
                     x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
@@ -335,24 +334,23 @@ def ui_core_loss_predict(m):
                     legend_lower=f'{round(flux * 0.8 * 1e3)} mT',
                     title=f'<b> Core Loss Sweeping Frequency </b>'
                           f'<br> at a Few Flux Densities {subtitle_plot}',
-                    x_title='Frequency [kHz]'
+                    x_title='Frequency [kHz]',
+                    not_extrapolated = not_extrapolated
                 )
                 plot_bar.progress(10)
 
             with col2:  # vs flux density
                 d_freq = np.concatenate(
                     (np.tile(freq, len(c.streamlit.core_loss_flux)),
-                     np.tile(freq*1.2, len(c.streamlit.core_loss_flux)),
-                     np.tile(freq*0.8, len(c.streamlit.core_loss_flux))))
+                     np.tile(freq*2.0, len(c.streamlit.core_loss_flux)),
+                     np.tile(freq*0.5, len(c.streamlit.core_loss_flux))))
                 d_flux = np.tile(np.array(c.streamlit.core_loss_flux), 3)
                 d_temp = np.tile(temp, len(c.streamlit.core_loss_flux)*3)
                 d_bias = np.tile(bias, len(c.streamlit.core_loss_flux)*3)
                 d_duty = [duty]*len(c.streamlit.core_loss_flux)*3
-                d_loss = core_loss_default(material=material, 
+                d_loss, not_extrapolated = core_loss_default(material=material, 
                                          freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                          batched = True)
-                d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                 plot_core_loss(
                     st,
                     x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
@@ -362,11 +360,12 @@ def ui_core_loss_predict(m):
                     x0=list([flux * 1e3]),
                     y0=list([1e-3 * loss]),
                     legend=f'{round(freq * 1e-3)} kHz',
-                    legend_upper=f'{round(freq * 1.2 * 1e-3)} kHz',
-                    legend_lower=f'{round(freq * 0.8 * 1e-3)} kHz',
+                    legend_upper=f'{round(freq * 2.0 * 1e-3)} kHz',
+                    legend_lower=f'{round(freq * 0.5 * 1e-3)} kHz',
                     title=f'<b> Core Loss Sweeping Flux Density </b>'
                           f'<br> at a fixed Frequency {subtitle_plot}',
-                    x_title='AC Flux Density [mT]'
+                    x_title='AC Flux Density [mT]',
+                    not_extrapolated = not_extrapolated
                 )
                 plot_bar.progress(20)
 
@@ -380,11 +379,9 @@ def ui_core_loss_predict(m):
                         d_temp = np.tile(temp, len(c.streamlit.core_loss_duty)*3)
                         d_bias = np.tile(bias, len(c.streamlit.core_loss_duty)*3)
                         d_duty = np.tile(np.array(c.streamlit.core_loss_duty), 3)
-                        d_loss = core_loss_default(material=material, 
+                        d_loss, not_extrapolated = core_loss_default(material=material, 
                                                  freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                                  batched = True)
-                        d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                        d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
@@ -400,23 +397,23 @@ def ui_core_loss_predict(m):
                                   f'<br> at a fixed Frequency, Temperature, and Bias',
                             x_title='Duty Cycle',
                             x_log=False,
-                            y_log=True
+                            y_log=True,
+                            not_extrapolated = not_extrapolated
                         )
                         plot_bar.progress(30)
+                        
                     with col2: # vs duty at a few frequencies
                         d_freq = np.concatenate(
                             (np.tile(freq, len(c.streamlit.core_loss_duty)),
-                             np.tile(freq*1.2, len(c.streamlit.core_loss_duty)),
-                             np.tile(freq*0.8, len(c.streamlit.core_loss_duty))))
+                             np.tile(freq*2.0, len(c.streamlit.core_loss_duty)),
+                             np.tile(freq*0.5, len(c.streamlit.core_loss_duty))))
                         d_flux = np.tile(flux, len(c.streamlit.core_loss_duty)*3)
                         d_temp = np.tile(temp, len(c.streamlit.core_loss_duty)*3)
                         d_bias = np.tile(bias, len(c.streamlit.core_loss_duty)*3)
                         d_duty = np.tile(np.array(c.streamlit.core_loss_duty), 3)
-                        d_loss = core_loss_default(material=material, 
+                        d_loss, not_extrapolated = core_loss_default(material=material, 
                                                  freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                                  batched = True)
-                        d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                        d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
@@ -426,13 +423,14 @@ def ui_core_loss_predict(m):
                             x0=list([duty_p]),
                             y0=list([1e-3 * loss]),
                             legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                            legend_upper=f'{round(freq * 1.2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                            legend_lower=f'{round(freq * 0.8 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_upper=f'{round(freq * 2.0 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                            legend_lower=f'{round(freq * 0.5 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                             title=f'<b> Core Loss Sweeping Duty Cycle </b>'
                                   f'<br> at a fixed Flux Density, Temperature, and Bias',
                             x_title='Duty Cycle',
                             x_log=False,
-                            y_log=True
+                            y_log=True,
+                            not_extrapolated = not_extrapolated
                         )
                         plot_bar.progress(40)
 
@@ -445,11 +443,9 @@ def ui_core_loss_predict(m):
                     d_temp = np.tile(temp, len(c.streamlit.core_loss_bias)*3)
                     d_bias = np.tile(np.array(c.streamlit.core_loss_bias), 3)
                     d_duty = [duty]*len(c.streamlit.core_loss_bias)*3
-                    d_loss = core_loss_default(material=material, 
+                    d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
@@ -465,24 +461,23 @@ def ui_core_loss_predict(m):
                               f'<br> at a fixed Frequency',
                         x_title='DC Bias [A/m]',
                         x_log=False,
-                        y_log=True
+                        y_log=True,
+                        not_extrapolated = not_extrapolated
                     )
                     plot_bar.progress(50)
 
                 with col2:  # vs dc bias at a few frequencies
                     d_freq = np.concatenate(
                         (np.tile(freq, len(c.streamlit.core_loss_bias)),
-                         np.tile(freq*1.2, len(c.streamlit.core_loss_bias)),
-                         np.tile(freq*0.8, len(c.streamlit.core_loss_bias))))
+                         np.tile(freq*2.0, len(c.streamlit.core_loss_bias)),
+                         np.tile(freq*0.5, len(c.streamlit.core_loss_bias))))
                     d_flux = np.tile(flux, len(c.streamlit.core_loss_bias)*3)
                     d_temp = np.tile(temp, len(c.streamlit.core_loss_bias)*3)
                     d_bias = np.tile(np.array(c.streamlit.core_loss_bias), 3)
                     d_duty = [duty]*len(c.streamlit.core_loss_bias)*3
-                    d_loss = core_loss_default(material=material, 
+                    d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
@@ -492,13 +487,14 @@ def ui_core_loss_predict(m):
                         x0=list([bias]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_upper=f'{round(freq*1.2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_lower=f'{round(freq*0.8 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq*2.0 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_lower=f'{round(freq*0.5 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         title=f'<b> Core Loss Sweeping DC Bias </b>'
                               f'<br> at a fixed Flux Density',
                         x_title='DC Bias [A/m]',
                         x_log=False,
-                        y_log=True
+                        y_log=True,
+                        not_extrapolated = not_extrapolated
                     )
                     plot_bar.progress(60)
 
@@ -511,11 +507,9 @@ def ui_core_loss_predict(m):
                     d_temp = np.tile(np.array(c.streamlit.core_loss_temp), 3)
                     d_bias = np.tile(bias, len(c.streamlit.core_loss_temp)*3)
                     d_duty = [duty]*len(c.streamlit.core_loss_temp)*3
-                    d_loss = core_loss_default(material=material, 
+                    d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
@@ -531,24 +525,23 @@ def ui_core_loss_predict(m):
                               f'<br> at a fixed Frequency',
                         x_title='Temperature [C]',
                         x_log=False,
-                        y_log=True
+                        y_log=True,
+                        not_extrapolated = not_extrapolated
                     )
                     plot_bar.progress(70)
 
                 with col2:  # vs temperature at a few frequencies
                     d_freq = np.concatenate(
                         (np.tile(freq, len(c.streamlit.core_loss_temp)),
-                         np.tile(freq*1.2, len(c.streamlit.core_loss_temp)),
-                         np.tile(freq*0.8, len(c.streamlit.core_loss_temp))))
+                         np.tile(freq*2.0, len(c.streamlit.core_loss_temp)),
+                         np.tile(freq*0.5, len(c.streamlit.core_loss_temp))))
                     d_flux = np.tile(flux, len(c.streamlit.core_loss_temp)*3)
                     d_temp = np.tile(np.array(c.streamlit.core_loss_temp), 3)
                     d_bias = np.tile(bias, len(c.streamlit.core_loss_temp)*3)
                     d_duty = [duty]*len(c.streamlit.core_loss_temp)*3
-                    d_loss = core_loss_default(material=material, 
+                    d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
-                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
-                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
@@ -558,15 +551,17 @@ def ui_core_loss_predict(m):
                         x0=list([temp]),
                         y0=list([1e-3 * loss]),
                         legend=f'{round(freq * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_upper=f'{round(freq * 1.2 * 1e-3)} kHz, {round(flux * 1e3)} mT',
-                        legend_lower=f'{round(freq * 0.8 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_upper=f'{round(freq * 2.0 * 1e-3)} kHz, {round(flux * 1e3)} mT',
+                        legend_lower=f'{round(freq * 0.5 * 1e-3)} kHz, {round(flux * 1e3)} mT',
                         title=f'<b> Core Loss Sweeping Temperature </b>'
                               f'<br> at a fixed Flux Density',
                         x_title='Temperature [C]',
                         x_log=False,
-                        y_log=True
+                        y_log=True,
+                        not_extrapolated = not_extrapolated
                     )
                     plot_bar.progress(100)
+                    
             st.success('Done!')
 
     st.markdown("""---""")

@@ -129,7 +129,11 @@ def waveform_visualization(
 
 def plot_core_loss(
         st, x, y, x0, y0, title, x_title, legend, y_title='Power Loss [kW/m^3]',
-        x_log=True, y_log=True, y_upper=None, y_lower=None, legend_upper=None, legend_lower=None):
+        x_log=True, y_log=True, y_upper=None, y_lower=None, legend_upper=None, legend_lower=None, not_extrapolated=None):
+    
+    if not_extrapolated is None:
+        not_extrapolated = np.full(len(y)*3, True)
+        
     fig = go.Figure()
     if y_upper is not None:
         fig.add_trace(
@@ -137,17 +141,37 @@ def plot_core_loss(
                 name=legend_upper,
                 x=x,
                 y=y_upper,
+                line=dict(color='firebrick', width=3, dash='dash'),
+                showlegend=False if any(not_extrapolated[0:(len(y))]) else True
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                name=legend_upper,
+                x=np.array(x)[not_extrapolated[0:(len(y))]],
+                y=y_upper[not_extrapolated[0:(len(y))]],
                 line=dict(color='firebrick', width=3)
             )
         )
+        
     fig.add_trace(
         go.Scatter(
             name=legend,
             x=x,
             y=y,
+            line=dict(color='darkslategrey', width=4, dash='dash'),
+            showlegend=False if any(not_extrapolated[(len(y)):(len(y))*2]) else True
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            name=legend,
+            x=np.array(x)[not_extrapolated[(len(y)):(len(y))*2]],
+            y=y[not_extrapolated[(len(y)):(len(y))*2]],
             line=dict(color='darkslategrey', width=4)
         )
     )
+    
     fig.add_trace(
         go.Scatter(dict(
             name=legend,
@@ -159,12 +183,22 @@ def plot_core_loss(
             line=dict(color='darkslategrey', width=4)
         ))
     )
+    
     if y_lower is not None:
         fig.add_trace(
             go.Scatter(
                 name=legend_lower,
                 x=x,
                 y=y_lower,
+                line=dict(color='mediumslateblue', width=3, dash='dash'),
+                showlegend=False if any(not_extrapolated[(len(y))*2:len(y)*3]) else True
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                name=legend_lower,
+                x=np.array(x)[not_extrapolated[(len(y))*2:len(y)*3]],
+                y=y_lower[not_extrapolated[(len(y))*2:len(y)*3]],
                 line=dict(color='mediumslateblue', width=3)
             )
         )
