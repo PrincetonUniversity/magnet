@@ -261,7 +261,7 @@ def ui_core_loss_predict(m):
 
     st.header(f'Output: Case {m}: {round(loss / 1e3 ,2)} kW/m^3')
     if not not_extrapolated:
-        st.warning("Warning: Data at extreme conditions is likely to be extrapolated. The neural network has not been trained by the specified data in the corner cases. Use these plots carefully.")
+        st.warning("Disclaimer: Data at extreme conditions is likely to be extrapolated. The neural network has not been trained by the measurement data in the corner cases.")
         
     info_string = f'{material_manufacturers[material]} - {material}, {excitation} excitation, ' \
                   f'f={round(freq / 1e3)} kHz, Bac={round(flux * 1e3)} mT, Bias={round(bias)} A/m'
@@ -277,7 +277,11 @@ def ui_core_loss_predict(m):
                  f'D1={round(duty_p, 2)}, D2={round(duty_0, 2)}, D3={round(duty_n, 2)}, D4={round(duty_0, 2)}, '
                  f'T={round(temp)} C')
 
-    st.write("")
+    st.warning('''
+                Solid curves: interporated prediction. MagNet AI is reproducing the training data. \n 
+                Dash curves: extrapolated prediction. MagNet AI is doing its own prediction.
+                ''')
+    
     if excitation == "Arbitrary":
         col1, col2 = st.columns(2)
         with col1:
