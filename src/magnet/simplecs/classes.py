@@ -5,6 +5,8 @@ from plotly.subplots import make_subplots
 import xmlrpc.client as xmlrpclib
 import os
 import os.path
+import numpy as np
+from magnet import config as c
 
 class CircuitModel(object):
     cntInst = 0
@@ -31,7 +33,7 @@ class CircuitModel(object):
         
     # Display schematic
     def displaySch(self, path):
-        st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}_sch.png')), width=500)
+        st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}_sch.png')), width=400)
 
     # Configure magnetic model
     def setMagModel(self, mag_init, material_init):
@@ -60,7 +62,7 @@ class CircuitModel(object):
         self.H = Data_raw['Values'][2]
         self.B = Data_raw['Values'][3]
         self.Ploss = Data_raw['Values'][4][-1]/self.mag.Ac/self.mag.lc/1000
-        return self.B,self.Time
+        return self.B,self.H,self.Time
 
     # Display waveform
     def displayWfm(self):
@@ -92,6 +94,26 @@ class CircuitModel(object):
         
         st.plotly_chart(fig, use_container_width=True)
         
+    def displayBH(self):
+        fig = make_subplots(specs=[[{"secondary_y": False}]])
+        fig.add_trace(
+            go.Scatter(
+                x=np.tile(self.Hinterp + self.bias * np.ones(c.streamlit.n_nn), 2),
+                y=np.tile((self.Binterp + self.bias * self.mag.material.mu_r * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3, 2),
+                line=dict(color='mediumslateblue', width=4),
+                name="Predicted B-H Loop"),
+            secondary_y=False,
+        )
+        
+        fig.update_layout(
+            title_text="<b>Predicted B-H Loop</b>",
+            title_x=0.5,
+            legend=dict(yanchor="bottom", y=0, xanchor="right", x=0.935)
+        )
+
+        fig.update_yaxes(title_text="B - Flux Density [mT]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
+        fig.update_xaxes(title_text="H - Field Strength [A/m]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
+        st.plotly_chart(fig, use_container_width=True)
 
 
 class MagModel(object):
@@ -117,7 +139,7 @@ class MagModel(object):
 
     # Display schematic
     def displaySch(self, path):
-        st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}.png')), width=300)
+        st.image(Image.open(os.path.join(path, 'graphics', f'{self.Name}.png')), width=200)
 
     # Configure material model
     def configMaterialModel(self, material_init):
