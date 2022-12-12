@@ -15,9 +15,13 @@ the functionality is exposed. Before `magnet` is released on PyPI, it can be ins
 
 API Documentation for `magnet` can be viewed online at [https://princetonuniversity.github.io/magnet/](https://princetonuniversity.github.io/magnet/)
 
+Please `pip install mag-net` and `pip install .` in the magnet folder before running streamlit.
+
 ## How to Cite
 
 If you used MagNet, please cite us with the following.
+
+D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), 2022.
 
 H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
 

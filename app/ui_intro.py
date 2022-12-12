@@ -1,160 +1,360 @@
 import os.path
 import pandas as pd
 import streamlit as st
-from magnet.constants import material_names, materials, materials_extra, material_manufacturers, \
-    material_applications, material_core_tested
-from magnet.io import load_dataframe
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from magnet.constants import material_list, material_extra, material_core_params
+from magnet.io import load_dataframe, load_hull
+import numpy as np
+from magnet.core import BH_Transformer, loss_BH, bdata_generation, point_in_hull
+from magnet import config as c
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
 
 def ui_intro(m):
-
-    st.header('Introduction of MagNet')
-    st.write("""
-        MagNet is a large-scale dataset designed to enable researchers modeling power magnetics with real measurement data.
-        
-        The dataset contains a large amount of voltage and current data (B and H) of different magnetic components with different shapes of waveforms and different properties measured in the real world.
-        
-        Researchers may use these data as pairs of excitations and responses to build up dynamic magnetic models or calculate the core loss in design.
-        
-        MagNet is continuously being maintained and updated with new data.
-        
-        With this webpage, you can visualize and download the collected data for different magnetic materials and excitations or calculate core losses for your specific design conditions using Neural Networks integrated into the webpage.
-        
-        Please select one of these functions on the left menu to start exploring the webpage.
-    """)
-
-    col1, col2, col3, col4 = st.columns(4)
+    st.title('MagNet AI for Research, Education and Design')
+    st.subheader('"Are you still using the Steinmetz Equation proposed in 1890 to design power magnetics in 2022?" - Try MagNet AI and join us to make it better')
+    st.caption('We created MagNet AI to advance power magnetics research, education, and design. The mission of MagNet AI is to replace the traditional curve-fitting models (e.g., Steinmetz Equations and Jiles-Atherton Models) with state-of-the-art data-driven methods such as neural networks and machine learning. MagNet AI is open, transparent, fast, smart, versatile, and is continously learning. It is a new tool to design power magnetics and can do lots of things that traditional methods cannnot do.')
+    st.markdown("""---""")
+    
+    col1, col2 = st.columns(2)
     with col1:
-        st.subheader('MagNet Database')
-        st.write("""
-            In this section, the MagNet database can be visualized.
-            
-            Select the desired material and excitation on the left to visualize the core loss as a function of the frequency and flux density.
-            The desired range for the plot and specific conditions such as temperature, DC bias, or duty cycle can also be selected from the left sliders.
-            On the right, you can see the shape of the waveform you have selected.
-            
-            For each case, a plot will represent the volumetric loss, frequency, and flux density, where the variable in the colorbar can be selected on the left.
-            When selecting Datasheet excitation, the data provided is the interpolation of the values provided in the material datasheet from the manufacturer.
-            
-            Finally, for measured data, a plot shows the Outlier Factor, which provides information on the quality of the data; for more information please check the FAQ section.
-            
-            Additionally, all the data points in the selected range can be easily downloaded as a .csv file by clicking the download button.
-            Click on "Measurement details" to see the core and specific conditions for the test.
-            
-            We are working on adding measurements at different temperature and DC bias.
-        """)
-    with col2:
-        st.subheader('MagNet Analysis')
-        st.write("""
-            In this section, volumetric core losses are calculated for any desired operation point.
-            
-            The material and operation point can be configured with the menu on the left.
-            On the right, the voltage and flux as a function of time are depicted for the selected conditions. 
-            
-            For the selected operation point, losses are calculated using two methods:
-            1) improved Generalized Steinmetz Equations (iGSE).
-            2) Machine Learning (ML) models, which are Neural Networks trained with the measured database are deployed on the webpage.
-            Further information on the iGSE and ML models can be found in the FAQ section.
-            Additionally, the interpolated values for the measurement and datasheet are provided when available for comparison purposes.
-            
-            For the selected material and conditions, additional plots show how losses change when sweeping one of the variables (such as frequency, flux, or duty cycle) and keeping the others fixed.
-            The results include both the iGSE and ML methods.
-            
-            Besides the calculation for conventional excitations, we are working on NN models for arbitrary waveforms.
-        """)
-    with col3:
-        st.subheader('Download Measurement Data')
-        st.write("""
-            In this section, the measurement and post-processed data are available for download.
-            
-            For each material and excitation, there are two .zip files available:
-            
-            1) The raw voltage and current data from the oscilloscope of each measured waveform are provided for download.
-            Each data point contains 2.000 samples, the first 20 us out of the 100 us of the total sample, which ensures at least a switching cycle information while saving space.
-            The voltage and current are provided as two separated .csv files. 
-            An additional .txt file includes the information regarding how the test has been performed.
-            
-            2) The B and H waveforms for a single switching cycle.
-            This information is post-processed from the raw voltage and current waveform as detailed in the FAQ section.
-            Again, two .csv files are generated, one for B and one for H, and another .csv file contains the information of the frequency of each data point.
-            A .txt with information on the test is also incldued.
-            
-            These files are intended for researchers to build their own core loss models.
-        """)
-    with col4:
-        st.subheader('MagNet Simulation')
-        st.write("""
-            This PLECs toolbox allows you to simulate conventional power converters with the selected material and core shape to obtain the desired waveforms.
-            The waveforms are then used to compute the core losses using iGSE and Machine Learning.
+        st.header('MagNet AI Input')
+        material = st.selectbox(
+            f'Material:',
+            material_list,
+            key=f'material {m}',
+            help='select from a list of available materials')
+        
+        mu_relative = material_extra[material][0]
+        st.caption(f'Initial Relative Permeability (mu) of {material} is set to {mu_relative} to determine the center of the predicted B-H loop.')
 
-            We are working on including the DC bias into the calculations.
-        """)
-        st.subheader('Frequently Asked Questions')
-        st.write("""
-            For more information, the FAQ section details how the data is captured and processed and how losses are calculated.
-        """)
+        dataset = load_dataframe(material)  # To find the range of the variables
+
+        temp = st.slider(
+            "Temperature [C]",
+            0.0,
+            120.0,
+            25.0,
+            1.0,
+            format='%f',
+            key=f'temp {m}',
+            help='Device surface temperature')
+
+        if temp < min(dataset['Temperature']):
+            st.warning(
+                f"For temperature below {round(min(dataset['Temperature']))} C. Results are potentially extrapolated.")
+        if temp > max(dataset['Temperature']):
+            st.warning(
+                f"For temperature above {round(max(dataset['Temperature']))} C. Results are potentially extrapolated.")
+
+        freq = st.slider(
+            "Frequency [kHz]",
+            10.0,
+            1000.0,
+            100.0,
+            1.0,
+            format='%f',
+            key=f'freq {m}',
+            help='Fundamental frequency of the excitation') * 1e3
+
+        if freq < min(dataset['Frequency']):
+            st.warning(
+                f"For frequency below {round(min(dataset['Frequency']) * 1e-3)} kHz. "
+                f"Results are potentially extrapolated.")
+        if freq > max(dataset['Frequency']):
+            st.warning(
+                f"For frequency above {round(max(dataset['Frequency']) * 1e-3)} kHz. "
+                f"Results are potentially extrapolated.")
+        
+    with col2:
+        st.subheader('Option 1: Arbitrary B Input')  # Create an example Bac input file
+        bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
+        output = {'B [mT]': bdata0}
+        csv = convert_df(pd.DataFrame(output))
+        st.write(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
+        st.download_button(
+            f"Download an Example {c.streamlit.n_nn}-Step 100 mT Sinusoidal Bac Waveform CSV File",
+            data=csv,
+            file_name='B-Input.csv',
+            mime='text/csv',
+        )
+
+        inputB = st.file_uploader(
+            "Upload the User-defined CSV File Here:",
+            type='csv',
+            key=f'bfile {m}'
+        )
+        
+        st.markdown("""---""")
+        
+        st.subheader('Option 2: Standard B Input')  # Create an example Bac input file
+        if inputB is None:  # default input for display
+            default = st.radio(  # TODO disable radio button and make horizontal with new streamlit version
+                "Select one of the default inputs for a quick start 🡻",
+                ["Sinusoidal", "Triangular", "Trapezoidal"])
+            flux = st.slider(
+                "Bac Amplitude [mT]",
+                10.0,
+                350.0,
+                100.0,
+                1.0,
+                format='%f',
+                key=f'flux_sine {m}',
+                help='Half of the peak-to-peak flux density') / 1e3
+            if default == "Sinusoidal":
+                duty = None
+                dd = 0.5
+            if default == "Triangular":
+                duty = st.slider(
+                    "Duty Cycle",
+                    0.0,
+                    1.0,
+                    0.5,
+                    0.01,
+                    format='%f',
+                    key=f'duty_tri {m}',
+                    help='Duty cycle of the rising part.')
+                dd = duty
+            if default == "Trapezoidal":
+                duty_p = st.slider(
+                    "Duty Cycle (Rising)",
+                    0.01,
+                    1-0.01,
+                    0.2,
+                    0.01,
+                    format='%f',
+                    key=f'duty_trap_p1 {m}',
+                    help='Duty cycle of the rising part.')
+                duty_n = st.slider(
+                    "Duty Cycle (Falling)",
+                    0.01,
+                    round((1-duty_p)/0.01)*0.01,
+                    duty_p if duty_p<=0.5 else round((1-duty_p)/2/0.01-1)*0.01,
+                    0.01,
+                    format='%f',
+                    key=f'duty_trap_p2 {m}',
+                    help='Duty cycle of the falling part.')
+                duty = [duty_p, duty_n, (1-duty_p-duty_n)/2]
+                dd = duty[0]
+            phase = st.slider(
+                "Starting Phase",
+                0.0,
+                360.0,
+                0.0,
+                1.0,
+                format='%f',
+                key=f'phase_trap {m}',
+                help='Shift the waveform horizontally. '
+                     'Theoretically, this won\'t change the B-H loop nor the core loss.') / 360.0
+
+            bdata_start0 = bdata_generation(flux, duty)
+            bdata = np.roll(bdata_start0, np.int_(phase * c.streamlit.n_nn))
+
+        if inputB is not None:  # user input
+            df = pd.read_csv(inputB)
+            st.write("Default inputs have been disabled as the following user-defined waveform is uploaded:")
+            st.write(df.T)
+            st.write(
+                "To remove the uploaded file and reactivate the default input, click on the cross on the right side")
+            bdata_read = df["B [mT]"].to_numpy()
+            bdata = np.interp(np.linspace(0, 1, c.streamlit.n_nn), np.linspace(0, 1, len(bdata_read)), bdata_read * 1e-3)
+
+            flag_minor_loop = 0  # Detection of minor loops TODO test it once data is read
+            if np.argmin(bdata) < np.argmax(bdata):  # min then max
+                for i in range(np.argmin(bdata), np.argmax(bdata)):
+                    if bdata[i + 1] < bdata[i]:
+                        flag_minor_loop = 1
+                for i in range(np.argmax(bdata), len(bdata) - 1):
+                    if bdata[i + 1] > bdata[i]:
+                        flag_minor_loop = 1
+                for i in range(0, np.argmin(bdata)):
+                    if bdata[i + 1] > bdata[i]:
+                        flag_minor_loop = 1
+            else:  # max then min
+                for i in range(0, np.argmax(bdata)):
+                    if bdata[i + 1] < bdata[i]:
+                        flag_minor_loop = 1
+                for i in range(np.argmin(bdata), len(bdata) - 1):
+                    if bdata[i + 1] < bdata[i]:
+                        flag_minor_loop = 1
+                for i in range(np.argmax(bdata), np.argmin(bdata)):
+                    if bdata[i + 1] > bdata[i]:
+                        flag_minor_loop = 1
+            if flag_minor_loop == 1:
+                st.warning(
+                    f"The models has not been trained by waveforms with minor loops. "
+                    f"Results are potentially extrapolated.")
+
+        with col1:
+            if inputB is not None:  # user input
+                bias = np.average(bdata) / (mu_relative * c.streamlit.mu_0)
+                bdata = bdata - bias * mu_relative * c.streamlit.mu_0  # Removing the average B for the NN
+                st.write(f'DC Bias of {round(bias)} A/m based on input B waveform and mu={mu_relative}')
+            else:
+                bias = st.slider(
+                    "Hdc Bias [A/m]",
+                    -20.0,
+                    40.0,
+                    0.0,
+                    1.0,
+                    format='%f',
+                    key=f'bias {m}',
+                    help='Determined by the bias dc current')
+        
+            st.write('The next step is to describe the B waveform with two options.')
+            st.markdown("""---""")
+            st.subheader('How does MagNet AI work?')
+            st.caption('from data acquisition, error analysis, data visualization, to machine learning')
+            st.write('- Diego Serrano et al., "Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340989.v2) - Why MagNet AI?')
+            st.write('- Haoran Li et al., "Machine Learning Framework for Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340998.v2) - How MagNet AI?')
+
+            
+            if bias < 0:
+                st.warning(f"For bias below 0 A/m, results are potentially extrapolated.")
+            if bias > max(dataset['DC_Bias']):
+                st.warning(
+                    f"For bias above {round(max(dataset['DC_Bias']))} A/m, results are potentially extrapolated.")
+
+        with col2:
+            if max(abs(bdata)) + bias * mu_relative * c.streamlit.mu_0 > max(dataset['Flux_Density']):
+                st.warning(
+                    f"For peak flux densities above {round(max(dataset['Flux_Density']) * 1e3)} mT, results are potentially extrapolated."
+                    f" (Bac={round((max(bdata)-min(bdata))/2 * 1e3)} mT, Bdc={round(bias * mu_relative * c.streamlit.mu_0 * 1e3)} mT).")
+
+            flag_dbdt_high = 0  # Detection of large dB/dt
+            dbdt_max = c.streamlit.vpkpk_max/(material_core_params[material][2] * material_core_params[material][1])
+            for i in range(0, len(bdata) - 1):
+                if abs(bdata[i + 1] - bdata[i]) * freq * c.streamlit.n_nn > dbdt_max:  # dbdt_max=vpkpk_max/N/Ae
+                    flag_dbdt_high = 1
+            if flag_dbdt_high == 1:
+                st.warning(f"For dB/dt above {round(dbdt_max * 1e-3)} mT/ns, results are potentially extrapolated.")
+    
+    hdata = BH_Transformer(material, freq, temp, bias, bdata)
+    loss = loss_BH(bdata, hdata, freq)
+    
+    Eq = load_hull(material)
+    if inputB is None:
+        point = np.array([freq, flux, bias, temp, dd])
+        not_extrapolated = point_in_hull(point,Eq)
+    else:
+        point = np.array([freq, (max(bdata)-min(bdata))/2, bias, temp, 0.5]) #TODO: access the user-defined waveform
+        not_extrapolated = point_in_hull(point,Eq)
 
     st.markdown("""---""")
-    col1, col2 = st.columns([1, 2])
+    st.header('MagNet AI Output')
+    st.caption('The data contains measurement artifacts. The B-H loop and volumetric core losses describe component-level behaviors. Material characteristics, parasitics, and measurement error all impact the results.')
+    
+    if not not_extrapolated:
+        st.warning("Extrapolation detected. The specified condition is out of the range of training data. Use the results carefully.")
+    
+    col1, col2 = st.columns(2)
     with col1:
-        st.header('Webpage Status')
-        st.write("")
-        n_sine = 0
-        n_tot = 0
-        for material in material_names:
-            n_sine = n_sine + len(load_dataframe(material, freq_min=None, freq_max=None, flux_min=None,
-                                                 flux_max=None, duty_1=-1.0, duty_3=-1.0, out_max=None))
-            n_tot = n_tot + len(load_dataframe(material))
-        st.subheader(f'Number of materials added: {len(material_names)}')
-        st.write("")
-        st.subheader(f'Total number of data points: {n_tot}')
-        st.write(""f'{n_sine} Sinusoidal points and {n_tot-n_sine} Triangular-Trapezoidal points.'"")
-        st.write(f'Tested for 25 C and no DC bias so far. During the tests, the core temperature may increase 5 C ~ 10 C in worst case conditions.')
+        st.subheader('Effective B-H Waveform')
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=(bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
+                line=dict(color='mediumslateblue', width=4),
+                name="B [mT]"),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=(bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
+                line=dict(color='mediumslateblue', dash='longdash', width=2),
+                name="Bdc [mT]"),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=hdata + bias * np.ones(c.streamlit.n_nn),
+                line=dict(color='firebrick', width=4),
+                name="H [A/m]"),
+            secondary_y=True,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=np.linspace(1, c.streamlit.n_nn, num=c.streamlit.n_nn) / c.streamlit.n_nn,
+                y=bias * np.ones(c.streamlit.n_nn),
+                line=dict(color='firebrick', dash='longdash', width=2),
+                name="Hdc [A/m]"),
+            secondary_y=True,
+        )
+
+        fig.update_xaxes(title_text="Fraction of a Cycle")
+        fig.update_yaxes(title_text="B - Flux Density [mT]", color='mediumslateblue', secondary_y=False, zeroline=False,
+                         zerolinewidth=1.5, zerolinecolor='gray')
+        fig.update_yaxes(title_text="H - Field Strength [A/m]", color='firebrick', secondary_y=True, zeroline=False,
+                         zerolinewidth=1.5, zerolinecolor='gray')
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.header('How to Cite')
-        st.write("""
-            If you used MagNet, please cite us with the following:
-            
-            [1] H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, 
-            "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," 
-            IEEE Applied Power Electronics Conference (APEC), Houston, 2022.
-            
-            [2] E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, 
-            "Transfer Learning Methods for Magnetic Core Loss Modeling,” 
-            IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021.
-            
-            [3] H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, 
-            "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling,” 
-            IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020.
-        """)
+        st.subheader('Effective B-H Loop')
+        fig = make_subplots(specs=[[{"secondary_y": False}]])
+        fig.add_trace(
+            go.Scatter(
+                x=np.tile(hdata + bias * np.ones(c.streamlit.n_nn), 2),
+                y=np.tile((bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3, 2),
+                line=dict(color='mediumslateblue', width=4),
+                name="Predicted B-H Loop"),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=[min(bdata) / mu_relative / c.streamlit.mu_0 + bias, max(bdata) / mu_relative / c.streamlit.mu_0 + bias],
+                y=[(min(bdata) + bias * mu_relative * c.streamlit.mu_0) * 1e3, (max(bdata) + bias * mu_relative * c.streamlit.mu_0) * 1e3],
+                line=dict(color='firebrick', dash='longdash', width=2),
+                name="Bdc = mu * Hdc"),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=np.array(0),
+                y=np.array(0),
+                line=dict(color='gray', width=0.25),
+                showlegend=False),
+            secondary_y=False,
+        )
 
-    df = pd.DataFrame({'Manufacturer': material_manufacturers})
-    df['Material'] = materials.keys()
-    df['Applications'] = pd.DataFrame({'Applications': material_applications})
-    df_extra = pd.DataFrame(materials_extra)
-    df['mu_i_0'] = df_extra.iloc[0]
-    df['f_min'] = df_extra.iloc[1]
-    df['f_max'] = df_extra.iloc[2]
-    df_params = pd.DataFrame(materials)
-    df['k_i*'] = df_params.iloc[0]
-    df['alpha*'] = df_params.iloc[1]
-    df['beta*'] = df_params.iloc[2]
-    df['Tested Core'] = pd.DataFrame({'Tested Core': material_core_tested})
-    # Hide the index column
-    hide_table_row_index = """
-                <style>
-                tbody th {display:none}
-                .blank {display:none}
-                </style>
-                """  # CSS to inject contained in a string
-    st.markdown(hide_table_row_index, unsafe_allow_html=True)  # Inject CSS with Markdown
-    st.table(df)
+        fig.update_yaxes(title_text="B - Flux Density [mT]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
+        fig.update_xaxes(title_text="H - Field Strength [A/m]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.write(f'*iGSE parameters obtained from the sinusoidal measurements at 25 C and data '
-             f'between 50 kHz and 500 kHz and 10 mT and 300 mT; '
-             f'with Pv, f, and B in W/m^3, Hz and T respectively')
+    with col1:
+        st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
+    with col2:
 
+        output = {'B [mT]': (bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
+                  'H [A/m]': hdata + bias * np.ones(c.streamlit.n_nn)}
+        csv = convert_df(pd.DataFrame(output))
+
+        st.download_button(
+            "Download the B-H Loop as a CSV File",
+            data=csv,
+            file_name='BH-Loop.csv',
+            mime='text/csv',
+            )
+
+    st.markdown("""---""")
+
+    st.header('How to Cite')
+    st.write("""
+        If you find MagNet as useful, please cite the following:
+
+        - D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, Israel, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
+
+        - H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, USA, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
+
+        - E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021. [Paper](https://ieeexplore.ieee.org/document/9646065)
+
+        - H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020. [Paper](https://ieeexplore.ieee.org/document/9265869)
+    """)
     st.markdown("""---""")

@@ -1,7 +1,9 @@
 import numpy as np
 import torch
-from magnet.constants import materials
-from magnet.net import model, model_lstm
+from magnet.net import model, model_lstm, model_transformer
+from magnet.io import load_hull
+from magnet import config as c
+import time
 
 
 def default_units(prop):  # Probably we are not going to need the default units
@@ -9,8 +11,7 @@ def default_units(prop):  # Probably we are not going to need the default units
     return {
         'frequency': 'Hz',
         'flux_density': 'T',
-        'power_loss': '[W/m^3]',
-        'outlier_factor': '%'
+        'power_loss': '[W/m^3]'
     }[prop]
 
 
@@ -23,8 +24,7 @@ def plot_label(prop):
         'frequency': 'Frequency [Hz]',
         'flux_density': 'AC Flux Density [T]',
         'power_loss': 'Power Loss [W/m^3]',
-        'duty_ratio': 'Duty Ratio',
-        'outlier_factor': 'Outlier Factor [%]'
+        'duty_ratio': 'Duty Ratio'
     }[prop]
 
 
@@ -36,161 +36,178 @@ def plot_title(prop):
         'power_loss_kw/m3': 'Power Loss',
         'frequency': 'Frequency',
         'flux_density': 'Flux Density',
-        'power_loss': 'Power Loss',
-        'outlier_factor': 'Outlier Factor'
+        'power_loss': 'Power Loss'
     }[prop]
 
-def core_loss_iGSE_sinusoidal(freq, flux, duty=None, k_i=None, alpha=None, beta=None, material=None, dc_bias=0, n_interval=10_000):
-    # Here duty is not needed, but it is convenient to call the function recursively
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
 
-    frac_time = np.linspace(0, 1, n_interval)
-    flux_list = dc_bias + flux * np.sin(2 * np.pi * frac_time)
-
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material,
-                                    n_interval=n_interval)
-
-
-def core_loss_iGSE_triangular(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
-    # Here duty is the fraction of time where the current rises
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
-    frac_time = np.array([0, duty, 1])
-    flux_list = dc_bias + np.array([-flux, flux, -flux])
-
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
-
-
-def core_loss_iGSE_trapezoidal(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None, dc_bias=0):
-    # Here duty is a vector
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    assert len(duty) == 3, 'Please specify 3 values as the Duty Ratios'
-    assert np.all((0 <= np.array(duty)) & (np.array(duty) <= 1)), 'Duty ratios should be between 0 and 1'
-
-    frac_time = np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1])
-
-    if duty[0] > duty[1]:
-        # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
-        BPplot = flux
-        BNplot = -BPplot * ((-1 - duty[0] + duty[1]) * duty[1]) / (
-                    (1 - duty[0] + duty[1]) * duty[0])  # proportional to (-1-dp+dN)*dn
+def core_loss_default(material, freq, flux, temp, bias, duty=None, batched = False):
+    Eq = load_hull(material)
+    
+    if not batched:
+        if duty is None:  # Sinusoidal
+            phase = 0
+            dd = 0.5
+        elif type(duty) is list:  # Trapezoidal
+            if duty[0] <= duty[1]:
+                phase = 0.5 - duty[0]/2
+            else:
+                phase = -duty[0]/2
+            dd = duty[0]
+        else:  # type(duty) == 'float' -> Triangular
+            if duty <= 0.5:
+                phase = 0.5 - duty/2
+            else:
+                phase = -duty/2
+            dd = duty
+        
+        bdata = bdata_generation(flux, duty)
+        bdata = np.roll(bdata, np.int_(phase * c.streamlit.n_nn))
+        hdata = BH_Transformer(material, freq, temp, bias, bdata)
+        core_loss = loss_BH(bdata, hdata, freq)     
+        
+        point = np.array([freq, flux, bias, temp, dd])
+        not_extrapolated = point_in_hull(point,Eq)
+        
+        return core_loss, not_extrapolated
+    
     else:
-        BNplot = flux  # proportional to (-1-dP+dN)*dN
-        BPplot = -BNplot * ((1 - duty[0] + duty[1]) * duty[0]) / (
+        bdata = np.zeros(shape=(len(freq), c.streamlit.n_nn))
+        dd = np.zeros(shape=(len(freq), 1))
+        not_extrapolated = [False for i in range(len(freq))]
+        
+        for k in range(len(freq)):
+            if duty[k] is None:  # Sinusoidal
+                phase = 0
+                dd[k] = 0.5
+            elif type(duty[k]) is list:  # Trapezoidal
+                if duty[k][0] <= duty[k][1]:
+                    phase = 0.5 - duty[k][0]/2
+                else:
+                    phase = -duty[k][0]/2
+                dd[k] = duty[k][0]
+            else:  # type(duty) == 'float' -> Triangular
+                if duty[k] <= 0.5:
+                    phase = 0.5 - duty[k]/2
+                else:
+                    phase = -duty[k]/2
+                dd[k] = duty[k]
+                
+            bdata[k,:] = bdata_generation(flux[k], duty[k])
+            bdata[k,:] = np.roll(bdata[k,:], np.int_(phase * c.streamlit.n_nn))
+            
+        hdata = BH_Transformer(material, freq, temp, bias, bdata)
+        core_loss = np.zeros(shape=len(freq))
+        
+        for k in range(len(freq)):
+            core_loss[k] = loss_BH(bdata[k,:], hdata[k,:], freq[k])
+            
+        for k in range(len(freq)):
+            point = np.array([freq[k], flux[k], bias[k], temp[k], dd[k]])
+            not_extrapolated[k] = point_in_hull(point,Eq)
+            
+        return core_loss, not_extrapolated
+
+
+def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
+    bdata_pre = np.interp(np.linspace(0, 1, c.streamlit.n_nn), np.array(duty), np.array(flux))
+    bdata = bdata_pre - np.average(bdata_pre)
+    hdata = BH_Transformer(material, freq, temp, bias, bdata)
+    core_loss = loss_BH(bdata, hdata, freq)
+    return core_loss
+
+
+def BH_Transformer(material, freq, temp, bias, bdata):
+    
+    net_encoder, net_decoder, norm = model_transformer(material)
+        
+    bdata = torch.from_numpy(np.array(bdata)).float()
+    bdata = (bdata-norm[0])/norm[1]
+    
+    freq = np.log10(freq)
+    freq = torch.from_numpy(np.array(freq)).float()
+    freq = (freq-norm[2])/norm[3]
+    
+    temp = torch.from_numpy(np.array(temp)).float()
+    temp = (temp-norm[4])/norm[5]
+    
+    bias = torch.from_numpy(np.array(bias)).float()
+    bias = (bias-norm[6])/norm[7]
+        
+    if bdata.dim()==1:
+        BATCHED = False
+    else:
+        BATCHED = True
+    
+    if not BATCHED:
+        bdata = bdata.unsqueeze(0).unsqueeze(2)
+        freq = freq.unsqueeze(0).unsqueeze(1)
+        temp = temp.unsqueeze(0).unsqueeze(1)
+        bias = bias.unsqueeze(0).unsqueeze(1)
+    else:
+        bdata = bdata.unsqueeze(2)
+        freq = freq.unsqueeze(1)
+        temp = temp.unsqueeze(1)
+        bias = bias.unsqueeze(1)
+        
+    outputs = torch.zeros(bdata.size()[0], bdata.size()[1]+1, 1)
+    tgt = (torch.rand(bdata.size()[0], bdata.size()[1]+1, 1)*2-1)
+    tgt[:, 0, :] = 0.1*torch.ones(tgt[:, 0, :].size())
+        
+    src = net_encoder(src=bdata, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
+    
+    for t in range(1, bdata.size()[1]+1):   
+        outputs = net_decoder(src=src, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
+        tgt[:, t, :] = outputs[:, t-1, :]
+        
+    outputs = net_decoder(src, tgt, torch.cat((freq, temp, bias), dim=1))
+    
+    hdata = outputs[:, :-1, :]*norm[9]+norm[8]
+            
+    if not BATCHED:
+        hdata = hdata.squeeze(2).squeeze(0).detach().numpy()
+    else:
+        hdata = hdata.squeeze(2).detach().numpy()
+    
+    return hdata
+
+
+def loss_BH(bdata, hdata, freq):
+    loss = freq * np.trapz(hdata, bdata)
+    return loss
+
+
+def bdata_generation(flux, duty=None, n_points=c.streamlit.n_nn):
+    # Here duty is not needed, but it is convenient to call the function recursively
+
+    if duty is None:  # Sinusoidal
+        bdata = flux * np.sin(np.linspace(0.0, 2 * np.pi, n_points+1))
+        bdata = bdata[:-1]
+    elif type(duty) is list:  # Trapezoidal
+        assert len(duty) == 3, 'Please specify 3 values as the Duty Ratios'
+        assert np.all((0 <= np.array(duty)) & (np.array(duty) <= 1)), 'Duty ratios should be between 0 and 1'
+
+        if duty[0] > duty[1]:
+            # Since Bpk is proportional to the voltage, and the voltage is proportional to (1-dp+dN) times the dp
+            bp = flux
+            bn = -bp * ((-1 - duty[0] + duty[1]) * duty[1]) / (
+                    (1 - duty[0] + duty[1]) * duty[0])  # proportional to (-1-dp+dN)*dn
+        else:
+            bn = flux  # proportional to (-1-dP+dN)*dN
+            bp = -bn * ((1 - duty[0] + duty[1]) * duty[0]) / (
                     (-1 - duty[0] + duty[1]) * duty[1])  # proportional to (1-dP+dN)*dP
+        bdata = np.interp(np.linspace(0, 1, n_points+1),
+                          np.array([0, duty[0], duty[0] + duty[2], 1 - duty[2], 1]),
+                          np.array([-bp, bp, bn, -bn, -bp]))
+        bdata = bdata[:-1]
+    else:  # type(duty) == 'float' -> Triangular
+        assert 0 <= duty <= 1.0, 'Duty ratio should be between 0 and 1'
+        bdata = np.interp(np.linspace(0, 1, n_points+1), np.array([0, duty, 1]), np.array([-flux, flux, -flux]))
+        bdata = bdata[:-1]
 
-    flux_list = dc_bias + np.array([-BPplot, BPplot, BNplot, -BNplot, -BPplot])
+    return bdata
 
-    return core_loss_iGSE_arbitrary(freq, flux_list, frac_time, k_i=k_i, alpha=alpha, beta=beta, material=material)
-
-
-def core_loss_iGSE_arbitrary(freq, flux, duty, k_i=None, alpha=None, beta=None, material=None,
-                             n_interval=10_000):
-
-    """
-    Calculate magnetic core loss using iGSE without minor loops
-
-    :param freq: Frequency of excitation waveform (Hz)
-    :param flux: Relative Flux Density (T) in a single waveform cycle, as an ndarray
-    :param duty: Fractional time wrt time period, in [0, 1], in a single waveform cycle, as an ndarray
-    :param k_i: Steinmetz coefficient k_i
-    :param alpha: Steinmetz coefficient alpha
-    :param beta: Steinmetz coefficient beta
-    :param material: Name of material. If specified, k_i/alpha/beta are ignored.
-    :param n_interval: No. of intervals to use to solve iGSE using trapezoidal rule
-    :return: Core loss (W/m^3)
-    """
-    if material is not None:
-        assert material in materials, f'Material {material} not found'
-        k_i, alpha, beta = materials[material]
-
-    period = 1 / freq
-    flux_delta = np.amax(flux) - np.amin(flux)
-    time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
-    B = np.interp(time, np.multiply(duty, period), flux)
-    dBdt = np.gradient(B, dt)
-    core_loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
-
-    return core_loss
-
-
-def core_loss_ML_sinusoidal(freq, flux, material, duty=None):
-    nn = model(material=material, waveform='Sinusoidal')
-    core_loss = 10.0 ** nn(
-        torch.from_numpy(
-            np.array([
-                np.log10(float(freq)),
-                np.log10(float(flux))
-            ])
-        )
-    ).item()
-    return core_loss
-
-
-def core_loss_ML_triangular(freq, flux, duty, material):
-    nn = model(material=material, waveform='Trapezoidal')
-    core_loss = 10.0 ** nn(
-        torch.from_numpy(
-            np.array([
-                np.log10(float(freq)),
-                np.log10(float(flux)),
-                duty,
-                0,
-                1-duty,
-                0
-            ])
-        )
-    ).item()
-    return core_loss
-
-
-def core_loss_ML_trapezoidal(freq, flux, duty, material):
-    nn = model(material=material, waveform='Trapezoidal')
-    core_loss = 10.0 ** nn(
-        torch.from_numpy(
-            np.array([
-                np.log10(float(freq)),
-                np.log10(float(flux)),
-                duty[0],
-                duty[2],
-                duty[1],
-                duty[2]
-            ])
-        )
-    ).item()
-    return core_loss
-
-
-def core_loss_ML_arbitrary(material, freq, flux, duty):
-    nn = model_lstm(material=material)
-    Num = 100
-    period = 1/freq
-    time = np.linspace(start=0, stop=period, num=Num)
-    flux_interpolated = np.interp(time, np.multiply(duty, period), flux)
-    
-    # Manually get rid of the dc-bias in the flux, for now
-    # print(np.average(flux_interpolated))
-    flux_interpolated = flux_interpolated - np.average(flux_interpolated)
-    
-    flux_interpolated = torch.from_numpy(flux_interpolated).view(-1, Num, 1)
-    freq = torch.from_numpy(np.asarray(np.log10(freq))).view(-1, 1)
-    core_loss = 10.0 ** nn(flux_interpolated, freq).item()
-    return core_loss
-
-
-def loss(waveform, algorithm, **kwargs):
-    if algorithm == 'Machine Learning':
-        algorithm = 'ML'
-    assert waveform.lower() in ('sinusoidal', 'triangular', 'trapezoidal', 'arbitrary'), f'Unknown waveform {waveform}'
-    assert algorithm in ('iGSE', 'ML'), f'Unknown algorithm {algorithm}'
-
-    fn = globals()[f'core_loss_{algorithm}_{waveform.lower()}']
-    return fn(**kwargs)
+def point_in_hull(point, Eq, tolerance=1e-10):
+    # Determine whether a given point lies in the convex hull or not
+    return all(
+        (np.dot(coeff[:-1], point) + coeff[-1] <= tolerance)
+        for coeff in Eq)

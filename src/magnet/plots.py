@@ -27,7 +27,7 @@ def scatter_plot(df, x='Frequency_kHz', y='Power_Loss_kW/m3', c='Flux_Density_mT
 # From https://stackoverflow.com/questions/67589451/how-to-add-secondary-xaxis-in-plotly-using-plotly-express
 def waveform_visualization_2axes(
         st, x1, x2, y1, y2, x1_aux, y1_aux,
-        title='Waveform Visualization', x1_title='Time [us]', x2_title='Fraction of the cycle',
+        title='Waveform Visualization', x1_title='Time [us]', x2_title='Fraction of the Cycle',
         y1_title='Flux Density [mT]', y2_title='Normalized Voltage', width=4):
     fig = go.Figure()
     fig.layout = go.Layout(dict(
@@ -127,90 +127,81 @@ def waveform_visualization(
     st.plotly_chart(fig, use_container_width=True)
 
 
-def core_loss_multiple(
-        st, x, y1, y2, x0, y01, y02, title, x_title, y_title='Power Loss [kW/m^3]', x_log=True, y_log=True, y3=None, y03=None, y4=None, y04=None):
+def plot_core_loss(
+        st, x, y, x0, y0, title, x_title, legend, y_title='Power Loss [kW/m^3]',
+        x_log=True, y_log=True, y_upper=None, y_lower=None, legend_upper=None, legend_lower=None, not_extrapolated=None):
+    
+    if not_extrapolated is None:
+        not_extrapolated = np.full(len(y)*3, True)
+        
     fig = go.Figure()
+    if y_upper is not None:
+        fig.add_trace(
+            go.Scatter(
+                name=legend_upper,
+                x=x,
+                y=y_upper,
+                line=dict(color='firebrick', width=3, dash='dash'),
+                showlegend=False if any(not_extrapolated[0:(len(y))]) else True
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                name=legend_upper,
+                x=np.array(x)[not_extrapolated[0:(len(y))]],
+                y=y_upper[not_extrapolated[0:(len(y))]],
+                line=dict(color='firebrick', width=3)
+            )
+        )
+        
     fig.add_trace(
         go.Scatter(
-            name="iGSE",
+            name=legend,
             x=x,
-            y=y1,
-            line=dict(color='firebrick', width=4)
+            y=y,
+            line=dict(color='darkslategrey', width=4, dash='dash'),
+            showlegend=False if any(not_extrapolated[(len(y)):(len(y))*2]) else True
         )
     )
     fig.add_trace(
+        go.Scatter(
+            name=legend,
+            x=np.array(x)[not_extrapolated[(len(y)):(len(y))*2]],
+            y=y[not_extrapolated[(len(y)):(len(y))*2]],
+            line=dict(color='darkslategrey', width=4)
+        )
+    )
+    
+    fig.add_trace(
         go.Scatter(dict(
-            name="iGSE",
+            name=legend,
             marker_symbol="diamond",
             marker_size=13,
             showlegend=False,
             x=x0,
-            y=y01,
-            line=dict(color='firebrick', width=4)
-        ))
-    )
-    fig.add_trace(
-        go.Scatter(
-            name="ML",
-            x=x,
-            y=y2,
-            line=dict(color='darkslategrey', width=4)
-        )
-    )
-    fig.add_trace(
-        go.Scatter(dict(
-            name="ML",
-            marker_symbol="diamond",
-            marker_size=13,
-            showlegend=False,
-            x=x0,
-            y=y02,
+            y=y0,
             line=dict(color='darkslategrey', width=4)
         ))
     )
-    if (y3 is not None) and max(y3) > 0.0:
+    
+    if y_lower is not None:
         fig.add_trace(
             go.Scatter(
-                name="Datasheet",
+                name=legend_lower,
                 x=x,
-                y=y3,
-                line=dict(color='mediumslateblue', width=0)
+                y=y_lower,
+                line=dict(color='mediumslateblue', width=3, dash='dash'),
+                showlegend=False if any(not_extrapolated[(len(y))*2:len(y)*3]) else True
             )
         )
-    if y03 is not None:
-        fig.add_trace(
-            go.Scatter(dict(
-                name="Datasheet",
-                marker_symbol="diamond",
-                marker_size=13,
-                showlegend=False,
-                x=x0,
-                y=y03,
-                line=dict(color='mediumslateblue', width=4)
-            ))
-        )
-    if (y4 is not None) and max(y4) > 0.0:
         fig.add_trace(
             go.Scatter(
-                name="Measurement",
-                x=x,
-                y=y4,
-                line=dict(color='limegreen', width=0)
+                name=legend_lower,
+                x=np.array(x)[not_extrapolated[(len(y))*2:len(y)*3]],
+                y=y_lower[not_extrapolated[(len(y))*2:len(y)*3]],
+                line=dict(color='mediumslateblue', width=3)
             )
         )
-    if y04 is not None:
-        fig.add_trace(
-            go.Scatter(dict(
-                name="Measurement",
-                marker_symbol="diamond",
-                marker_size=13,
-                showlegend=False,
-                x=x0,
-                y=y04,
-                line=dict(color='limegreen', width=4)
-            ))
-        )
-
     fig.update_layout(
         xaxis_title=x_title,
         yaxis_title=y_title,

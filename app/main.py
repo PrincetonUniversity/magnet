@@ -1,6 +1,7 @@
 import os.path
 from PIL import Image
 import streamlit as st
+#import streamlit_analytics
 
 from magnet import __version__
 from ui_db import ui_core_loss_db
@@ -8,7 +9,10 @@ from ui_predict import ui_core_loss_predict
 from ui_raw import ui_download_data
 from ui_faq import ui_faq
 from ui_intro import ui_intro
+from ui_mc import ui_mc
 from magnet.simplecs.simfunctions import SimulationPLECS
+from magnet.constants import material_list
+from magnet.io import load_dataframe
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
@@ -32,50 +36,58 @@ def contributor(name, email):
 
  
 if __name__ == '__main__':
-
+    
     st.set_page_config(page_title='MagNet', layout='wide')
-
-    st.sidebar.header('Welcome to Princeton MagNet')
+    st.sidebar.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
+    st.sidebar.markdown('[GitHub](https://github.com/PrincetonUniversity/Magnet) | [Doc](https://princetonuniversity.github.io/magnet/) | [Report an Issue](https://github.com/PrincetonUniversity/magnet/issues) ')
+    st.sidebar.markdown('[Princeton Power Electronics Lab](https://www.princeton.edu/~minjie/)')
+    st.sidebar.caption('by Princeton-Dartmouth-Plexim')
+    st.sidebar.header('[Contact Us](https://forms.gle/6SHLF45V8vdkiPENA) | [Error History](https://docs.google.com/spreadsheets/d/1YPfv8w0kzO4UhrgpV7L3LixFJpvesBvC1CmkdJ9fGe0/edit?usp=sharing)')
+    st.sidebar.header('MagNet Platform')
+    
+#    with streamlit_analytics.track():
+#        st.sidebar.text_input("Name/Email Address?")
+#        st.sidebar.text_input("Comments?")
+#        st.sidebar.button("Submit")
+    
     function_select = st.sidebar.radio(
-        'Select a Function:',
-        ('Introduction to MagNet', 'MagNet Database', 'MagNet Analysis', 'MagNet Simulation', 'MagNet Download', 'Frequently Asked Questions')
+        'Select One:',
+        ('MagNet AI', 'MagNet Database', 'MagNet Smartsheet',
+         'MagNet Simulation', 'MagNet Download', 'MagNet Challenge', 'MagNet Help')
     )
-
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.title('Princeton-Dartmouth-Plexim MagNet Project')
-        st.subheader('Data Driven Methods for Magnetic Core Loss Modeling')
-        st.subheader('GitHub: https://github.com/PrincetonUniversity/Magnet')
-    with col2:
-        st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'magnetlogo.jpg')), width=300)
-
-    st.markdown('---')
-
+    
     if 'n_material' not in st.session_state:
         st.session_state.n_material = 1
 
-    if function_select in ['MagNet Database', 'MagNet Analysis', 'MagNet Download']:
-        clicked = st.sidebar.button("Add another case")
+    if function_select in ['MagNet Database', 'MagNet Smartsheet']:
+        clicked = st.sidebar.button("Add Another Case")
         if clicked:
             st.session_state.n_material += 1
 
-    if function_select == 'Introduction to MagNet':
+    if function_select == 'MagNet AI':
         ui_multiple_materials(ui_intro)
         st.session_state.n_material = 1  # Resets the number of plots
 
     if function_select == 'MagNet Database':
         ui_multiple_materials(ui_core_loss_db, st.session_state.n_material)
 
-    if function_select == 'MagNet Analysis':
+    if function_select == 'MagNet Smartsheet':
         ui_multiple_materials(ui_core_loss_predict, st.session_state.n_material)
         
     if function_select == 'MagNet Simulation':
+        st.title('MagNet Simulation for Circuit Analysis [pending]')
         ui_multiple_materials(SimulationPLECS)
+        st.session_state.n_material = 1  # Resets the number of plots
             
     if function_select == 'MagNet Download':
-        ui_multiple_materials(ui_download_data, st.session_state.n_material, streamlit_root=STREAMLIT_ROOT)
+        ui_multiple_materials(ui_download_data, streamlit_root=STREAMLIT_ROOT)
+        st.session_state.n_material = 1  # Resets the number of plots
         
-    if function_select == 'Frequently Asked Questions':
+    if function_select == 'MagNet Challenge':
+        ui_multiple_materials(ui_mc)
+        st.session_state.n_material = 1  # Resets the number of plots
+            
+    if function_select == 'MagNet Help':
         ui_multiple_materials(ui_faq)
         st.session_state.n_material = 1  # Resets the number of plots
 
@@ -86,16 +98,24 @@ if __name__ == '__main__':
 
     st.markdown('---')
     st.markdown(f"<h6>MAGNet v{__version__}</h6>", unsafe_allow_html=True)
-
-    st.sidebar.header('Thanks for using MagNet!')
+        
+    st.sidebar.header('MagNet Data Status')
+    n_tot = 0
+    for material in material_list:
+        n_tot = n_tot + len(load_dataframe(material))
+    st.sidebar.write(f'- Number of data points: {n_tot}')
+    st.sidebar.write(f'- Number of materials: {len(material_list)}')
+        
+    st.sidebar.header('MagNet Team')
     contributor('Haoran Li', 'haoranli@princeton.edu')
     contributor('Diego Serrano', 'ds9056@princeton.edu')
-    contributor('Evan Dogariu', 'edogariu@princeton.edu')
-    contributor('Arielle Rivera', 'aerivera@princeton.edu')
-    contributor('Yuxin Chen', 'yuxinc@wharton.upenn.edu')
-    contributor('Thomas Guillod', 'Thomas.Paul.Henri.Guillod@dartmouth.edu')
-    contributor('Vineet Bansal', 'vineetb@princeton.edu')
-    contributor('Niraj Jha', 'jha@princeton.edu')
+    contributor('Shukai Wang', 'sw0123@princeton.edu')
+    contributor('Thomas Guillod', 'thomas.paul.henri.guillod@dartmouth.edu')
     contributor('Min Luo', 'luo@plexim.com')
+    contributor('Vineet Bansal', 'vineetb@princeton.edu')
+    contributor('Yuxin Chen', 'yuxinc@wharton.upenn.edu')
+    contributor('Niraj Jha', 'jha@princeton.edu')
     contributor('Charles R. Sullivan', 'charles.r.sullivan@dartmouth.edu')
     contributor('Minjie Chen', 'minjie@princeton.edu')
+        
+        
