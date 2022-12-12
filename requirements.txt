@@ -1,7 +1,7 @@
 streamlit==1.1.0
 json5==0.9.5
 plotly==4.14.3
-numpy==1.20.1
+numpy==1.22.0
 pandas==1.2.4
 pip==21.3.1
 pytest==6.2.5
