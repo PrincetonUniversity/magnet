@@ -9,6 +9,7 @@ from magnet.io import load_dataframe
 from magnet.plots import waveform_visualization, waveform_visualization_2axes, plot_core_loss, \
     cycle_points_sinusoidal, cycle_points_trapezoidal
 from magnet.core import core_loss_default, core_loss_arbitrary
+from magnet.constants import core_loss_range
 
 
 @st.cache
@@ -33,6 +34,7 @@ def ui_core_loss_predict(m):
         material = st.selectbox(
             f'Material:',
             material_list,
+            index=9,
             key=f'material {m}')
 
     mu_relative = material_extra[material][0]
@@ -43,7 +45,7 @@ def ui_core_loss_predict(m):
             "Frequency (kHz)",
             10,
             1000,
-            100,
+            200,
             step=1,
             key=f'freq {m}') * 1e3  # Use kHz for front-end demonstration while Hz for underlying calculation
         if freq < min(df['Frequency']):
@@ -128,7 +130,7 @@ def ui_core_loss_predict(m):
                 f'AC Flux Density (mT)',
                 1,
                 500,
-                100,
+                50,
                 step=1,
                 key=f'flux {m}',
                 help=f'Amplitude of the AC signal, not peak to peak') / 1e3
@@ -324,7 +326,9 @@ def ui_core_loss_predict(m):
                 d_duty = [duty]*len(c.streamlit.core_loss_freq)*3
                 d_loss, not_extrapolated = core_loss_default(material=material, 
                                          freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
-                                         batched = True)
+                                         batched = True)               
+                d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                d_loss[d_loss > core_loss_range[material][1]] = "NaN"       
                 plot_core_loss(
                     st,
                     x=[freq / 1e3 for freq in c.streamlit.core_loss_freq],
@@ -355,6 +359,8 @@ def ui_core_loss_predict(m):
                 d_loss, not_extrapolated = core_loss_default(material=material, 
                                          freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                          batched = True)
+                d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                 plot_core_loss(
                     st,
                     x=[flux * 1e3 for flux in c.streamlit.core_loss_flux],
@@ -386,6 +392,8 @@ def ui_core_loss_predict(m):
                         d_loss, not_extrapolated = core_loss_default(material=material, 
                                                  freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                                  batched = True)
+                        d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                        d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
@@ -418,6 +426,8 @@ def ui_core_loss_predict(m):
                         d_loss, not_extrapolated = core_loss_default(material=material, 
                                                  freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                                  batched = True)
+                        d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                        d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                         plot_core_loss(
                             st,
                             x=c.streamlit.core_loss_duty,
@@ -450,6 +460,8 @@ def ui_core_loss_predict(m):
                     d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
@@ -482,6 +494,8 @@ def ui_core_loss_predict(m):
                     d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_bias,
@@ -514,6 +528,8 @@ def ui_core_loss_predict(m):
                     d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
@@ -546,6 +562,8 @@ def ui_core_loss_predict(m):
                     d_loss, not_extrapolated = core_loss_default(material=material, 
                                              freq=d_freq, flux=d_flux, temp=d_temp, bias=d_bias, duty=d_duty, 
                                              batched = True)
+                    d_loss[d_loss < core_loss_range[material][0]] = "NaN"
+                    d_loss[d_loss > core_loss_range[material][1]] = "NaN"
                     plot_core_loss(
                         st,
                         x=c.streamlit.core_loss_temp,
