@@ -10,6 +10,7 @@ from ui_predict import ui_core_loss_predict
 from ui_raw import ui_download_data
 from ui_faq import ui_faq
 from ui_intro import ui_intro
+from ui_tutorial import ui_tutorial
 from ui_mc import ui_mc
 from magnet.simplecs.simfunctions import SimulationPLECS
 from magnet.constants import material_list
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     function_select = st.sidebar.radio(
         'Select One:',
         ('MagNet AI', 'MagNet Database', 'MagNet Smartsheet',
-         'MagNet Simulation', 'MagNet Download', 'MagNet Challenge', 'MagNet Help')
+         'MagNet Simulation', 'MagNet Download', 'MagNet Tutorial', 'MagNet Challenge', 'MagNet Help')
     )
     
     if 'n_material' not in st.session_state:
@@ -83,10 +84,14 @@ if __name__ == '__main__':
         ui_multiple_materials(ui_download_data, streamlit_root=STREAMLIT_ROOT)
         st.session_state.n_material = 1  # Resets the number of plots
         
+    if function_select == 'MagNet Tutorial':
+        ui_multiple_materials(ui_tutorial)
+        st.session_state.n_material = 1  # Resets the number of plots
+        
     if function_select == 'MagNet Challenge':
         ui_multiple_materials(ui_mc)
         st.session_state.n_material = 1  # Resets the number of plots
-            
+    
     if function_select == 'MagNet Help':
         ui_multiple_materials(ui_faq)
         st.session_state.n_material = 1  # Resets the number of plots
