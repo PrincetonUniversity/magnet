@@ -27,18 +27,27 @@ def ui_tutorial(m):
     """)
     
     with st.expander("Import Packages"):    
-        st.code("""import random
-import numpy as np
+        st.write("""
+                 In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
+                 """)
+        st.code("""
 import torch
 from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import random
+import numpy as np
 import json
-import math""", language="python")
+import math
+""", language="python")
         
     with st.expander("Define Network Structure"):
-        st.code("""class Transformer(nn.Module):
+        st.write("""
+         In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
+         """)
+        st.code("""
+class Transformer(nn.Module):
     def __init__(self, 
         input_size :int,
         dec_seq_len :int,
@@ -57,22 +66,22 @@ import math""", language="python")
         num_var: int=3
         ): 
         
-        ###
-        Args:
-            input_size: int, number of input variables. 1 if univariate.
-            dec_seq_len: int, the length of the input sequence fed to the decoder
-            max_seq_len: int, length of the longest sequence the model will receive. Used in positional encoding. 
-            out_seq_len: int, the length of the model's output (i.e. the target sequence length)
-            dim_val: int, aka d_model. All sub-layers in the model produce outputs of dimension dim_val
-            n_encoder_layers: int, number of stacked encoder layers in the encoder
-            n_decoder_layers: int, number of stacked encoder layers in the decoder
-            n_heads: int, the number of attention heads (aka parallel attention layers)
-            dropout_encoder: float, the dropout rate of the encoder
-            dropout_decoder: float, the dropout rate of the decoder
-            dropout_pos_enc: float, the dropout rate of the positional encoder
-            dim_feedforward_encoder: int, number of neurons in the linear layer of the encoder
-            dim_feedforward_decoder: int, number of neurons in the linear layer of the decoder
-        ###
+        #   Args:
+        #    input_size: int, number of input variables. 1 if univariate.
+        #    dec_seq_len: int, the length of the input sequence fed to the decoder
+        #    max_seq_len: int, length of the longest sequence the model will receive. Used in positional encoding. 
+        #    out_seq_len: int, the length of the model's output (i.e. the target sequence length)
+        #    dim_val: int, aka d_model. All sub-layers in the model produce outputs of dimension dim_val
+        #    n_encoder_layers: int, number of stacked encoder layers in the encoder
+        #    n_decoder_layers: int, number of stacked encoder layers in the decoder
+        #    n_heads: int, the number of attention heads (aka parallel attention layers)
+        #    dropout_encoder: float, the dropout rate of the encoder
+        #    dropout_decoder: float, the dropout rate of the decoder
+        #    dropout_pos_enc: float, the dropout rate of the positional encoder
+        #    dim_feedforward_encoder: int, number of neurons in the linear layer of the encoder
+        #    dim_feedforward_decoder: int, number of neurons in the linear layer of the decoder
+        #    dim_feedforward_projecter :int, number of neurons in the linear layer of the projecter
+        #    num_var: int, number of additional input variables of the projector
 
         super().__init__() 
 
@@ -119,40 +128,18 @@ import math""", language="python")
         self.decoder = nn.TransformerDecoder(decoder_layer=self.decoder_layer, num_layers=n_decoder_layers, norm=None)
 
     def forward(self, src: Tensor, tgt: Tensor, var: Tensor, device) -> Tensor:
-        ###
-        Args:
-            src: the encoder's output sequence. Shape: (S, E) for unbatched input, 
-                 (S, N, E) if batch_first=False or (N, S, E) if 
-                 batch_first=True, where S is the source sequence length, 
-                 N is the batch size, and E is the feature number
-            tgt: the sequence to the decoder. Shape: (T, E) for unbatched input, 
-                 (T, N, E) if batch_first=False or (N, T, E) if 
-                 batch_first=True, where T is the target sequence length, 
-                 N is the batch size, E is the feature number.
-            src_mask: the mask for the src sequence to prevent the model from 
-                      using data points from the target sequence
-            tgt_mask: the mask for the tgt sequence to prevent the model from
-                      using data points from the target sequence
-        ###
 
         src = self.encoder_input_layer(src)
         src = self.positional_encoding_layer(src)
         src = self.encoder(src)
         enc_seq_len = 128
+        
         var = var.unsqueeze(1).repeat(1,enc_seq_len,1)
         src = self.projector(torch.cat([src,var],dim=2))
+        
         tgt = self.decoder_input_layer(tgt)
         tgt = self.positional_encoding_layer(tgt)
         batch_size = src.size()[0]
-
-        # src_mask = generate_square_subsequent_mask(
-        # dim1=batch_size*self.n_heads,
-        # dim2=self.out_seq_len,
-        # dim3=self.out_seq_len-1#enc_seq_len
-        # ).to(device)
-
-        # src_mask = generate_square_subsequent_mask(sz1=self.out_seq_len, sz2=enc_seq_len).to(device)
-
         tgt_mask = generate_square_subsequent_mask(sz1=self.out_seq_len, sz2=self.out_seq_len).to(device)
         output = self.decoder(
             tgt=tgt,
@@ -161,6 +148,7 @@ import math""", language="python")
             memory_mask=None
             ) 
         output= self.linear_mapping(output)
+        
         return output
 
 class PositionalEncoder(nn.Module):
@@ -177,10 +165,6 @@ class PositionalEncoder(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x: Tensor) -> Tensor:
-        ###
-        Args:
-            x: Tensor, shape [seq_len, batch_size, embedding_dim]
-        ###
         x = x + self.pe[:x.size(1)]
         return self.dropout(x)
 
@@ -194,7 +178,11 @@ def count_parameters(model):
 """, language="python")
     
     with st.expander("Load the Dataset"):   
-        st.code("""def load_dataset(data_length=128):
+        st.write("""
+         In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
+         """)
+        st.code("""
+def load_dataset(data_length=128):
     # Load .json Files
     with open('/content/Dataset_sine.json','r') as load_f:
         DATA = json.load(load_f)
@@ -223,6 +211,8 @@ def count_parameters(model):
     in_D = (in_D-torch.mean(in_D))/torch.std(in_D)
     out_H = (out_H-torch.mean(out_H))/torch.std(out_H)
 
+    # Save the normalization coefficients for reproducing the output sequences
+    # For model deployment, all the coefficients need to be saved.
     normH = [torch.mean(out_H),torch.std(out_H)]
 
     # Attach the starting token and add the noise
@@ -241,7 +231,11 @@ def count_parameters(model):
     return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H, out_H_head), normH""", language="python")
     
     with st.expander("Training and Testing the Model"):   
-        st.code("""def main():
+        st.write("""
+         In this part, we program the training and testing procedure of the network model. The loaded dataset is randomly split into training set, validation set, and test set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values, and the output of the testing part is the (.csv) file containing the predicted sequences.
+         """)
+        st.code("""
+def main():
 
     # Reproducibility
     random.seed(1)
@@ -353,10 +347,28 @@ def count_parameters(model):
             with open("/content/meas.csv", "a") as f:
                 np.savetxt(f, (out_H[:,1:,:]*normH[1]+normH[0]).squeeze(2).cpu().numpy())
                 f.close()
-            print("Testing finished! Results are saved!")
+            print("Testing finished! Results are saved!")""", language="python")
+            
+    with st.expander("Calculate the Core Loss"):   
+        st.write("""
+         In this part, we provide two methods of calculating the core loss. One is naturally based on the sequence and B-H loop predicted by the neural network, and the other one is the conventional iGSE method. 
+         """)
+        st.code("""
+def loss_BH(bdata, hdata, freq):
+    # bdata: the waveform sequence of flux density that provided by the user
+    # hdata: the waveform sequence of field strength that predicted by the neural network
+    loss = freq * np.trapz(hdata, bdata)
+    return loss
 
-
-if __name__ == "__main__":
-    main()""", language="python")
+def loss_iGSE(freq, flux_list, frac_time, k_i, alpha, beta, n_interval=10_000):
+    # the flux density waveform is defined by the pairs of flux_list and frac_time
+    # Steinmetz coefficients k_i, alpha, and beta are needed
+    period = 1 / freq
+    flux_delta = np.amax(flux_list) - np.amin(flux_list)
+    time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
+    B = np.interp(time, np.multiply(frac_time, period), flux_list)
+    dBdt = np.gradient(B, dt)
+    loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
+    return loss""", language="python")
     
     st.markdown("""---""")
