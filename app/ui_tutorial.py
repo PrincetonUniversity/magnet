@@ -9,28 +9,69 @@ def ui_tutorial(m):
 
     st.title('MagNet-AI Tutorial')
     st.write("""
-        Here we provide a few step-by-step tutorials to explain how MagNet AI work. The complete codes and data files can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
+        Here we provide a few step-by-step tutorials to explain how MagNet AI work. 
+        The complete codes and data files can be downloaded from the [MagNet GitHub]
+        (https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
     """)
     st.write("""    
-        For PyTorch beginners, we recommend using [Google Golab](https://colab.research.google.com/) (free) to simplify the learning process.
+        For PyTorch beginners, we recommend using [Google Golab](https://colab.research.google.com/) 
+        (free) to simplify the learning process.
     """)
-    st.header('Tutorial #1: Train a Seq-to-Seq Neural Network to Predict B-H Loops')
+    st.subheader("Overview: Encoder-projector-decoder Neural Network Architecture")
     st.write("""
-        Figure 1 illustrates the structure and the data flow of an encoder-projector-decoder neural network architecture. The general concept of the encoder-projector-decoder architecture is to map a time series into another time series while mixing other information about the operating conditions. As an example, we select $B(t)$ as the input sequence and $H(t)$ as the output sequence. Waveforms of $B(t)$ and $H(t)$ define the basic shape of hysteresis loops. The B-H loops are also significantly affected by other scalar inputs, including the frequency $f$, the temperature $T$, and the dc bias $H_{dc}$. Therefore, an additional projector is implemented between the encoder and the decoder to take these scalar inputs into consideration and predict the $B$-$H$ loop under different operating conditions.
+        Figure 1 illustrates the structure and the data flow of an encoder-projector-
+        decoder neural network architecture. The general concept of the encoder-projector-
+        decoder architecture is to map a time series into another time series while 
+        mixing other information about the operating conditions. As an example, we 
+        select $B(t)$ as the input sequence and $H(t)$ as the output sequence. 
+        Waveforms of $B(t)$ and $H(t)$ define the basic shape of hysteresis loops. 
+        The $B-H$ loops are also significantly affected by other scalar inputs, including 
+        the frequency $f$, the temperature $T$, and the dc bias $H_{dc}$. Therefore, 
+        an additional projector is implemented between the encoder and the decoder to 
+        take these scalar inputs into consideration and predict the $B-H$ loop under 
+        different operating conditions.
     """)
-    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'seq-to-seq.jpg')), width=600, caption='Fig. 1: Data flow of the encoder-projector-decoder structure')
+    st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'seq-to-seq.jpg')), 
+             width=600, caption='Fig. 1: Data flow of the encoder-projector-decoder structure')
     st.write("""
-        The encoder takes the $B(t)$ sequence as input and maps the sequence into a vector of fixed dimension. It captures the sequential information and temporal correlation within the sequence, such as the shape, the sequence of the patterns, the amplitude, and the relative changing rate of the given excitation waveform. The output of the encoder is the hidden state vectors, which encapsulate all the necessary information extracted from the input sequence and map it to a domain with hidden states. The hidden state vectors are then fed into the projector and modified based on the additional scalar inputs (frequency $f$, temperature $T$, and dc bias $H_{dc}$). The rationale behind the projector is that the shape of $B$--$H$ loop is not only determined by the shape of $B(t)$ sequence itself, but also by many other factors. Finally, the modified hidden state vectors are processed by the decoder, where the decoder makes predictions of the output sequence $H(t)$. During the model inference, the expected response sequence is generated in an auto-regressive way, which means the prediction of each step is produced based on both the current hidden states vectors and all the predictions that are already produced, such that the temporal information of the sequence is retained and reconstructed sequentially while maintain time causality.
+        The encoder takes the $B(t)$ sequence as input and maps the sequence into 
+        a vector of fixed dimension. It captures the sequential information and temporal 
+        correlation within the sequence, such as the shape, the sequence of the patterns, 
+        the amplitude, and the relative changing rate of the given excitation waveform. 
+        The output of the encoder is the hidden state vectors, which encapsulate all the 
+        necessary information extracted from the input sequence and map it to a domain 
+        with hidden states. The hidden state vectors are then fed into the projector and 
+        modified based on the additional scalar inputs (frequency $f$, temperature $T$, 
+        and dc bias $H_{dc}$). The rationale behind the projector is that the shape of 
+        $B-H$ loop is not only determined by the shape of $B(t)$ sequence itself, 
+        but also by many other factors. Finally, the modified hidden state vectors are 
+        processed by the decoder, where the decoder makes predictions of the output 
+        sequence $H(t)$. During the model inference, the expected response sequence is 
+        generated in an auto-regressive way, which means the prediction of each step is 
+        produced based on both the current hidden states vectors and all the predictions 
+        that are already produced, such that the temporal information of the sequence is 
+        retained and reconstructed sequentially while maintain time causality.
      """)   
     st.write("""
-        The encoder and the decoder can be implemented in various ways, for instance, recurrent neural networks (RNN), attention-based networks (transformer), long-short-term-memory network (LSTM), or convolutional neural networks (CNN), all of which have been proved successful in processing sequential data with sophisticated temporal correlations, and impacted by many factors. Here we show an example pytorch code for training a transformer based neural network.
+        The encoder and the decoder can be implemented in various ways, for instance, 
+        recurrent neural networks (RNN), attention-based networks (transformer), 
+        long-short-term-memory network (LSTM), or convolutional neural networks (CNN), 
+        all of which have been proved successful in processing sequential data with 
+        sophisticated temporal correlations, and impacted by many factors. Here we 
+        show the training and testing of a transformer-based model and an LSTM-based model
+        as examples.
     """)
     
-    with st.expander("Import Packages"):    
-        st.write("""
-                 In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
-                 """)
-        st.code("""
+    st.subheader("Select from the tabs below for the example codes:")
+    tab1, tab2, tab3 = st.tabs(["Transformer-based Model", "LSTM-based Model", "Core Loss Calculation"])
+    
+    with tab1:
+    
+        with st.expander("Import Packages"):    
+            st.write("""
+                     In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
+                     """)
+            st.code("""
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -40,13 +81,13 @@ import random
 import numpy as np
 import json
 import math
-""", language="python")
-        
-    with st.expander("Define Network Structure"):
-        st.write("""
-         In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
-         """)
-        st.code("""
+    """, language="python")
+            
+        with st.expander("Define Network Structure"):
+            st.write("""
+             In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
+             """)
+            st.code("""
 class Transformer(nn.Module):
     def __init__(self, 
         input_size :int,
@@ -175,13 +216,13 @@ def generate_square_subsequent_mask(sz1: int, sz2: int) -> Tensor:
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-""", language="python")
-    
-    with st.expander("Load the Dataset"):   
-        st.write("""
-         In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
-         """)
-        st.code("""
+    """, language="python")
+        
+        with st.expander("Load the Dataset"):   
+            st.write("""
+             In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
+             """)
+            st.code("""
 def load_dataset(data_length=128):
     # Load .json Files
     with open('/content/Dataset_sine.json','r') as load_f:
@@ -228,13 +269,14 @@ def load_dataset(data_length=128):
     print(out_H.size())
     print(out_H_head.size())
 
-    return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H, out_H_head), normH""", language="python")
-    
-    with st.expander("Training and Testing the Model"):   
-        st.write("""
-         In this part, we program the training and testing procedure of the network model. The loaded dataset is randomly split into training set, validation set, and test set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values, and the output of the testing part is the (.csv) file containing the predicted sequences.
-         """)
-        st.code("""
+    return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H, out_H_head), normH
+    """, language="python")
+        
+        with st.expander("Training and Testing the Model"):   
+            st.write("""
+             In this part, we program the training and testing procedure of the network model. The loaded dataset is randomly split into training set, validation set, and test set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values, and the output of the testing part is the (.csv) file containing the predicted sequences.
+             """)
+            st.code("""
 def main():
 
     # Reproducibility
@@ -347,28 +389,29 @@ def main():
             with open("/content/meas.csv", "a") as f:
                 np.savetxt(f, (out_H[:,1:,:]*normH[1]+normH[0]).squeeze(2).cpu().numpy())
                 f.close()
-            print("Testing finished! Results are saved!")""", language="python")
-            
-    with st.expander("Calculate the Core Loss"):   
-        st.write("""
-         In this part, we provide two methods of calculating the core loss. One is naturally based on the sequence and B-H loop predicted by the neural network, and the other one is the conventional iGSE method. 
-         """)
-        st.code("""
-def loss_BH(bdata, hdata, freq):
-    # bdata: the waveform sequence of flux density that provided by the user
-    # hdata: the waveform sequence of field strength that predicted by the neural network
-    loss = freq * np.trapz(hdata, bdata)
-    return loss
-
-def loss_iGSE(freq, flux_list, frac_time, k_i, alpha, beta, n_interval=10_000):
-    # the flux density waveform is defined by the pairs of flux_list and frac_time
-    # Steinmetz coefficients k_i, alpha, and beta are needed
-    period = 1 / freq
-    flux_delta = np.amax(flux_list) - np.amin(flux_list)
-    time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
-    B = np.interp(time, np.multiply(frac_time, period), flux_list)
-    dBdt = np.gradient(B, dt)
-    loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
-    return loss""", language="python")
+            print("Testing finished! Results are saved!")
+            """, language="python")
+                
+        with st.expander("Calculate the Core Loss"):   
+            st.write("""
+             In this part, we provide two methods of calculating the core loss. One is naturally based on the sequence and B-H loop predicted by the neural network, and the other one is the conventional iGSE method. 
+             """)
+            st.code("""
+    def loss_BH(bdata, hdata, freq):
+        # bdata: the waveform sequence of flux density that provided by the user
+        # hdata: the waveform sequence of field strength that predicted by the neural network
+        loss = freq * np.trapz(hdata, bdata)
+        return loss
+    
+    def loss_iGSE(freq, flux_list, frac_time, k_i, alpha, beta, n_interval=10_000):
+        # the flux density waveform is defined by the pairs of flux_list and frac_time
+        # Steinmetz coefficients k_i, alpha, and beta are needed
+        period = 1 / freq
+        flux_delta = np.amax(flux_list) - np.amin(flux_list)
+        time, dt = np.linspace(start=0, stop=period, num=n_interval, retstep=True)
+        B = np.interp(time, np.multiply(frac_time, period), flux_list)
+        dBdt = np.gradient(B, dt)
+        loss = freq * np.trapz(k_i * (np.abs(dBdt) ** alpha) * (flux_delta ** (beta - alpha)), time)
+        return loss""", language="python")
     
     st.markdown("""---""")
