@@ -62,7 +62,7 @@ def ui_tutorial(m):
         as examples.
     """)
     
-    st.subheader("Select from the tabs below for the example codes:")
+    st.subheader("Select from the tabs below for the example codes 👇")
     tab1, tab2, tab3 = st.tabs(["Transformer-based Model", "LSTM-based Model", "Core Loss Calculation"])
     
     with tab1:
@@ -452,7 +452,7 @@ def test():
     with tab2:
     
         st.write("""
-                 The Jupyter Notebook file of this tutorial can be found in the [MagNet GitHub](https://github.com/PrincetonUniversity/magnet/tree/develop/tutorial/Transformer).
+                 The Jupyter Notebook file of this tutorial can be found in the [MagNet GitHub](https://github.com/PrincetonUniversity/magnet/tree/develop/tutorial/LSTM).
                  """)
         with st.expander("Import Packages"):    
             st.write("""
@@ -475,131 +475,103 @@ import math
              In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
              """)
             st.code("""
-class Transformer(nn.Module):
-    def __init__(self, 
-        input_size :int,
-        dec_seq_len :int,
-        max_seq_len :int,
-        out_seq_len :int,
-        dim_val :int,  
-        n_encoder_layers :int,
-        n_decoder_layers :int,
-        n_heads :int,
-        dropout_encoder,
-        dropout_decoder,
-        dropout_pos_enc,
-        dim_feedforward_encoder :int,
-        dim_feedforward_decoder :int,
-        dim_feedforward_projecter :int,
-        num_var: int=3
-        ): 
-        
-        #   Args:
-        #    input_size: int, number of input variables. 1 if univariate.
-        #    dec_seq_len: int, the length of the input sequence fed to the decoder
-        #    max_seq_len: int, length of the longest sequence the model will receive. Used in positional encoding. 
-        #    out_seq_len: int, the length of the model's output (i.e. the target sequence length)
-        #    dim_val: int, aka d_model. All sub-layers in the model produce outputs of dimension dim_val
-        #    n_encoder_layers: int, number of stacked encoder layers in the encoder
-        #    n_decoder_layers: int, number of stacked encoder layers in the decoder
-        #    n_heads: int, the number of attention heads (aka parallel attention layers)
-        #    dropout_encoder: float, the dropout rate of the encoder
-        #    dropout_decoder: float, the dropout rate of the decoder
-        #    dropout_pos_enc: float, the dropout rate of the positional encoder
-        #    dim_feedforward_encoder: int, number of neurons in the linear layer of the encoder
-        #    dim_feedforward_decoder: int, number of neurons in the linear layer of the decoder
-        #    dim_feedforward_projecter :int, number of neurons in the linear layer of the projecter
-        #    num_var: int, number of additional input variables of the projector
+class Encoder(nn.Module):
+   def __init__(self, input_dim, hidden_dim):
+       super(Encoder, self).__init__()
 
-        super().__init__() 
+       self.hidden_dim = hidden_dim
+       self.input_dim = input_dim
 
-        self.dec_seq_len = dec_seq_len
-        self.n_heads = n_heads
-        self.out_seq_len = out_seq_len
-        self.dim_val = dim_val
-        self.encoder_input_layer = nn.Sequential(
-            nn.Linear(input_size, dim_val),
+       self.lstm = nn.LSTM(1, self.hidden_dim, num_layers=1, batch_first=True)
+              
+   def forward(self, x):
+       outputs, (hidden, cell) = self.lstm(x)
+       return hidden, cell
+
+class Decoder(nn.Module):
+   def __init__(self, output_dim, hidden_dim):
+       super(Decoder, self).__init__()
+
+       self.hidden_dim = hidden_dim
+       self.output_dim = output_dim
+
+       self.lstm = nn.LSTM(1, self.hidden_dim, num_layers=1, batch_first=True)
+       self.out = nn.Sequential(
+            nn.Linear(self.hidden_dim, self.hidden_dim*2),
             nn.Tanh(),
-            nn.Linear(dim_val, dim_val))
-        self.decoder_input_layer = nn.Sequential(
-            nn.Linear(input_size, dim_val),
+            nn.Linear(self.hidden_dim*2, self.output_dim))
+
+   def forward(self, x, hidden, cell):
+
+       batch = x.shape[0]
+       x = x.reshape(batch,1,1)
+       output, (hidden, cell) = self.lstm(x, (hidden, cell))     
+
+       prediction = self.out(output)
+       prediction = prediction.squeeze(0)
+      
+       return prediction, hidden, cell
+
+class Projector(nn.Module):
+   def __init__(self, num_var, hidden_dim, mod_dim):
+       super(Projector, self).__init__()
+
+       self.hidden_dim = hidden_dim
+       self.num_var = num_var
+       self.mod_dim = mod_dim
+
+       self.out = nn.Sequential(
+            nn.Linear(self.hidden_dim + self.num_var, self.mod_dim),
             nn.Tanh(),
-            nn.Linear(dim_val, dim_val))
-        self.linear_mapping = nn.Sequential(
-            nn.Linear(dim_val, dim_val),
+            nn.Linear(self.mod_dim, self.mod_dim),
             nn.Tanh(),
-            nn.Linear(dim_val, input_size))
-        self.positional_encoding_layer = PositionalEncoder(d_model=dim_val, dropout=dropout_pos_enc, max_len=max_seq_len)
-        self.projector = nn.Sequential(
-            nn.Linear(dim_val + num_var, dim_feedforward_projecter),
-            nn.Tanh(),
-            nn.Linear(dim_feedforward_projecter, dim_feedforward_projecter),
-            nn.Tanh(),
-            nn.Linear(dim_feedforward_projecter, dim_val))
-        self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=dim_val, 
-            nhead=n_heads,
-            dim_feedforward=dim_feedforward_encoder,
-            dropout=dropout_encoder,
-            activation="relu",
-            batch_first=True
-            )
-        self.encoder = nn.TransformerEncoder(encoder_layer=self.encoder_layer, num_layers=n_encoder_layers, norm=None)
-        self.decoder_layer = nn.TransformerDecoderLayer(
-            d_model=dim_val,
-            nhead=n_heads,
-            dim_feedforward=dim_feedforward_decoder,
-            dropout=dropout_decoder,
-            activation="relu",
-            batch_first=True
-            )
-        self.decoder = nn.TransformerDecoder(decoder_layer=self.decoder_layer, num_layers=n_decoder_layers, norm=None)
+            nn.Linear(self.mod_dim, self.hidden_dim))
 
-    def forward(self, src: Tensor, tgt: Tensor, var: Tensor, device) -> Tensor:
+   def forward(self, x, var1):
 
-        src = self.encoder_input_layer(src)
-        src = self.positional_encoding_layer(src)
-        src = self.encoder(src)
-        enc_seq_len = 128
-        
-        var = var.unsqueeze(1).repeat(1,enc_seq_len,1)
-        src = self.projector(torch.cat([src,var],dim=2))
-        
-        tgt = self.decoder_input_layer(tgt)
-        tgt = self.positional_encoding_layer(tgt)
-        batch_size = src.size()[0]
-        tgt_mask = generate_square_subsequent_mask(sz1=self.out_seq_len, sz2=self.out_seq_len).to(device)
-        output = self.decoder(
-            tgt=tgt,
-            memory=src,
-            tgt_mask=tgt_mask,
-            memory_mask=None
-            ) 
-        output= self.linear_mapping(output)
-        
-        return output
+       x = x.squeeze(0)
+       y = self.out(torch.cat([x,var1],dim=1))
+       y = y.unsqueeze(0)
+      
+       return y
 
-class PositionalEncoder(nn.Module):
+class Seq2Seq(nn.Module):
+   def __init__(self, encoder, projector_hidden, projector_cell, decoder, device):
+       super().__init__()
+      
+       self.encoder = encoder
+       self.projector_hidden = projector_hidden
+       self.projector_cell = projector_cell
+       self.decoder = decoder
+       self.device = device
+     
+   def forward(self, source, target, var1, teacher_forcing_ratio=0.5):
 
-    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
+       target_len = target.shape[1]
+       batch_size = source.shape[0]
 
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
-        pe = torch.zeros(max_len, d_model)
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)
+       trg_vocab_size = self.decoder.output_dim
 
-    def forward(self, x: Tensor) -> Tensor:
-        x = x + self.pe[:x.size(1)]
-        return self.dropout(x)
+       outputs = torch.zeros(target_len+1, batch_size, trg_vocab_size).to(self.device)
 
-def generate_square_subsequent_mask(sz1: int, sz2: int) -> Tensor:
-    #Generates an upper-triangular matrix of -inf, with zeros on diag.
-    return torch.triu(torch.ones(sz1, sz2) * float('-inf'), diagonal=1)
+       hidden, cell = self.encoder(source)
 
+       hidden = self.projector_hidden(hidden, var1)
+       cell = self.projector_cell(hidden, var1)
+       
+       trg = torch.add(torch.zeros(batch_size, trg_vocab_size),10).to(self.device)
+
+       for t in range(1, target_len+1):   
+           prediction, hidden, cell = self.decoder(trg, hidden, cell)
+
+           outputs[t] = prediction.squeeze(2)
+
+           if random.random() < teacher_forcing_ratio:
+             trg = target[:,t-1]
+           else:
+             trg = prediction
+
+       return outputs[1:]
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -643,20 +615,13 @@ def load_dataset(data_length=128):
     # For model deployment, all the coefficients need to be saved.
     normH = [torch.mean(out_H),torch.std(out_H)]
 
-    # Attach the starting token and add the noise
-    head = 0.1 * torch.ones(out_H.size()[0],1,out_H.size()[2])
-    out_H_head = torch.cat((head,out_H), dim=1)
-    out_H = out_H_head
-    out_H_head = out_H_head + (torch.rand(out_H_head.size())-0.5)*0.1
-
     print(in_B.size())
     print(in_F.size())
     print(in_T.size())
     print(in_D.size())
     print(out_H.size())
-    print(out_H_head.size())
 
-    return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H, out_H_head), normH
+    return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H), normH
     """, language="python")
         
         with st.expander("Training the Model"):   
@@ -695,21 +660,11 @@ def train():
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, **kwargs)
 
     # Setup network
-    net = Transformer(
-      dim_val=24,
-      input_size=1, 
-      dec_seq_len=129,
-      max_seq_len=129,
-      out_seq_len=129, 
-      n_decoder_layers=1,
-      n_encoder_layers=1,
-      n_heads=4,
-      dropout_encoder=0.0, 
-      dropout_decoder=0.0,
-      dropout_pos_enc=0.0,
-      dim_feedforward_encoder=40,
-      dim_feedforward_decoder=40,
-      dim_feedforward_projecter=40).to(device)
+    encoder = Encoder(input_dim=100, hidden_dim=32).to(device)  
+    decoder = Decoder(output_dim=1, hidden_dim=32).to(device)  
+    projector_hidden = Projector(num_var=3, hidden_dim=32, mod_dim=64).to(device)  
+    projector_cell = Projector(num_var=3, hidden_dim=32, mod_dim=64).to(device)  
+    net = Seq2Seq(encoder, projector_hidden, projector_cell, decoder, device).to(device)  
 
     # Log the number of parameters
     print("Number of parameters: ", count_parameters(net))
@@ -726,12 +681,12 @@ def train():
         net.train()
         optimizer.param_groups[0]['lr'] = LR_INI* (DECAY_RATIO ** (0+ epoch_i // DECAY_EPOCH))
 
-        for in_B, in_F, in_T, in_D, out_H, out_H_head in train_loader:
+        for in_B, in_F, in_T, in_D, out_H in train_loader:
             optimizer.zero_grad()
-            output = net(src=in_B.to(device), tgt=out_H_head.to(device), var=torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1), device=device)
-            loss = criterion(output[:,:-1,:], out_H.to(device)[:,1:,:])
+            outputs = net(in_B.to(device),out_H.to(device),torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1),teacher_forcing_ratio=0.0)
+            loss = criterion(outputs, out_H.transpose(0,1).to(device))
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=0.25)
+            torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=0.5)
             optimizer.step()
             epoch_train_loss += loss.item()
 
@@ -739,9 +694,9 @@ def train():
         with torch.no_grad():
             net.eval()
             epoch_valid_loss = 0
-            for in_B, in_F, in_T, in_D, out_H, out_H_head in valid_loader:
-                output = net(src=in_B.to(device), tgt=out_H_head.to(device), var=torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1), device=device)
-                loss = criterion(output[:,:-1,:], out_H.to(device)[:,1:,:])
+            for in_B, in_F, in_T, in_D, out_H in valid_loader:
+                outputs = net(in_B.to(device),out_H.to(device),torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1),teacher_forcing_ratio=0)
+                loss = criterion(outputs, out_H.transpose(0,1).to(device))
                 epoch_valid_loss += loss.item()
         
         if (epoch_i+1)%200 == 0:
@@ -750,7 +705,7 @@ def train():
               f"Valid {epoch_valid_loss / len(valid_dataset) * 1e5:.5f}")
         
     # Save the model parameters
-    torch.save(net.state_dict(), "/content/Model_Transformer.sd")
+    torch.save(net.state_dict(), "/content/Model_LSTM.sd")
     print("Training finished! Model is saved!")
             """, language="python")
         with st.expander("Testing the Model"):   
@@ -783,24 +738,14 @@ def test():
     test_loader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, **kwargs)
 
     # Setup network
-    net = Transformer(
-      dim_val=24,
-      input_size=1, 
-      dec_seq_len=129,
-      max_seq_len=129,
-      out_seq_len=129, 
-      n_decoder_layers=1,
-      n_encoder_layers=1,
-      n_heads=4,
-      dropout_encoder=0.0, 
-      dropout_decoder=0.0,
-      dropout_pos_enc=0.0,
-      dim_feedforward_encoder=40,
-      dim_feedforward_decoder=40,
-      dim_feedforward_projecter=40).to(device)
+    encoder = Encoder(input_dim=100, hidden_dim=32).to(device)  
+    decoder = Decoder(output_dim=1, hidden_dim=32).to(device)  
+    projector_hidden = Projector(num_var=3, hidden_dim=32, mod_dim=64).to(device)  
+    projector_cell = Projector(num_var=3, hidden_dim=32, mod_dim=64).to(device)  
+    net = Seq2Seq(encoder, projector_hidden, projector_cell, decoder, device).to(device)  
 
     # Load trained parameters
-    state_dict = torch.load('/content/Model_Transformer.sd')
+    state_dict = torch.load('/content/Model_LSTM.sd')
     net.load_state_dict(state_dict, strict=True)
     net.eval()
     print("Model is loaded!")
@@ -810,26 +755,19 @@ def test():
 
     # Test the network
     with torch.no_grad():
-        for in_B, in_F, in_T, in_D, out_H, out_H_head in test_loader:
+        for in_B, in_F, in_T, in_D, out_H in test_loader:
 
-            # Create dummy out_H_head                            
-            outputs = torch.zeros(out_H.size()).to(device)
-            tgt = (torch.rand(out_H.size())*2-1).to(device)
-            tgt[:,0,:] = 0.1*torch.ones(tgt[:,0,:].size())                        
-
-            # Compute inference
-            for t in range(1, out_H.size()[1]):   
-                outputs = net(src=in_B.to(device),tgt=tgt.to(device),var=torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1), device=device)                     
-                tgt[:,t,:] = outputs[:,t-1,:]     
-            outputs = net(in_B.to(device),tgt.to(device),torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1), device=device)
+            outputs = net(in_B.to(device),out_H.to(device),torch.cat((in_F.to(device), in_T.to(device), in_D.to(device)), dim=1),teacher_forcing_ratio=0.0)
+            outputs = outputs.transpose(0,1)
 
             # Save results
             with open("/content/pred.csv", "a") as f:
-                np.savetxt(f, (outputs[:,:-1,:]*normH[1]+normH[0]).squeeze(2).cpu().numpy())
+                np.savetxt(f, (outputs*normH[1]+normH[0]).squeeze(2).cpu().numpy())
                 f.close()
             with open("/content/meas.csv", "a") as f:
-                np.savetxt(f, (out_H[:,1:,:]*normH[1]+normH[0]).squeeze(2).cpu().numpy())
+                np.savetxt(f, (out_H*normH[1]+normH[0]).squeeze(2).cpu().numpy())
                 f.close()
+
         print("Testing finished! Results are saved!")
             """, language="python")
     

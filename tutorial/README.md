@@ -6,7 +6,7 @@ Here we provide a few step-by-step tutorials to explain how MagNet AI work.
 
 For PyTorch beginners, we recommend using [Google Golab](https://colab.research.google.com/)(free) to simplify the learning process.
 
-## Overview:Encoder-projector-decoder Neural Network Architecture
+## Overview: Encoder-projector-decoder Neural Network Architecture
 
 Figure below illustrates the structure and the data flow of an encoder-projector-decoder neural network architecture. The general concept of the encoder-projector-decoder architecture is to map a time series into another time series while mixing other information about the operating conditions. As an example, we select $B(t)$ as the input sequence and $H(t)$ as the output sequence. Waveforms of $B(t)$ and $H(t)$ define the basic shape of hysteresis loops. The $B-H$ loops are also significantly affected by other scalar inputs, including the frequency $f$, the temperature $T$, and the dc bias $H_{dc}$. Therefore, an additional projector is implemented between the encoder and the decoder to take these scalar inputs into consideration and predict the $B-H$ loop under different operating conditions.
 
