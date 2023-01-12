@@ -62,19 +62,18 @@ def ui_tutorial(m):
         as examples.
     """)
     
-    st.subheader("Select from the tabs below for the example codes 👇")
-    tab1, tab2, tab3 = st.tabs(["Transformer-based Model", "LSTM-based Model", "Core Loss Calculation"])
     
-    with tab1:
+    st.markdown("""---""")
     
+    st.subheader("Tutorial: Transformer-based Model")
+    st.write("""
+             The Jupyter Notebook file of this tutorial can be found in the [MagNet GitHub](https://github.com/PrincetonUniversity/magnet/tree/develop/tutorial/Transformer).
+             """)
+    with st.expander("Import Packages"):    
         st.write("""
-                 The Jupyter Notebook file of this tutorial can be found in the [MagNet GitHub](https://github.com/PrincetonUniversity/magnet/tree/develop/tutorial/Transformer).
+                 In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
                  """)
-        with st.expander("Import Packages"):    
-            st.write("""
-                     In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
-                     """)
-            st.code("""
+        st.code("""
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -86,11 +85,11 @@ import json
 import math
     """, language="python")
             
-        with st.expander("Define Network Structure"):
-            st.write("""
-             In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
-             """)
-            st.code("""
+    with st.expander("Define Network Structure"):
+        st.write("""
+         In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
+         """)
+        st.code("""
 class Transformer(nn.Module):
     def __init__(self, 
         input_size :int,
@@ -221,11 +220,11 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
     """, language="python")
         
-        with st.expander("Load the Dataset"):   
-            st.write("""
-             In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
-             """)
-            st.code("""
+    with st.expander("Load the Dataset"):   
+        st.write("""
+         In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
+         """)
+        st.code("""
 def load_dataset(data_length=128):
     # Load .json Files
     with open('/content/Dataset_sine.json','r') as load_f:
@@ -275,11 +274,11 @@ def load_dataset(data_length=128):
     return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H, out_H_head), normH
     """, language="python")
         
-        with st.expander("Training the Model"):   
-            st.write("""
-             In this part, we program the training procedure of the network model. The loaded dataset is randomly split into training set and validation set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values.
-             """)
-            st.code("""
+    with st.expander("Training the Model"):   
+        st.write("""
+         In this part, we program the training procedure of the network model. The loaded dataset is randomly split into training set and validation set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values.
+         """)
+        st.code("""
 def train():
 
     # Reproducibility
@@ -369,11 +368,11 @@ def train():
     torch.save(net.state_dict(), "/content/Model_Transformer.sd")
     print("Training finished! Model is saved!")
             """, language="python")
-        with st.expander("Testing the Model"):   
-            st.write("""
-             In this part, we program the testing procedure of the network model. The loaded dataset is entirely used as the test set. The pre-trained model is loaded through the state dictionary file (.sd), and the output of the testing part is the (.csv) file containing the predicted sequences.
-             """)
-            st.code("""
+    with st.expander("Testing the Model"):   
+        st.write("""
+         In this part, we program the testing procedure of the network model. The loaded dataset is entirely used as the test set. The pre-trained model is loaded through the state dictionary file (.sd), and the output of the testing part is the (.csv) file containing the predicted sequences.
+         """)
+        st.code("""
 def test():
 
     # Reproducibility
@@ -449,16 +448,17 @@ def test():
         print("Testing finished! Results are saved!")
             """, language="python")
                 
-    with tab2:
+    st.markdown("""---""")
+    st.subheader("Tutorial: LSTM-based Model")
     
-        st.write("""
+    st.write("""
                  The Jupyter Notebook file of this tutorial can be found in the [MagNet GitHub](https://github.com/PrincetonUniversity/magnet/tree/develop/tutorial/LSTM).
                  """)
-        with st.expander("Import Packages"):    
-            st.write("""
-                     In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
-                     """)
-            st.code("""
+    with st.expander("Import Packages"):    
+        st.write("""
+                 In this demo, the neural network is synthesized using the PyTorch framework. Please install PyTorch according to the [official guidance](https://pytorch.org/get-started/locally/) , then import PyTorch and other dependent modules.
+                 """)
+        st.code("""
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -470,11 +470,11 @@ import json
 import math
     """, language="python")
             
-        with st.expander("Define Network Structure"):
-            st.write("""
-             In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
-             """)
-            st.code("""
+    with st.expander("Define Network Structure"):
+        st.write("""
+         In this part, we define the structure of the transformer-based encoder-projector-decoder neural network. Refer to the [PyTorch document](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) for more details.
+         """)
+        st.code("""
 class Encoder(nn.Module):
    def __init__(self, input_dim, hidden_dim):
        super(Encoder, self).__init__()
@@ -577,11 +577,11 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
     """, language="python")
         
-        with st.expander("Load the Dataset"):   
-            st.write("""
-             In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
-             """)
-            st.code("""
+    with st.expander("Load the Dataset"):   
+        st.write("""
+         In this part, we load and pre-process the dataset for the network training and testing. In this demo, a small dataset containing sinusoidal waveforms measured with N87 ferrite material under different frequency, temperature, and dc bias conditions is used, which can be downloaded from the [MagNet GitHub](https://github.com/PrincetonUniversity/Magnet) repository under "tutorial". 
+         """)
+        st.code("""
 def load_dataset(data_length=128):
     # Load .json Files
     with open('/content/Dataset_sine.json','r') as load_f:
@@ -624,11 +624,11 @@ def load_dataset(data_length=128):
     return torch.utils.data.TensorDataset(in_B, in_F, in_T, in_D, out_H), normH
     """, language="python")
         
-        with st.expander("Training the Model"):   
-            st.write("""
-             In this part, we program the training procedure of the network model. The loaded dataset is randomly split into training set and validation set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values.
-             """)
-            st.code("""
+    with st.expander("Training the Model"):   
+        st.write("""
+         In this part, we program the training procedure of the network model. The loaded dataset is randomly split into training set and validation set. The output of the training part is the state dictionary file (.sd) containing all the trained parameter values.
+         """)
+        st.code("""
 def train():
 
     # Reproducibility
@@ -708,11 +708,11 @@ def train():
     torch.save(net.state_dict(), "/content/Model_LSTM.sd")
     print("Training finished! Model is saved!")
             """, language="python")
-        with st.expander("Testing the Model"):   
-            st.write("""
-             In this part, we program the testing procedure of the network model. The loaded dataset is entirely used as the test set. The pre-trained model is loaded through the state dictionary file (.sd), and the output of the testing part is the (.csv) file containing the predicted sequences.
-             """)
-            st.code("""
+    with st.expander("Testing the Model"):   
+        st.write("""
+         In this part, we program the testing procedure of the network model. The loaded dataset is entirely used as the test set. The pre-trained model is loaded through the state dictionary file (.sd), and the output of the testing part is the (.csv) file containing the predicted sequences.
+         """)
+        st.code("""
 def test():
 
     # Reproducibility
@@ -771,29 +771,30 @@ def test():
         print("Testing finished! Results are saved!")
             """, language="python")
     
-    with tab3:
-        st.write("""
+    st.markdown("""---""")
+    st.subheader("Tutorial: Core Loss Calculation")
+    st.write("""
                  A few methods of core loss calculation are provided here, as a follow-up of the sequence prediction.
                  """)
-        with st.expander("Calculate through the B-H loop"):   
-            st.write("""
-             This method is naturally calculating the core loss based on the area of B-H loop and the fundamental frequency.
-             It is assumed that the B-H loop is already predicted by the neural network ($B$ is user-defined and $H$ is predicted), 
-             and the fundamental frequency is provided. 
-             """)
-            st.code("""
+    with st.expander("Calculate through the B-H loop"):   
+        st.write("""
+         This method is naturally calculating the core loss based on the area of B-H loop and the fundamental frequency.
+         It is assumed that the B-H loop is already predicted by the neural network ($B$ is user-defined and $H$ is predicted), 
+         and the fundamental frequency is provided. 
+         """)
+        st.code("""
 def loss_BH(bdata, hdata, freq):
     # bdata: the waveform sequence of flux density that provided by the user
     # hdata: the waveform sequence of field strength that predicted by the neural network
     loss = freq * np.trapz(hdata, bdata)
     return loss
     """, language="python")
-        with st.expander("Calculate through the iGSE"):   
-            st.write("""
-             This method is calculating the core loss based on the conventional iGSE model. 
-             It is assumed that the Steinmetz parameters are already provided, and the $B(t)$ waveform is user-defined. 
-             """)
-            st.code("""
+    with st.expander("Calculate through the iGSE"):   
+        st.write("""
+         This method is calculating the core loss based on the conventional iGSE model. 
+         It is assumed that the Steinmetz parameters are already provided, and the $B(t)$ waveform is user-defined. 
+         """)
+        st.code("""
 def loss_iGSE(freq, flux_list, frac_time, k_i, alpha, beta, n_interval=10_000):
     # the flux density waveform is defined by the pairs of flux_list and frac_time
     # Steinmetz coefficients k_i, alpha, and beta are needed
