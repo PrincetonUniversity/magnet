@@ -77,9 +77,9 @@ def ui_intro(m):
         bdata0 = 100 * np.sin(np.linspace(0, 2*np.pi, c.streamlit.n_nn))
         output = {'B [mT]': bdata0}
         csv = convert_df(pd.DataFrame(output))
-        st.write(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
+        st.write(f"Describe a single cycle waveform of Bac in mT. Expected for a {c.streamlit.n_nn}-points array that describes the waveform in a single cycle of steady state. The dc bias is automatically detected. Arrays with other lengths will be automatically interpolated. Here's a template for your reference:")
         st.download_button(
-            f"Download an Example {c.streamlit.n_nn}-Step 100 mT Sinusoidal Bac Waveform CSV File",
+            f"Download an Example {c.streamlit.n_nn}-Step-per-Cycle 100 mT Sinusoidal B Waveform CSV File",
             data=csv,
             file_name='B-Input.csv',
             mime='text/csv',
@@ -210,7 +210,7 @@ def ui_intro(m):
             st.write('The next step is to describe the B waveform with two options.')
             st.markdown("""---""")
             st.subheader('How does MagNet AI work?')
-            st.caption('from data acquisition, error analysis, data visualization, to machine learning')
+            st.caption('from data acquisition, error analysis, data visualization, to machine learning framework')
             st.write('- Diego Serrano et al., "Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340989.v2) - Why MagNet AI?')
             st.write('- Haoran Li et al., "Machine Learning Framework for Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340998.v2) - How MagNet AI?')
 
@@ -251,7 +251,7 @@ def ui_intro(m):
     st.caption('The data contains measurement artifacts. The B-H loop and volumetric core losses describe component-level behaviors. Material characteristics, parasitics, and measurement error all impact the results.')
     
     if not not_extrapolated:
-        st.warning("Extrapolation detected. The specified condition is out of the range of training data. Use the results carefully.")
+        st.warning("The specified condition is out of the range of training data.")
     
     col1, col2 = st.columns(2)
     with col1:
