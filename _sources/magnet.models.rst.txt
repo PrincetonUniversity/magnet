@@ -1,0 +1,10 @@
+magnet.models package
+=====================
+
+Module contents
+---------------
+
+.. automodule:: magnet.models
+   :members:
+   :undoc-members:
+   :show-inheritance:

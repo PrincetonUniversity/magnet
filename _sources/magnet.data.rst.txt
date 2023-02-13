@@ -1,0 +1,10 @@
+magnet.data package
+===================
+
+Module contents
+---------------
+
+.. automodule:: magnet.data
+   :members:
+   :undoc-members:
+   :show-inheritance:

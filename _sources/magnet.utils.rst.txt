@@ -1,0 +1,21 @@
+magnet.utils package
+====================
+
+Submodules
+----------
+
+magnet.utils.config module
+--------------------------
+
+.. automodule:: magnet.utils.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: magnet.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:

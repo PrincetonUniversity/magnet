@@ -1,0 +1,37 @@
+magnet.simplecs package
+=======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   magnet.simplecs.models
+
+Submodules
+----------
+
+magnet.simplecs.classes module
+------------------------------
+
+.. automodule:: magnet.simplecs.classes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+magnet.simplecs.simfunctions module
+-----------------------------------
+
+.. automodule:: magnet.simplecs.simfunctions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: magnet.simplecs
+   :members:
+   :undoc-members:
+   :show-inheritance:
