@@ -11,7 +11,6 @@ from magnet import config as c
 
 STREAMLIT_ROOT = os.path.dirname(__file__)
 
-@st.cache
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 

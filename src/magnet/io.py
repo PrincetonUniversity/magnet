@@ -21,7 +21,6 @@ def h5_load(filename):
         return data, metadata
 
 
-@st.cache
 def load_dataframe(material, freq_min=None, freq_max=None, flux_min=None, flux_max=None, bias=None,
                    duty_p=None, duty_n=None, temp=None):
     bias_margin = 4
@@ -84,7 +83,6 @@ def load_metadata(material):
         data, metadata = h5_load(h5file)
     return metadata
 
-@st.cache
 def load_hull(material):
     with path('magnet.data', f'hull_{material}.npy') as npfile:
         hull = np.load(npfile)

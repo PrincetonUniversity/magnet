@@ -12,7 +12,6 @@ from magnet.core import core_loss_default, core_loss_arbitrary
 from magnet.constants import core_loss_range
 
 
-@st.cache
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 

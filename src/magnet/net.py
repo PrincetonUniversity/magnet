@@ -29,7 +29,6 @@ class Net(nn.Module):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 
-@functools.lru_cache(maxsize=8)
 def model(material, waveform, device='cpu'):
     with path('magnet.models', f'Model_{material}_{waveform}.sd') as sd_file:
         state_dict = torch.load(sd_file)
@@ -80,7 +79,6 @@ class Net_LSTM(nn.Module):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 
-@functools.lru_cache(maxsize=8)
 def model_lstm(material, device='cpu'):
     with path('magnet.models', f'Model_{material}_LSTM.sd') as sd_file:
         device = torch.device('cpu')
@@ -291,7 +289,6 @@ def generate_square_subsequent_mask(sz1: int, sz2: int) -> Tensor:
     return torch.triu(torch.ones(sz1, sz2) * float('-inf'), diagonal=1)
 
 
-@functools.lru_cache(maxsize=8)
 def model_transformer(material, device='cpu'):
         
     with path('magnet.models', f'Model_{material}_Transformer.sd') as sd_file:
