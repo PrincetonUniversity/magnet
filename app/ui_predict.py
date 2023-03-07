@@ -11,7 +11,6 @@ from magnet.plots import waveform_visualization, waveform_visualization_2axes, p
 from magnet.core import core_loss_default, core_loss_arbitrary
 
 
-@st.cache
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
