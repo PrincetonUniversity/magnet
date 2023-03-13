@@ -32,6 +32,7 @@ def ui_core_loss_db(m):
         material = st.selectbox(
             f'Material:',
             material_list,
+            index=9,
             key=f'material {m}')
     with col1:
         # temperature = st.sidebar.radio(

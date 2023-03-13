@@ -157,7 +157,7 @@ def BH_Transformer(material, freq, temp, bias, bdata):
     
     for t in range(1, bdata.size()[1]+1):   
         outputs = net_decoder(src=src, tgt=tgt, var=torch.cat((freq, temp, bias), dim=1))
-        tgt[:, t, :] = outputs[:, t-1, :]
+        tgt[:, t, :] = outputs[:, t-1, :].detach()
         
     outputs = net_decoder(src, tgt, torch.cat((freq, temp, bias), dim=1))
     
