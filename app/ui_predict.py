@@ -167,7 +167,7 @@ def ui_core_loss_predict(m):
                     help=f'Rising part with the highest slope')
                 duty_n = st.slider(
                     f'Duty Cycle (D3)',
-                    1-duty_step,
+                    duty_step,
                     1 - duty_p,
                     max(round((1 - duty_p) / 2, 2), duty_step),
                     step=duty_step,

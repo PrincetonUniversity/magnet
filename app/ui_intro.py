@@ -15,8 +15,9 @@ def convert_df(df):
     return df.to_csv().encode('utf-8')
 
 def ui_intro(m):
+    
     st.title('MagNet AI for Research, Education and Design')
-    st.subheader('"Are you still using the Steinmetz Equation proposed in 1890 to design power magnetics in 2022?" - Try MagNet AI and join us to make it better')
+    st.subheader('"It is time to upgrade the Steinmetz Equation!" - Try MagNet AI and join us to make it better')
     st.caption('We created MagNet AI to advance power magnetics research, education, and design. The mission of MagNet AI is to replace the traditional curve-fitting models (e.g., Steinmetz Equations and Jiles-Atherton Models) with state-of-the-art data-driven methods such as neural networks and machine learning. MagNet AI is open, transparent, fast, smart, versatile, and is continously learning. It is a new tool to design power magnetics and can do lots of things that traditional methods cannnot do.')
     st.markdown("""---""")
     
@@ -28,6 +29,7 @@ def ui_intro(m):
             material_list,
             index=9,
             key=f'material {m}',
+            index=9,
             help='select from a list of available materials')
         
         mu_relative = material_extra[material][0]
@@ -252,7 +254,7 @@ def ui_intro(m):
     if not not_extrapolated:
         st.warning("The specified condition is out of the range of training data.")
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.subheader('Effective B-H Waveform')
         fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -329,8 +331,6 @@ def ui_intro(m):
         st.plotly_chart(fig, use_container_width=True)
 
     with col1:
-        st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
-    with col2:
 
         output = {'B [mT]': (bdata + bias * mu_relative * c.streamlit.mu_0 * np.ones(c.streamlit.n_nn)) * 1e3,
                   'H [A/m]': hdata + bias * np.ones(c.streamlit.n_nn)}
@@ -343,11 +343,37 @@ def ui_intro(m):
             mime='text/csv',
             )
 
+    with col3:
+        st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
+        st.subheader('Ranking among included materials:')
+    
+        loss_test_list = pd.DataFrame(columns=['Material','Core Loss [kW/m^3]','This one'])
+        for material_test in material_list:
+            hdata_test = BH_Transformer(material_test, freq, temp, bias, bdata)
+            loss_test = loss_BH(bdata, hdata_test, freq)
+            this_one = '   ✓' if (material_test==material) else ''
+            loss_test_list = loss_test_list.append({
+                'Material':material_test,
+                'Core Loss [kW/m^3]': np.round(loss_test / 1e3, 2),
+                'This one': this_one}, ignore_index=True)
+        
+        loss_test_list=loss_test_list.sort_values(by='Core Loss [kW/m^3]')
+        
+        # loss_test_list.index = [''] * len(loss_test_list) # hide index
+        loss_test_list.index = range(1, len(loss_test_list) + 1) # re-index from 1 to 10
+        
+        st.dataframe(data=loss_test_list, width=None, height=None)
+    
+    
     st.markdown("""---""")
 
     st.header('How to Cite')
     st.write("""
         If you find MagNet as useful, please cite the following:
+            
+        - H. Li et al., "How MagNet: Machine Learning Framework for Modeling Power Magnetic Material Characteristics," TechRxiv. Preprint. https://doi.org/10.36227/techrxiv.21340998.v3. [Paper](https://doi.org/10.36227/techrxiv.21340998.v3)
+        
+        - D. Serrano et al., "Why MagNet: Quantifying the Complexity of Modeling Power Magnetic Material Characteristics", TechRxiv. Preprint. https://doi.org/10.36227/techrxiv.21340989.v3. [Paper](https://doi.org/10.36227/techrxiv.21340989.v3)
 
         - D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, Israel, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
 
