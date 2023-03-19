@@ -29,7 +29,6 @@ def ui_intro(m):
             material_list,
             index=9,
             key=f'material {m}',
-            index=9,
             help='select from a list of available materials')
         
         mu_relative = material_extra[material][0]
