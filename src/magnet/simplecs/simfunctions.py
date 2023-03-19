@@ -41,14 +41,14 @@ def SimulationPLECS(m):
         # Display schematic
         circuit.displaySch(path)
     with col3:      
-        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0.01, max_value=1000., value=40., step=10.,
+        Param['Vi'] = st.number_input("Voltage input [V]", min_value=0.01, max_value=1000., value=24., step=2.,
                                       key='Vi')
-        Param['Ro'] = st.number_input("Load resistor [Ω]", min_value=0.01, max_value=1e6, value=10., step=10.,
+        Param['Ro'] = st.number_input("Load resistor [Ω]", min_value=0.01, max_value=1e6, value=10., step=5.,
                                      key='R')
         if topology_type == "DAB":
-            Param['Lk'] = st.number_input("Series inductor [μH]", min_value=0.001, max_value=1000., value=12., step=1., key='Lk')*1e-6
+            Param['Lk'] = st.number_input("Series inductor [μH]", min_value=0.001, max_value=1000., value=10., step=1., key='Lk')*1e-6
     with col4:
-        Param['fsw'] = st.number_input("Switching frequency [kHz]", min_value=50., max_value=500., value=100., step=1.,
+        Param['fsw'] = st.number_input("Switching frequency [kHz]", min_value=50., max_value=500., value=200., step=10.,
                                        key='fsw')*1e3
         if topology_type == "DAB":
             Param['ph'] = st.number_input("Phase shift [deg]", min_value=0., max_value=360., value=90., step=1.,
@@ -81,18 +81,18 @@ def SimulationPLECS(m):
         # Display geometry
         mag.displaySch(path)   
     with col3: 
-        Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0.01, max_value=1000., value=50., step=1.,
+        Param_mag['lc'] = st.number_input("Length of core [mm]", min_value=0.01, max_value=1000., value=103., step=1.,
                                           key='Lc')*1e-3
-        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0.01, max_value=1000., value=100., step=1.,
+        Param_mag['Ac'] = st.number_input("Cross section [mm2]", min_value=0.01, max_value=1000., value=96., step=1.,
                                           key='Ac')*1e-6
     with col4:    
-        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0.0001, max_value=1000., value=0.1, step=0.01,
+        Param_mag['lg'] = st.number_input("Length of gap [mm]", min_value=0.0001, max_value=1000., value=0.5, step=0.01,
                                           key='lg')*1e-3
     
-        Param_mag['Np'] = st.number_input("Turns number primary", min_value=0., max_value=100., value=10., step=1.,
+        Param_mag['Np'] = st.number_input("Turns number primary", min_value=0., max_value=100., value=8., step=1.,
                                           key='Np')
         if topology_type == "Flyback" or topology_type == "DAB":
-            Param_mag['Ns'] = st.number_input("Turns number secondary", min_value=0., max_value=100., value=10.,
+            Param_mag['Ns'] = st.number_input("Turns number secondary", min_value=0., max_value=100., value=8.,
                                               step=1., key='Ns')
 
     # Assign the inputs to the simulation parameter structure
@@ -123,8 +123,16 @@ def SimulationPLECS(m):
         }
         material = CoreMaterial(Material_type)
         material.setParam(Param_material)
-    with col2:
         st.write(f"Relative initial permeability: {material.mu_r}, for reference")
+        
+    with col2:
+        Temperature = st.number_input(
+            f'Temperature (C)',
+            0,
+            120,
+            25,
+            step=5,
+            key=f'temp {m}')
 
     # Simulate and obtain the data
     result = st.button("Simulate", key='Simulate')
@@ -150,11 +158,12 @@ def SimulationPLECS(m):
         flux_amp = (np.max(flux) - np.min(flux)) / 2
         
         duty = time_vector
-        bdata_pre = np.interp(np.linspace(0, 1, c.streamlit.n_nn), np.array(duty), np.array(flux))
+        bdata_pre = np.interp(np.linspace(0, 1, c.streamlit.n_nn+1), np.array(duty), np.array(flux))
+        bdata_pre = bdata_pre[:-1]
         bdata = bdata_pre - np.average(bdata_pre)
         hdata = BH_Transformer(material=Material_type, 
                                freq=Param['fsw'],
-                               temp=25.0, 
+                               temp=Temperature, 
                                bias=bias, 
                                bdata=bdata)
         loss = loss_BH(bdata, hdata, freq=Param['fsw'])

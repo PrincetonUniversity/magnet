@@ -27,6 +27,7 @@ def ui_intro(m):
         material = st.selectbox(
             f'Material:',
             material_list,
+            index=9,
             key=f'material {m}',
             index=9,
             help='select from a list of available materials')
@@ -57,7 +58,7 @@ def ui_intro(m):
             "Frequency [kHz]",
             10.0,
             1000.0,
-            100.0,
+            200.0,
             1.0,
             format='%f',
             key=f'freq {m}',
@@ -102,7 +103,7 @@ def ui_intro(m):
                 "Bac Amplitude [mT]",
                 10.0,
                 350.0,
-                100.0,
+                50.0,
                 1.0,
                 format='%f',
                 key=f'flux_sine {m}',
