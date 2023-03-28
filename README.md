@@ -7,6 +7,10 @@ Princeton MagNet is a large-scale dataset designed to enable researchers modelin
 
 Princeton MagNet is currently deployed at https://mag-net.princeton.edu/
 
+## MagNet Challenge
+
+[Download the Latest Version of the MagNet Handbook (03-13-2023)](magnetchallenge/handbook.pdf)
+
 ## Documentation
 
 The web application for Princeton MagNet uses the `magnet` package, a python package under development where most of
