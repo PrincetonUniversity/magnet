@@ -53,8 +53,8 @@ if __name__ == '__main__':
     
     function_select = st.sidebar.radio(
         'Select One:',
-        ('MagNet Challenge', 'MagNet AI', 'MagNet Database', 'MagNet Smartsheet',
-         'MagNet Simulation', 'MagNet Download', 'MagNet Tutorial', 'MagNet Help'),
+        ('MagNet AI', 'MagNet Database', 'MagNet Smartsheet',
+         'MagNet Simulation', 'MagNet Download', 'MagNet Tutorial', 'MagNet Challenge', 'MagNet Help'),
     )
     
     if 'n_material' not in st.session_state:
