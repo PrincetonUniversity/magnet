@@ -1,5 +1,5 @@
 [![Build](https://github.com/PrincetonUniversity/magnet/actions/workflows/main.yml/badge.svg)](https://github.com/PrincetonUniversity/magnet/actions/workflows/main.yml)
-![MagNet Logo](app/img/mclogo.jpg)
+![MC Logo](app/img/mclogo.jpg)
 
 “It’s time to Upgrade the Steinmetz Equation!”- The 2023 MagNet Challenge aims to upgrade the Steinmetz equation with the support of a massive amount of measurement data covering different materials across a wide range of frequencies, waveform shapes, and temperatures. We seek novel and elegant models or data-driven algorithms to tackle this challenge and advance the understanding about magnetic core characteristics. The challenge has the following two tracks:
 
