@@ -10,9 +10,10 @@ def ui_mc(m):
 
     st.title('2023 IEEE PELS-Google-Tesla-Princeton MagNet Challenge')
     st.header('[Sign-Up for Updates about MagNet Challenge](https://forms.gle/aAmcwB5G5kvaDvJB9)')
-    st.header('MagNet Handbook - 2023/03/01')
+    st.header('[MagNet Challenge Main Information Hub](https://www.princeton.edu/~minjie/magnet.html)')
+    st.header('MagNet Handbook - 2023-03-25')
     with open(os.path.join(STREAMLIT_ROOT, 'img', 'handbook.pdf'),"rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="1200" height="500" type="application/pdf"></iframe>'
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="1200" height="1000" type="application/pdf"></iframe>'
     st.markdown(pdf_display, unsafe_allow_html=True)
     st.markdown("""---""")
