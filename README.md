@@ -9,7 +9,7 @@ Princeton MagNet is currently deployed at https://mag-net.princeton.edu/
 
 ## MagNet Challenge
 
-[Download the Latest Version of the MagNet Handbook (03-13-2023)](app/img/handbook.pdf)
+[Download the Latest Version of the MagNet Handbook (03-25-2023)](magnetchallenge/handbook.pdf)
 
 ## Documentation
 
