@@ -9,15 +9,13 @@ Princeton MagNet is currently deployed at https://mag-net.princeton.edu/
 
 ## MagNet Challenge
 
-[Download the Latest Version of the MagNet Handbook (03-13-2023)](magnetchallenge/handbook.pdf)
+[Download the Latest Version of the MagNet Handbook (03-25-2023)](magnetchallenge/handbook.pdf)
 
 ## Documentation
 
 The web application for Princeton MagNet uses the `magnet` package, a python package under development where most of
 the functionality is exposed. Before `magnet` is released on PyPI, it can be installed using
 `pip install git+https://github.com/PrincetonUniversity/magnet`.
-
-API Documentation for `magnet` can be viewed online at [https://princetonuniversity.github.io/magnet/](https://princetonuniversity.github.io/magnet/)
 
 Please `pip install mag-net` and `pip install .` in the magnet folder before running streamlit.
 
