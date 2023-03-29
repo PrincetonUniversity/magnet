@@ -57,13 +57,7 @@ def ui_download_data(m, streamlit_root):
                     else:
                         st.subheader('Download data missing, please contact us')
                     st.write("""
-                    This .zip file contains a .txt file with information regarding the setup and core tested and three .csv files.
-    
-                    The .csv files contain the current and voltage waveforms saved from the oscilloscope. 
-                    Each row is a different measurement (i.e. a data point with a different frequency, flux density, etc.) 
-                    and each column is a sample. There are 10.000 samples per waveform. 
-    
-                    The sampling time, provided as a separate .csv file, is the same for each waveform (8 ns).
+                    This .zip file contains a .txt file with information regarding the setup and core tested and three .csv files. The .csv files contain the current and voltage waveforms saved from the oscilloscope. Each row is a different measurement time sequence for B or H waveform (i.e. an operation point with a different frequency, flux density, etc.) and each column is a time step sample (i.e., 10000 steps). There are 10,000 step samples per waveform. The sampling time, provided as a separate .csv file, is the same for each time sequence waveform (8 ns). A .csv file contains the information of the temperature where each time sequence is measured.
                     """)
                 with col2:
                     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_raw.jpg')), width=500)
@@ -84,12 +78,7 @@ def ui_download_data(m, streamlit_root):
                     else:
                         st.subheader('Download data missing, please contact us')
                     st.write("""
-                    This .zip file contains a .txt file contains information regarding the setup, core under test, and post-processing information.
-    
-                    Two .cvs file include the B and H waveform, where each row is a data point, and each column is a sample. 
-                    1024 samples are saved per data point. Additionally, a .csv file contains the information of the sampling time, 
-                    where each row corresponds to the data-point of the B and H files. 
-                    In this case, the sampling time depends on the frequency of the waveform, as a single cycle is provided.
+                    This .zip file contains a .txt file contains information regarding the setup, core under test, and post-processing information. Two .cvs file include the B and H waveform, where each row is a 1024 step time sequence, and each column is a sample point. 1024 samples are saved per time sequence. Additionally, a .csv file contains the information of the sampling time, where each row corresponds to the data-point of the B and H files. In this case, the sampling time depends on the frequency of the waveform, as a single cycle is provided. A .csv file contains the information of the temperature where each time sequence is measured.
                         """)
                 with col2:
                     st.image(Image.open(os.path.join(STREAMLIT_ROOT, 'img', 'download_single.jpg')), width=500)
