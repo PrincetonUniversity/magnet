@@ -230,7 +230,7 @@ def ui_core_loss_predict(m):
     # Variables that are function of the sliders, different type depending on the excitation
 
     if excitation == 'Arbitrary':
-        loss = core_loss_arbitrary(material, freq, flux_vector, temp, bias, duty_vector)
+        loss, not_extrapolated = core_loss_arbitrary(material, freq, flux_vector, temp, bias, duty_vector)
     else:
         loss, not_extrapolated = core_loss_default(material, freq, flux, temp, bias, duty, batched = False)
 
