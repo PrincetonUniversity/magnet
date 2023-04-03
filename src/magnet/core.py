@@ -113,7 +113,9 @@ def core_loss_arbitrary(material, freq, flux, temp, bias, duty):
     bdata = bdata_pre - np.average(bdata_pre)
     hdata = BH_Transformer(material, freq, temp, bias, bdata)
     core_loss = loss_BH(bdata, hdata, freq)
-    return core_loss
+    not_extrapolated = [False for i in range(len(bdata))]
+
+    return core_loss, not_extrapolated
 
 
 def BH_Transformer(material, freq, temp, bias, bdata):
