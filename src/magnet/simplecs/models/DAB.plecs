@@ -1069,7 +1069,7 @@ Plecs {
       Flipped       on
       Parameter {
         Variable      "K"
-        Value         "1/(676e-6*2)"
+        Value         "1/(Ac)"
         Show          off
       }
       Parameter {
