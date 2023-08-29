@@ -211,8 +211,8 @@ def ui_intro(m):
             st.markdown("""---""")
             st.subheader('How does MagNet AI work?')
             st.caption('from data acquisition, error analysis, data visualization, to machine learning framework')
-            st.write('- Diego Serrano et al., "Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340989.v2) - Why MagNet AI?')
-            st.write('- Haoran Li et al., "Machine Learning Framework for Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340998.v2) - How MagNet AI?')
+            st.write('- D. Serrano et al., "Why MagNet: Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3291084. [Paper](https://ieeexplore.ieee.org/document/10169101)')
+            st.write('- H. Li et al., "How MagNet: Machine Learning Framework for Modeling Power Magnetic Material Characteristics," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3309232. [Paper](https://ieeexplore.ieee.org/document/10232863)')
 
             
             if bias < 0:
