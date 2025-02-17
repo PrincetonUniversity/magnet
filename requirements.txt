@@ -9,3 +9,5 @@ torch==1.9.0
 scipy==1.7.1
 tables==3.6.1
 streamlit-analytics
+altair==4.1.0
+setuptools

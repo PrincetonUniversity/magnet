@@ -26,8 +26,8 @@ jobs:
       - name: Setup pyenv
         uses: "gabrielfalcao/pyenv-action@v10"
         with:
-          default: 3.7.9
-          versions: 3.8.6, 3.9.0
+          default: 3.9.21
+          versions: 3.9.21
 
       - name: Install global pyenv dependencies
         run: |
