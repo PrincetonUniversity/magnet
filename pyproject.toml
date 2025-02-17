@@ -1,6 +1,42 @@
 [build-system]
-requires = ["setuptools>=40.8.0", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=61.0", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "src/magnet/_version.py"
+
+[project]
+name = "mag-net"
+description = ""
+requires-python = ">=3.9"
+readme = "README.md"
+
+dependencies = [
+    "altair==4.1.0",
+    "json5==0.9.5",
+    "numpy==1.22.0",
+    "pandas==1.2.4",
+    "plotly==4.14.3",
+    "setuptools",
+    "scipy==1.7.1",
+    "streamlit==1.1.0",
+    "streamlit-analytics",
+    "tables==3.6.1",
+    "torch==1.9.0"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "numpydoc",
+    "pytest",
+    "sphinx",
+    "sphinxcontrib-bibtex<2.0.0",
+    "sphinx-rtd-theme" 
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+magnet = ["data/*"]
