@@ -26,6 +26,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
+      - name: Create/activate venv
+        run: |
+          uv venv --python 3.9
+          source venv/bin/activate
+
       - name: Test with nox
         run: |
           uv pip install nox
