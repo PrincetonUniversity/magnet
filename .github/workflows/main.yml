@@ -12,32 +12,26 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           lfs: true
           submodules: recursive
 
-      - name: Setup pyenv
-        uses: "gabrielfalcao/pyenv-action@v10"
-        with:
-          default: 3.9
-          versions: 3.9
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
-      - name: Install global pyenv dependencies
+      - name: Create/activate venv
         run: |
-          python3 -m pip install --upgrade pip 
-          python3 -m pip install --upgrade virtualenv
-          python3 -m pip install --upgrade nox 
+          uv venv --python 3.9
+          source .venv/bin/activate
 
-      - name: Warm up virtualenv cache
-        run: |
-          ./virtualenv_warmup.sh
       - name: Test with nox
         run: |
-          python3 -m nox 
+          uv pip install nox
+          uv run python -m nox 
