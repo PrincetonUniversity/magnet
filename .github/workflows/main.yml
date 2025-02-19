@@ -34,4 +34,4 @@ jobs:
       - name: Test with nox
         run: |
           uv pip install nox
-          python -m nox 
+          uv run python -m nox 
