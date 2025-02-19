@@ -20,6 +20,7 @@ def SimulationPLECS(m):
             topology_list,
             key='Topology'
         )
+   
         
     # Circuit model instance
     circuit = CircuitModel(topology_type)
@@ -103,7 +104,7 @@ def SimulationPLECS(m):
     # Steinmetz Parameters
     st.header("Magnetic Material")
 
-    col1, col2 = st.columns(2)
+    col1, col2 =  st.columns(2)
     with col1:
         Material_type = st.selectbox(
             "Material:",
@@ -133,8 +134,22 @@ def SimulationPLECS(m):
             25,
             step=5,
             key=f'temp {m}')
+    
+    # Select a backend
+    col1, col2 =  st.columns(2)
+
+    with col1:
+        # Select Backend
+        backend_list = ("Plecs", "Python")
+        backend_type = st.selectbox(
+            "Backend:",
+            backend_list,
+            key='Backend'
+        )
+
 
     # Simulate and obtain the data
+
     result = st.button("Simulate", key='Simulate')
 
     circuit.setMagModel(mag, material)
@@ -143,8 +158,11 @@ def SimulationPLECS(m):
         
         
         st.header("Simulation Results")
-        
-        flux, field, time = circuit.steadyRun(path)
+       
+        if backend_type == "Plecs":
+            flux, field, time = circuit.steadyRun(path)
+        elif backend_type == "Python":
+            flux, field, time = circuit.steadyRun_py(path)
         
         flux = np.array(flux)
         time = np.array(time)
@@ -152,15 +170,21 @@ def SimulationPLECS(m):
         
         temp = (time_vector <= 1)
         flux = flux[temp]
+
+        field = np.array(field)
+        field = field[temp]
+        
         bias = (np.max(field) + np.min(field)) / 2
         time_vector = time_vector[temp]
-        
+           
         flux_amp = (np.max(flux) - np.min(flux)) / 2
         
         duty = time_vector
         bdata_pre = np.interp(np.linspace(0, 1, c.streamlit.n_nn+1), np.array(duty), np.array(flux))
         bdata_pre = bdata_pre[:-1]
+
         bdata = bdata_pre - np.average(bdata_pre)
+
         hdata = BH_Transformer(material=Material_type, 
                                freq=Param['fsw'],
                                temp=Temperature, 

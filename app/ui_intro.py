@@ -211,8 +211,8 @@ def ui_intro(m):
             st.markdown("""---""")
             st.subheader('How does MagNet AI work?')
             st.caption('from data acquisition, error analysis, data visualization, to machine learning framework')
-            st.write('- Diego Serrano et al., "Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340989.v2) - Why MagNet AI?')
-            st.write('- Haoran Li et al., "Machine Learning Framework for Modeling Power Magnetic Material Characteristics," [Paper](https://doi.org/10.36227/techrxiv.21340998.v2) - How MagNet AI?')
+            st.write('- D. Serrano et al., "Why MagNet: Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3291084. [Paper](https://ieeexplore.ieee.org/document/10169101)')
+            st.write('- H. Li et al., "How MagNet: Machine Learning Framework for Modeling Power Magnetic Material Characteristics," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3309232. [Paper](https://ieeexplore.ieee.org/document/10232863)')
 
             
             if bias < 0:
@@ -368,18 +368,13 @@ def ui_intro(m):
 
     st.header('How to Cite')
     st.write("""
-        If you find MagNet as useful, please cite the following:
-            
-        - H. Li et al., "How MagNet: Machine Learning Framework for Modeling Power Magnetic Material Characteristics," TechRxiv. Preprint. https://doi.org/10.36227/techrxiv.21340998.v3. [Paper](https://doi.org/10.36227/techrxiv.21340998.v3)
-        
-        - D. Serrano et al., "Why MagNet: Quantifying the Complexity of Modeling Power Magnetic Material Characteristics", TechRxiv. Preprint. https://doi.org/10.36227/techrxiv.21340989.v3. [Paper](https://doi.org/10.36227/techrxiv.21340989.v3)
+        If you find MagNet as useful, please cite the following papers as a trilogy:
 
-        - D. Serrano et al., "Neural Network as Datasheet: Modeling B-H Loops of Power Magnetics with Sequence-to-Sequence LSTM Encoder-Decoder Architecture," IEEE 23rd Workshop on Control and Modeling for Power Electronics (COMPEL), Tel Aviv, Israel, 2022. [Paper](https://ieeexplore.ieee.org/document/9829998)
+        - D. Serrano et al., "Why MagNet: Quantifying the Complexity of Modeling Power Magnetic Material Characteristics," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3291084. [Paper](https://ieeexplore.ieee.org/document/10169101)
 
-        - H. Li, D. Serrano, T. Guillod, E. Dogariu, A. Nadler, S. Wang, M. Luo, V. Bansal, Y. Chen, C. R. Sullivan, and M. Chen, "MagNet: an Open-Source Database for Data-Driven Magnetic Core Loss Modeling," IEEE Applied Power Electronics Conference (APEC), Houston, USA, 2022. [Paper](https://ieeexplore.ieee.org/document/9773372)
+        - H. Li et al., "How MagNet: Machine Learning Framework for Modeling Power Magnetic Material Characteristics," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3309232. [Paper](https://ieeexplore.ieee.org/document/10232863)
 
-        - E. Dogariu, H. Li, D. Serrano, S. Wang, M. Luo and M. Chen, "Transfer Learning Methods for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Cartagena de Indias, Colombia, 2021. [Paper](https://ieeexplore.ieee.org/document/9646065)
+        - H. Li, D. Serrano, S. Wang and M. Chen, "MagNet-AI: Neural Network as Datasheet for Magnetics Modeling and Material Recommendation," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2023.3309233. [Paper](https://ieeexplore.ieee.org/document/10232911)
 
-        - H. Li, S. R. Lee, M. Luo, C. R. Sullivan, Y. Chen and M. Chen, "MagNet: A Machine Learning Framework for Magnetic Core Loss Modeling," IEEE Workshop on Control and Modeling of Power Electronics (COMPEL), Aalborg, Denmark, 2020. [Paper](https://ieeexplore.ieee.org/document/9265869)
     """)
     st.markdown("""---""")

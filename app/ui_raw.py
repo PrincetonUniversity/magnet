@@ -25,7 +25,10 @@ def ui_download_data(m, streamlit_root):
         selection = st.selectbox(
             f'Type of data:',
             ('Voltage and Current Data', 'Single Cycle B and H'),
-            key=f'data {m}')
+            key=f'data {m}',
+            index=1)
+        
+    st.warning("For MagNet Challenge Participants, please be sure to download the \"Single Cycle B and H\" files.")
 
     if material != '-':
 
@@ -37,6 +40,7 @@ def ui_download_data(m, streamlit_root):
             st.write(metadata['info_setup'])
             st.write('Data-processing information:')
             st.write(metadata['info_processing'])
+            
 
         st.write('Units: V [V], I [A], B [T], H [A/m], Ts [s], Temp [C]')
 
