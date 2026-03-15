@@ -1,0 +1,719 @@
+Plecs {
+  Name          "PU_LLG_V3"
+  Version       "4.8"
+  CircuitModel  "ContStateSpace"
+  StartTime     "0.0"
+  TimeSpan      "0.1"
+  Timeout       ""
+  Solver        "auto"
+  MaxStep       "1e-6"
+  InitStep      "-1"
+  FixedStep     "1e-3"
+  Refine        "1"
+  ZCStepSize    "1e-9"
+  RelTol        "1e-3"
+  AbsTol        "-1"
+  TurnOnThreshold "0"
+  NonIdealSwitchResistance "1"
+  SyncFixedStepTasks "2"
+  UseSingleCommonBaseRate "2"
+  LossVariableLimitExceededMsg "3"
+  NegativeSwitchLossMsg "3"
+  DivisionByZeroMsg "3"
+  DatatypeOverflowMsg "2"
+  DatatypeInheritanceConflictMsg "1"
+  ContSampleTimeConflictMsg "1"
+  StiffnessDetectionMsg "2"
+  MaxConsecutiveZCs "1000"
+  AlgebraicLoopWithStateMachineMsg "3"
+  AssertionAction "1"
+  FixedPointDatatypeOverride "1"
+  InitializationCommands ""
+  InitialState  "1"
+  SystemState   ""
+  TaskingMode   "1"
+  TaskConfigurations ""
+  CodeGenParameterInlining "2"
+  CodeGenFloatingPointFormat "2"
+  CodeGenAbsTimeUsageMsg "3"
+  CodeGenBaseName ""
+  CodeGenOutputDir ""
+  CodeGenExtraOpts ""
+  CodeGenTarget "Generic"
+  CodeGenTargetSettings ""
+  ExtendedMatrixPrecision "1"
+  MatrixSignificanceCheck "2"
+  RemoveUnusedStateSpaceOutputs "1"
+  EnableStateSpaceSplitting "2"
+  DisplayStateSpaceSplitting "1"
+  DiscretizationMethod "2"
+  ExternalModeSettings ""
+  AlgebraicLoopMethod "1"
+  AlgebraicLoopTolerance "1e-6"
+  ScriptsDialogGeometry "[1057 575 446 243]"
+  ScriptsDialogSplitterPos "100"
+  Terminal {
+    Type          Output
+    Index         "1"
+  }
+  Terminal {
+    Type          Output
+    Index         "2"
+  }
+  Schematic {
+    Location      [0, 27; 1920, 994]
+    ZoomFactor    1.49863
+    SliderPosition [0, 0]
+    ShowBrowser   off
+    BrowserWidth  100
+    Component {
+      Type          Ammeter
+      Name          "*"
+      Show          on
+      Position      [660, 285]
+      Direction     up
+      Flipped       off
+      LabelPosition westSouthwest
+    }
+    Component {
+      Type          SignalDemux
+      Name          "Demux1"
+      Show          off
+      Position      [795, 285]
+      Direction     right
+      Flipped       on
+      LabelPosition south
+      Parameter {
+        Variable      "Width"
+        Value         "3"
+        Show          off
+      }
+    }
+    Component {
+      Type          XYPlot
+      Name          " B-H"
+      Show          on
+      Position      [915, 280]
+      Direction     up
+      Flipped       off
+      LabelPosition south
+      Location      [0, 27; 1920, 1066]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAAvsAAAAQAFoAbwBvA"
+"G0AQQByAGUAYQAAAAAA/////wAAADQA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwIAAAGuAA"
+"ACBAAAAMgAAAB4AAAAAwAAB4AAAABm/AEAAAAB+wAAABIAVABpAG0AZQBSAGEAbgBnAGUBAAAAAAA"
+"AB4AAAAB4AP///wAAB4AAAAOKAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBv"
+"AGwAQgBhAHIBAAAAAP////8AAAAAAAAAAA=="
+      SavedViews    "AAAAAgAAAAEAAAAYAFMAYQB2AGUAZAAgAHYAaQBlAHcAIAAxwGkAAAAAA"
+"ABAaQAAAAAAAAAAAAEAf/gAAAAAAAB/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+      HeaderState   ""
+      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      TimeRange     "0.0"
+      ShownPeriods  "1"
+      Open          "0"
+      Ts            "-1"
+      SampleLimit   "0"
+      XAxisLabel    "H Field [A/m]"
+      AspectRatioX  "-1"
+      AspectRatioY  "-1"
+      PlotStyle     "1"
+      ShowLegend    "1"
+      Axis {
+        Name          "B-H Loop"
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        AxisLabel     "B Field [T]"
+      }
+      Axis {
+        Name          ""
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        AxisLabel     "H Field [A/m]"
+      }
+    }
+    Component {
+      Type          CScript
+      Name          "LLG V1"
+      Show          on
+      Position      [735, 285]
+      Direction     up
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "DialogGeometry"
+        Value         "[0 22 1920 1009]"
+        Show          off
+      }
+      Parameter {
+        Variable      "NumInputs"
+        Value         "1"
+        Show          off
+      }
+      Parameter {
+        Variable      "NumOutputs"
+        Value         "3"
+        Show          off
+      }
+      Parameter {
+        Variable      "NumContStates"
+        Value         "3"
+        Show          off
+      }
+      Parameter {
+        Variable      "NumDiscStates"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "NumZCSignals"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "DirectFeedthrough"
+        Value         "1"
+        Show          off
+      }
+      Parameter {
+        Variable      "Ts"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "TerminalBasedSampleTimes"
+        Value         "1"
+        Show          off
+      }
+      Parameter {
+        Variable      "Parameters"
+        Value         "Ms, alpha, gamma, mu0, Hani_z, Hani_y, f_ani, H0"
+        Show          off
+      }
+      Parameter {
+        Variable      "LangStandard"
+        Value         "2"
+        Show          off
+      }
+      Parameter {
+        Variable      "GnuExtensions"
+        Value         "1"
+        Show          off
+      }
+      Parameter {
+        Variable      "RuntimeCheck"
+        Value         "2"
+        Show          off
+      }
+      Parameter {
+        Variable      "HighlightLevel"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Declarations"
+        Value         "#include <math.h>\n"
+"\n"
+"#define PI 3.14159265358979323846\n"
+"\n"
+"#define IDX_MX 0\n"
+"#define IDX_MY 1\n"
+"#define IDX_MZ 2\n"
+"\n"
+"// Parameter order: Ms, alpha, gamma, mu0, Hani_z, Hani_y, f_ani, H0\n"
+"#define Ms      ParamRealData(0,0)\n"
+"#define alpha   ParamRealData(1,0)\n"
+"#define gamma   ParamRealData(2,0)\n"
+"#define mu0     ParamRealData(3,0)\n"
+"#define Hani_zP ParamRealData(4,0)\n"
+"#define Hani_yP ParamRealData(5,0)\n"
+"#define f_ani   ParamRealData(6,0)\n"
+"#define H0      ParamRealData(7,0)\n"
+"\n"
+"static void cross3(const double a[3], const double b[3], double c[3])\n"
+"{\n"
+"    c[0] = a[1]*b[2] - a[2]*b[1];\n"
+"    c[1] = a[2]*b[0] - a[0]*b[2];\n"
+"    c[2] = a[0]*b[1] - a[1]*b[0];\n"
+"}\n"
+"\n"
+"static double clamp(double x, double lo, double hi)\n"
+"{\n"
+"    return (x < lo) ? lo : (x > hi) ? hi : x;\n"
+"}\n"
+        Show          off
+      }
+      Parameter {
+        Variable      "StartFcn"
+        Value         "\n"
+"ContState(IDX_MX) = 0;\n"
+"ContState(IDX_MY) = 0;\n"
+"ContState(IDX_MZ) = Ms;\n"
+        Show          off
+      }
+      Parameter {
+        Variable      "OutputFcn"
+        Value         base64 "CmRvdWJsZSBIX2FwcF96ID0gSW5wdXRTaWduYWwoMCwwKTsK"
+"CmRvdWJsZSBNeiA9IENvbnRTdGF0ZShJRFhfTVopOwpkb3VibGUgQnogPSBtdTAgKiAoSF9hcHBfe"
+"iArIE16KTsgICAvLyBvciBtdTAqKEhfZWZmX3ogKyBNeikgaWYgdGhhdOKAmXMgeW91ciBpbnRlbn"
+"QKCmRvdWJsZSBNeCA9IENvbnRTdGF0ZShJRFhfTVgpOwpkb3VibGUgTXkgPSBDb250U3RhdGUoSUR"
+"YX01ZKTsKCmRvdWJsZSBNbWFnID0gc3FydChNeCpNeCArIE15Kk15ICsgTXoqTXopICsgMWUtMTI7"
+"CmRvdWJsZSBtel9ub3JtID0gTXogLyBNbWFnOwoKT3V0cHV0U2lnbmFsKDAsMCkgPSBIX2FwcF96O"
+"wpPdXRwdXRTaWduYWwoMCwxKSA9IEJ6OwpPdXRwdXRTaWduYWwoMCwyKSA9IG16X25vcm07Cg=="
+        Show          off
+      }
+      Parameter {
+        Variable      "UpdateFcn"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "DerivativeFcn"
+        Value         "\n"
+"double H_app_z = InputSignal(0,0);\n"
+"\n"
+"double Ms_eff = fmax(fabs(Ms), 1e-12);\n"
+"\n"
+"// ---- Magnetization ----\n"
+"double Mx = ContState(IDX_MX);\n"
+"double My = ContState(IDX_MY);\n"
+"double Mz = ContState(IDX_MZ);\n"
+"\n"
+"double Mmag = sqrt(Mx*Mx + My*My + Mz*Mz) + 1e-12;\n"
+"double mz = Mz / Mmag;\n"
+"\n"
+"// ---- Uniaxial anisotropy ----\n"
+"double H_ani_x = 0.0;\n"
+"double H_ani_y = 0.0;\n"
+"double H_ani_z = Hani_zP * mz;\n"
+"\n"
+"double H_eff[3];\n"
+"H_eff[0] = H_ani_x;\n"
+"H_eff[1] = Hani_yP + H_ani_y;\n"
+"H_eff[2] = H_app_z + H_ani_z;\n"
+"\n"
+"// ---- LLG ----\n"
+"double M[3] = { Mx, My, Mz };\n"
+"double MxH[3], MxMxH[3];\n"
+"\n"
+"cross3(M, H_eff, MxH);\n"
+"cross3(M, MxH, MxMxH);\n"
+"\n"
+"double a = alpha;\n"
+"double pref = -gamma * mu0 / (1.0 + a*a);\n"
+"double c1 = pref;\n"
+"double c2 = pref * (a / Ms_eff);\n"
+"\n"
+"ContDeriv(IDX_MX) = c1*MxH[0] + c2*MxMxH[0];\n"
+"ContDeriv(IDX_MY) = c1*MxH[1] + c2*MxMxH[1];\n"
+"ContDeriv(IDX_MZ) = c1*MxH[2] + c2*MxMxH[2];\n"
+        Show          off
+      }
+      Parameter {
+        Variable      "TerminateFcn"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "StoreCustomStateFcn"
+        Value         ""
+        Show          off
+      }
+      Parameter {
+        Variable      "RestoreCustomStateFcn"
+        Value         ""
+        Show          off
+      }
+    }
+    Component {
+      Type          Scope
+      Name          "Mag"
+      Show          on
+      Position      [915, 345]
+      Direction     up
+      Flipped       off
+      LabelPosition south
+      Location      [0, 27; 1920, 1068]
+      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
+"G0AQQByAGUAYQAAAAAA/////wAAADQA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
+"///wAAAGYA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABmAP///wAAAAMAAAAAAAAAAPw"
+"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABQAP///wAAB4AAAAP2AAAA"
+"BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
+"AAAAA=="
+      SavedViews    "AAAAAgAAAAA="
+      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAB"
+"wAAAGQAAAAGAAAAZAAAAAUAAABkAAAABAAAAGQAAAAJAAAAZAAAAAgAAABkAAAAAwAAAGQAAAACAA"
+"AAZAAAAAEAAABkAAAAjwAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAABrAAA"
+"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
+"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
+"AAkAAAAAQAAAAAAAAPoAAAAACQ="
+      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      Axes          "1"
+      TimeRange     "0.0"
+      ScrollingMode "1"
+      SingleTimeAxis "1"
+      Open          "0"
+      Ts            "-1"
+      SampleLimit   "0"
+      XAxisLabel    "Time / s"
+      ShowLegend    "1"
+      Axis {
+        Name          ""
+        AutoScale     1
+        MinValue      0
+        MaxValue      1
+        Signals       {}
+        SignalTypes   [ ]
+        Untangle      0
+        KeepBaseline  off
+        BaselineValue 0
+      }
+      Fourier {
+        SingleXAxis       on
+        AxisLabel         "Frequency / Hz"
+        Scaling           0
+        PhaseDisplay      0
+        ShowFourierLegend off
+        Axis {
+          Name          ""
+          AutoScale     1
+          MinValue      0
+          MaxValue      1
+          Signals       {}
+          Untangle      0
+          KeepBaseline  off
+          BaselineValue 0
+        }
+      }
+    }
+    Component {
+      Type          Output
+      Name          "H"
+      Show          on
+      Position      [860, 250]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Index"
+        Value         "1"
+        Show          on
+      }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
+      }
+    }
+    Component {
+      Type          Output
+      Name          "B"
+      Show          on
+      Position      [860, 310]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Index"
+        Value         "2"
+        Show          on
+      }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
+      }
+    }
+    Component {
+      Type          CurrentSource
+      Name          "I1"
+      Show          on
+      Position      [595, 285]
+      Direction     down
+      Flipped       on
+      LabelPosition east
+      Parameter {
+        Variable      "DiscretizationBehavior"
+        Value         "2"
+        Show          off
+      }
+      Parameter {
+        Variable      "StateSpaceInlining"
+        Value         "1"
+        Show          off
+      }
+    }
+    Component {
+      Type          SineGenerator
+      Name          "Sine Wave2"
+      Show          on
+      Position      [345, 225]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Amplitude"
+        Value         "I0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Bias"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Frequency"
+        Value         "f_ani"
+        Show          off
+      }
+      Parameter {
+        Variable      "Phase"
+        Value         "0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Units"
+        Value         "3"
+        Show          off
+      }
+    }
+    Component {
+      Type          TriangleGenerator
+      Name          "Triangular Wave"
+      Show          on
+      Position      [345, 285]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Min"
+        Value         "-I0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Max"
+        Value         "I0"
+        Show          off
+      }
+      Parameter {
+        Variable      "f"
+        Value         "f_ani"
+        Show          off
+      }
+      Parameter {
+        Variable      "DutyCycle"
+        Value         "0.5"
+        Show          off
+      }
+      Parameter {
+        Variable      "Delay"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Constant
+      Name          "SW"
+      Show          on
+      Position      [540, 220]
+      Direction     up
+      Flipped       on
+      LabelPosition east
+      Frame         [-10, -10; 10, 10]
+      Parameter {
+        Variable      "Value"
+        Value         "SW"
+        Show          off
+      }
+      Parameter {
+        Variable      "DataType"
+        Value         "10"
+        Show          off
+      }
+    }
+    Component {
+      Type          TriangleGenerator
+      Name          "Triangular Wave2"
+      Show          on
+      Position      [345, 350]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Min"
+        Value         "-2*I0"
+        Show          off
+      }
+      Parameter {
+        Variable      "Max"
+        Value         "2*I0"
+        Show          off
+      }
+      Parameter {
+        Variable      "f"
+        Value         "f_ani"
+        Show          off
+      }
+      Parameter {
+        Variable      "DutyCycle"
+        Value         "0.5"
+        Show          off
+      }
+      Parameter {
+        Variable      "Delay"
+        Value         "0"
+        Show          off
+      }
+    }
+    Component {
+      Type          Saturation
+      Name          "Saturation"
+      Show          on
+      Position      [425, 350]
+      Direction     right
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "UpperLimit"
+        Value         "I0"
+        Show          off
+      }
+      Parameter {
+        Variable      "LowerLimit"
+        Value         "-I0"
+        Show          off
+      }
+    }
+    Component {
+      Type          MultiportSignalSwitch
+      Name          "Multiport Signal Switch"
+      Show          on
+      Position      [540, 285]
+      Direction     up
+      Flipped       off
+      LabelPosition south
+      Parameter {
+        Variable      "Width"
+        Value         "3"
+        Show          off
+      }
+      Parameter {
+        Variable      "Default"
+        Value         "1"
+        Show          off
+      }
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "LLG V1"
+      SrcTerminal   2
+      DstComponent  "Demux1"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Demux1"
+      SrcTerminal   4
+      Points        [810, 295; 810, 345]
+      DstComponent  "Mag"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Demux1"
+      SrcTerminal   2
+      Points        [825, 275]
+      Branch {
+        DstComponent  " B-H"
+        DstTerminal   2
+      }
+      Branch {
+        Points        [825, 250]
+        DstComponent  "H"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "*"
+      SrcTerminal   3
+      DstComponent  "LLG V1"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Demux1"
+      SrcTerminal   3
+      Points        [825, 285]
+      Branch {
+        DstComponent  " B-H"
+        DstTerminal   1
+      }
+      Branch {
+        Points        [825, 310]
+        DstComponent  "B"
+        DstTerminal   1
+      }
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "I1"
+      SrcTerminal   2
+      DstComponent  "*"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Wire
+      SrcComponent  "I1"
+      SrcTerminal   1
+      DstComponent  "*"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Triangular Wave2"
+      SrcTerminal   1
+      DstComponent  "Saturation"
+      DstTerminal   1
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Sine Wave2"
+      SrcTerminal   1
+      Points        [475, 225; 475, 275]
+      DstComponent  "Multiport Signal Switch"
+      DstTerminal   3
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Triangular Wave"
+      SrcTerminal   1
+      DstComponent  "Multiport Signal Switch"
+      DstTerminal   4
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Saturation"
+      SrcTerminal   2
+      Points        [475, 350; 475, 295]
+      DstComponent  "Multiport Signal Switch"
+      DstTerminal   5
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "SW"
+      SrcTerminal   1
+      DstComponent  "Multiport Signal Switch"
+      DstTerminal   2
+    }
+    Connection {
+      Type          Signal
+      SrcComponent  "Multiport Signal Switch"
+      SrcTerminal   1
+      DstComponent  "I1"
+      DstTerminal   3
+    }
+  }
+}

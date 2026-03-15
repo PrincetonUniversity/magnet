@@ -11,6 +11,7 @@ from ui_raw import ui_download_data
 from ui_faq import ui_faq
 from ui_intro import ui_intro
 from ui_tutorial import ui_tutorial
+from ui_physics import ui_physics
 from ui_mc import ui_mc
 from magnet.simplecs.simfunctions import SimulationPLECS
 from magnet.constants import material_list
@@ -20,15 +21,6 @@ STREAMLIT_ROOT = os.path.dirname(__file__)
 
 
 def ui_multiple_materials(fn, n=1, *args, **kwargs):
-    """
-    Display multiple instances of input UI widgets, one for each 'material'
-      denoted by 'A', 'B', ...
-    :param fn: Function or callable that renders UI elements for Streamlit
-      This function should take the material identifier ('A', 'B', ..) as the
-      first input.
-    :param n: Number of times to call `fn`
-    :return: None
-    """
     for i in range(int(n)):
         fn(chr(ord('A') + i), *args, **kwargs)
 
@@ -54,7 +46,7 @@ if __name__ == '__main__':
     function_select = st.sidebar.radio(
         'Select One:',
         ('MagNet AI', 'MagNet Database', 'MagNet Smartsheet',
-         'MagNet Simulation', 'MagNet Download', 'MagNet Tutorial', 'MagNet Challenge', 'MagNet Help'),
+         'MagNet Simulation', 'MagNet Physics', 'MagNet Download', 'MagNet Tutorial', 'MagNet Challenge', 'MagNet Help'),
     )
     
     if 'n_material' not in st.session_state:
@@ -91,6 +83,10 @@ if __name__ == '__main__':
     if function_select == 'MagNet Challenge':
         ui_multiple_materials(ui_mc)
         st.session_state.n_material = 1  # Resets the number of plots
+
+    if function_select == 'MagNet Physics':
+        ui_multiple_materials(ui_physics)
+        st.session_state.n_material = 1  # Resets the number of plots
     
     if function_select == 'MagNet Help':
         ui_multiple_materials(ui_faq)
@@ -115,6 +111,7 @@ if __name__ == '__main__':
     contributor('Haoran Li', 'haoranli@princeton.edu')
     contributor('Diego Serrano', 'ds9056@princeton.edu')
     contributor('Shukai Wang', 'sw0123@princeton.edu')
+    contributor('Davit Grigoryan', 'dg1210@princeton.edu')
     contributor('Thomas Guillod', 'thomas.paul.henri.guillod@dartmouth.edu')
     contributor('Min Luo', 'luo@plexim.com')
     contributor('Vineet Bansal', 'vineetb@princeton.edu')

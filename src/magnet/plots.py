@@ -105,7 +105,7 @@ def waveform_visualization_2axes(
             showlegend=False
         )
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def waveform_visualization(
@@ -124,7 +124,7 @@ def waveform_visualization(
         yaxis_title=y_title
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def plot_core_loss(
@@ -214,7 +214,7 @@ def plot_core_loss(
     if y_log:
         fig.update_yaxes(type='log')
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 # Points for the representation of the plots

@@ -295,7 +295,7 @@ def ui_intro(m):
                          zerolinewidth=1.5, zerolinecolor='gray')
         fig.update_yaxes(title_text="H - Field Strength [A/m]", color='firebrick', secondary_y=True, zeroline=False,
                          zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with col2:
         st.subheader('Effective B-H Loop')
@@ -327,7 +327,7 @@ def ui_intro(m):
 
         fig.update_yaxes(title_text="B - Flux Density [mT]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
         fig.update_xaxes(title_text="H - Field Strength [A/m]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with col1:
 
@@ -346,22 +346,23 @@ def ui_intro(m):
         st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
         st.subheader('Ranking among included materials:')
     
-        loss_test_list = pd.DataFrame(columns=['Material','Core Loss [kW/m^3]','This one'])
+        rows = []
         for material_test in material_list:
             hdata_test = BH_Transformer(material_test, freq, temp, bias, bdata)
             loss_test = loss_BH(bdata, hdata_test, freq)
             this_one = '   ✓' if (material_test==material) else ''
-            loss_test_list = loss_test_list.append({
-                'Material':material_test,
+            rows.append({
+                'Material': material_test,
                 'Core Loss [kW/m^3]': np.round(loss_test / 1e3, 2),
-                'This one': this_one}, ignore_index=True)
+                'This one': this_one})
+        loss_test_list = pd.DataFrame(rows)
         
         loss_test_list=loss_test_list.sort_values(by='Core Loss [kW/m^3]')
         
         # loss_test_list.index = [''] * len(loss_test_list) # hide index
         loss_test_list.index = range(1, len(loss_test_list) + 1) # re-index from 1 to 10
         
-        st.dataframe(data=loss_test_list, width=None, height=None)
+        st.dataframe(data=loss_test_list)
     
     
     st.markdown("""---""")
