@@ -100,7 +100,7 @@ def generate_B_waveform(freq_hz, amp, n_points, waveform="sine"):
     return t, B
 
 
-PLECS_MODEL = "PU_LLG_V3"
+PLECS_MODEL = "PU_LLG_V3_v4,5"
 
 
 def run_plecs_sim(server, H0, freq_hz, Hani_z, Hani_y, alpha,

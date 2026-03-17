@@ -1,12 +1,12 @@
 Plecs {
-  Name          "PU_LLG_V3"
+  Name          "PU_LLG_V3_v4,5"
   Version       "4.5"
   CircuitModel  "ContStateSpace"
   StartTime     "0.0"
-  TimeSpan      "0.1"
+  TimeSpan      "1.0"
   Timeout       ""
   Solver        "auto"
-  MaxStep       "1e-6"
+  MaxStep       "1e-3"
   InitStep      "-1"
   FixedStep     "1e-3"
   Refine        "1"
@@ -23,9 +23,7 @@ Plecs {
   MaxConsecutiveZCs "1000"
   AlgebraicLoopWithStateMachineMsg "3"
   AssertionAction "1"
-  InitializationCommands "Ms = 3.88e5;\nalpha = 10;\ngamma = 1.76e11;\nmu0 = 1"
-".2566e-6;\nHani_z = 60;\nHani_y = 60;\nf_ani = 70e3;\nH0 = 0;\nI0 = 200;\nSW "
-"= 1;\n"
+  InitializationCommands ""
   InitialState  "1"
   SystemState   ""
   TaskingMode   "1"
@@ -46,8 +44,8 @@ Plecs {
   ExternalModeSettings ""
   AlgebraicLoopMethod "1"
   AlgebraicLoopTolerance "1e-6"
-  ScriptsDialogGeometry "[1057 575 446 243]"
-  ScriptsDialogSplitterPos "100"
+  ScriptsDialogGeometry ""
+  ScriptsDialogSplitterPos "0"
   Terminal {
     Type          Output
     Index         "1"
@@ -56,9 +54,13 @@ Plecs {
     Type          Output
     Index         "2"
   }
+  Terminal {
+    Type          Output
+    Index         "3"
+  }
   Schematic {
-    Location      [0, 31; 1920, 998]
-    ZoomFactor    1.49863
+    Location      [-1920, 23; 0, 983]
+    ZoomFactor    1
     SliderPosition [0, 0]
     ShowBrowser   off
     BrowserWidth  100
@@ -66,7 +68,7 @@ Plecs {
       Type          SineGenerator
       Name          "Sine Wave"
       Show          on
-      Position      [485, 255]
+      Position      [610, 385]
       Direction     right
       Flipped       off
       Parameter {
@@ -99,7 +101,7 @@ Plecs {
       Type          TriangleGenerator
       Name          "Triangular Wave"
       Show          on
-      Position      [485, 355]
+      Position      [610, 485]
       Direction     right
       Flipped       off
       Parameter {
@@ -132,7 +134,7 @@ Plecs {
       Type          Saturation
       Name          "Saturation"
       Show          on
-      Position      [560, 355]
+      Position      [685, 485]
       Direction     right
       Flipped       off
       Parameter {
@@ -150,7 +152,7 @@ Plecs {
       Type          MultiportSignalSwitch
       Name          "Multiport Signal Switch"
       Show          on
-      Position      [685, 305]
+      Position      [810, 435]
       Direction     up
       Flipped       off
       Parameter {
@@ -168,7 +170,7 @@ Plecs {
       Type          TriangleGenerator
       Name          "Triangular Wave1"
       Show          on
-      Position      [485, 305]
+      Position      [610, 435]
       Direction     right
       Flipped       off
       Parameter {
@@ -201,7 +203,7 @@ Plecs {
       Type          Constant
       Name          "Constant"
       Show          on
-      Position      [650, 200]
+      Position      [780, 355]
       Direction     right
       Flipped       off
       Frame         [-10, -10; 10, 10]
@@ -222,7 +224,7 @@ Plecs {
       Type          CurrentSource
       Name          "I"
       Show          on
-      Position      [755, 305]
+      Position      [880, 435]
       Direction     down
       Flipped       on
       Parameter {
@@ -240,7 +242,7 @@ Plecs {
       Type          Ammeter
       Name          "Am1"
       Show          on
-      Position      [810, 305]
+      Position      [935, 435]
       Direction     up
       Flipped       off
     }
@@ -248,7 +250,7 @@ Plecs {
       Type          CScript
       Name          "C-Script"
       Show          on
-      Position      [880, 305]
+      Position      [1005, 435]
       Direction     up
       Flipped       off
       Parameter {
@@ -438,7 +440,7 @@ Plecs {
       Type          SignalDemux
       Name          "Demux"
       Show          off
-      Position      [935, 305]
+      Position      [1060, 435]
       Direction     right
       Flipped       on
       Parameter {
@@ -451,7 +453,7 @@ Plecs {
       Type          Resistor
       Name          "R1"
       Show          on
-      Position      [790, 355]
+      Position      [915, 485]
       Direction     up
       Flipped       off
       Parameter {
@@ -464,178 +466,62 @@ Plecs {
       Type          Ground
       Name          "Ground"
       Show          off
-      Position      [790, 400]
+      Position      [915, 530]
       Direction     up
       Flipped       off
     }
     Component {
-      Type          Scope
-      Name          "Scope"
+      Type          Output
+      Name          "Out1"
       Show          on
-      Position      [1045, 275]
-      Direction     up
+      Position      [1185, 405]
+      Direction     right
       Flipped       off
-      Location      [640, 276; 990, 503]
-      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
-"G0AQQByAGUAYQAAAAAA/////wAAADQA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
-"///wAAAGYA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABmAP///wAAAAMAAAAAAAAAAPw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABQAP///wAAAV4AAADIAAAA"
-"BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
-"AAAAA=="
-      SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAB"
-"QAAAGQAAAAGAAAAZAAAAAcAAABkAAAAAQAAAGQAAAACAAAAZAAAAAMAAABkAAAACAAAAGQAAAAJAA"
-"AAZAAAAAQAAABkAAAAZAAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAABAAAA"
-"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
-"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
-"AAkAAAAAQAAAAAAAAPoAAAAACQ="
-      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      Axes          "1"
-      TimeRange     "0.0"
-      ScrollingMode "1"
-      SingleTimeAxis "1"
-      Open          "0"
-      Ts            "-1"
-      SampleLimit   "0"
-      XAxisLabel    ""
-      ShowLegend    "1"
-      Axis {
-        Name          ""
-        AutoScale     1
-        MinValue      0
-        MaxValue      1
-        Signals       {}
-        SignalTypes   [ ]
-        Untangle      0
-        KeepBaseline  off
-        BaselineValue 0
+      Parameter {
+        Variable      "Index"
+        Value         "1"
+        Show          on
       }
-      Fourier {
-        SingleXAxis       on
-        AxisLabel         "Frequency"
-        Scaling           0
-        PhaseDisplay      0
-        ShowFourierLegend off
-        Axis {
-          Name          ""
-          AutoScale     1
-          MinValue      0
-          MaxValue      1
-          Signals       {}
-          Untangle      0
-          KeepBaseline  off
-          BaselineValue 0
-        }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
       }
     }
     Component {
-      Type          Scope
-      Name          "Scope1"
+      Type          Output
+      Name          "Out2"
       Show          on
-      Position      [1050, 325]
-      Direction     up
+      Position      [1185, 435]
+      Direction     right
       Flipped       off
-      Location      [640, 276; 990, 503]
-      State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAbwBvA"
-"G0AQQByAGUAYQAAAAAA/////wAAADQA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAAAA//"
-"///wAAAGYA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABmAP///wAAAAMAAAAAAAAAAPw"
-"BAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAP////8AAABQAP///wAAAV4AAADIAAAA"
-"BAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAA"
-"AAAAA=="
-      SavedViews    "AAAAAgAAAAA="
-      HeaderState   "AAAA/wAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAL/gMAAAAJAAAAB"
-"QAAAGQAAAAGAAAAZAAAAAcAAABkAAAAAQAAAGQAAAACAAAAZAAAAAMAAABkAAAACAAAAGQAAAAJAA"
-"AAZAAAAAQAAABkAAAAZAAAAAsBAAABAAAAAAAAAAAAAAAAZP////8AAACBAAAAAAAAAAsAAABAAAA"
-"AAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAA"
-"AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAA"
-"AAkAAAAAQAAAAAAAAPoAAAAACQ="
-      PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      Axes          "1"
-      TimeRange     "0.0"
-      ScrollingMode "1"
-      SingleTimeAxis "1"
-      Open          "0"
-      Ts            "-1"
-      SampleLimit   "0"
-      XAxisLabel    ""
-      ShowLegend    "1"
-      Axis {
-        Name          ""
-        AutoScale     1
-        MinValue      0
-        MaxValue      1
-        Signals       {}
-        SignalTypes   [ ]
-        Untangle      0
-        KeepBaseline  off
-        BaselineValue 0
+      Parameter {
+        Variable      "Index"
+        Value         "2"
+        Show          on
       }
-      Fourier {
-        SingleXAxis       on
-        AxisLabel         "Frequency"
-        Scaling           0
-        PhaseDisplay      0
-        ShowFourierLegend off
-        Axis {
-          Name          ""
-          AutoScale     1
-          MinValue      0
-          MaxValue      1
-          Signals       {}
-          Untangle      0
-          KeepBaseline  off
-          BaselineValue 0
-        }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
       }
     }
     Component {
-      Type          Scope
-      Name          "Scope2"
+      Type          Output
+      Name          "Out3"
       Show          on
-      Position      [1050, 380]
-      Direction     up
+      Position      [1185, 465]
+      Direction     right
       Flipped       off
-      Location      [0, 0; 0, 0]
-      State         ""
-      SavedViews    ""
-      HeaderState   ""
-      PlotPalettes  ""
-      Axes          "1"
-      TimeRange     "0.0"
-      ScrollingMode "1"
-      SingleTimeAxis "1"
-      Open          "0"
-      Ts            "-1"
-      SampleLimit   "0"
-      XAxisLabel    ""
-      ShowLegend    "1"
-      Axis {
-        Name          ""
-        AutoScale     1
-        MinValue      0
-        MaxValue      1
-        Signals       {}
-        SignalTypes   [ ]
-        Untangle      0
-        KeepBaseline  off
-        BaselineValue 0
+      Parameter {
+        Variable      "Index"
+        Value         "3"
+        Show          on
       }
-      Fourier {
-        SingleXAxis       on
-        AxisLabel         "Frequency"
-        Scaling           0
-        PhaseDisplay      0
-        ShowFourierLegend off
-        Axis {
-          Name          ""
-          AutoScale     1
-          MinValue      0
-          MaxValue      1
-          Signals       {}
-          Untangle      0
-          KeepBaseline  off
-          BaselineValue 0
-        }
+      Parameter {
+        Variable      "Width"
+        Value         "-1"
+        Show          off
       }
     }
     Connection {
@@ -649,7 +535,7 @@ Plecs {
       Type          Signal
       SrcComponent  "Saturation"
       SrcTerminal   2
-      Points        [615, 355; 615, 315]
+      Points        [740, 485; 740, 445]
       DstComponent  "Multiport Signal Switch"
       DstTerminal   5
     }
@@ -664,7 +550,7 @@ Plecs {
       Type          Signal
       SrcComponent  "Sine Wave"
       SrcTerminal   1
-      Points        [615, 255; 615, 295]
+      Points        [740, 385; 740, 425]
       DstComponent  "Multiport Signal Switch"
       DstTerminal   3
     }
@@ -672,7 +558,7 @@ Plecs {
       Type          Signal
       SrcComponent  "Constant"
       SrcTerminal   1
-      Points        [685, 200]
+      Points        [810, 355]
       DstComponent  "Multiport Signal Switch"
       DstTerminal   2
     }
@@ -708,7 +594,7 @@ Plecs {
       Type          Wire
       SrcComponent  "I"
       SrcTerminal   1
-      Points        [790, 325]
+      Points        [915, 455]
       Branch {
         DstComponent  "Am1"
         DstTerminal   2
@@ -728,25 +614,24 @@ Plecs {
     Connection {
       Type          Signal
       SrcComponent  "Demux"
-      SrcTerminal   2
-      Points        [960, 295; 960, 275]
-      DstComponent  "Scope"
+      SrcTerminal   4
+      Points        [1085, 445; 1085, 465]
+      DstComponent  "Out3"
       DstTerminal   1
     }
     Connection {
       Type          Signal
       SrcComponent  "Demux"
       SrcTerminal   3
-      Points        [1005, 305; 1005, 325]
-      DstComponent  "Scope1"
+      DstComponent  "Out2"
       DstTerminal   1
     }
     Connection {
       Type          Signal
       SrcComponent  "Demux"
-      SrcTerminal   4
-      Points        [960, 315; 960, 335; 1010, 335; 1010, 380]
-      DstComponent  "Scope2"
+      SrcTerminal   2
+      Points        [1085, 425; 1085, 405]
+      DstComponent  "Out1"
       DstTerminal   1
     }
   }
