@@ -295,7 +295,7 @@ def ui_intro(m):
                          zerolinewidth=1.5, zerolinecolor='gray')
         fig.update_yaxes(title_text="H - Field Strength [A/m]", color='firebrick', secondary_y=True, zeroline=False,
                          zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         st.subheader('Effective B-H Loop')
@@ -327,7 +327,7 @@ def ui_intro(m):
 
         fig.update_yaxes(title_text="B - Flux Density [mT]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
         fig.update_xaxes(title_text="H - Field Strength [A/m]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, use_container_width=True)
 
     with col1:
 

@@ -1,6 +1,3 @@
-# plecs_io.py — PLECS XML-RPC bridge for MagNet Physics tab
-# Model load/close is separated from simulate so the caller can keep
-# the model open across many simulation calls (e.g. during a sweep).
 
 import xmlrpc.client
 import numpy as np
@@ -8,7 +5,6 @@ import os
 
 PLECS_RPC_URL = "http://localhost:1080/RPC2"
 
-# Path to the PLECS model directory (same location as existing simulation models)
 MODELS_DIR = os.path.normpath(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'models'
@@ -16,18 +12,15 @@ MODELS_DIR = os.path.normpath(os.path.join(
 
 
 def get_plecs_server():
-    """Return an XML-RPC proxy to the running PLECS instance."""
     return xmlrpc.client.ServerProxy(PLECS_RPC_URL)
 
 
 def load_model(server, model_name):
-    """Load a PLECS model file. Call once before a sweep."""
     model_path = os.path.normpath(os.path.join(MODELS_DIR, model_name))
     server.plecs.load(model_path)
 
 
 def close_model(server, model_name):
-    """Close a PLECS model file. Call once after a sweep."""
     try:
         server.plecs.close(model_name)
     except Exception:
@@ -35,7 +28,6 @@ def close_model(server, model_name):
 
 
 def extract_full_cycle_by_rising_zero(x, t, y, cycle_index=8):
-    """Extract one full cycle from simulation data using rising zero-crossings of x."""
     s = np.sign(x)
     idx = np.where((s[:-1] <= 0) & (s[1:] > 0))[0]
     if len(idx) <= cycle_index:
@@ -47,7 +39,6 @@ def extract_full_cycle_by_rising_zero(x, t, y, cycle_index=8):
 
 
 def parse_plecs_outports(res):
-    """Parse PLECS simulation output into time, H, and B arrays."""
     t = np.asarray(res["Time"], dtype=float)
     vals = res["Values"]
 
@@ -66,12 +57,6 @@ def parse_plecs_outports(res):
 
 
 def simulate_bh_cycle(server, model_name, model_vars, stop_time, cycle_index=8):
-    """
-    Run a single PLECS simulation and extract one B-H cycle.
-    
-    The model must already be loaded via load_model().
-    This does NOT open or close the model — call load_model/close_model separately.
-    """
     opts = {
         "ModelVars": model_vars,
         "SolverOpts": {
@@ -92,10 +77,6 @@ def simulate_bh_cycle(server, model_name, model_vars, stop_time, cycle_index=8):
 
 
 def run_plecs_bh_cycle(model_name, model_vars, stop_time, cycle_index=8):
-    """
-    Convenience wrapper: load model, simulate, close model.
-    Use this for one-off calls. For sweeps, use the server/load/simulate/close API.
-    """
     server = get_plecs_server()
     load_model(server, model_name)
     try:

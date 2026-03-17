@@ -15,9 +15,6 @@ if sim_path not in sys.path:
 from magnet.core import BH_Transformer
 from plecs_io import get_plecs_server, load_model, close_model, simulate_bh_cycle
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Material saturation magnetisation table (A/m)
-# ─────────────────────────────────────────────────────────────────────────────
 MATERIAL_PROPERTIES = {
     "3C90": {"Ms": 3.74e5},
     "3C94": {"Ms": 3.82e5},
@@ -240,7 +237,7 @@ def ui_physics(m):
                                       value=20, step=5, key=f"physics_gpts_{m}")
 
 
-    run_fitting = st.button("🚀 Run LLG Fitting", key=f"physics_run_{m}", type="primary")
+    run_fitting = st.button("🚀 Run LLG Fitting", key=f"physics_run_{m}")
 
     if run_fitting:
         _run_fitting_workflow(
@@ -411,7 +408,7 @@ def _run_fitting_workflow(*, material, freq_hz, amp_t, temp, waveform,
             yaxis_title="Theta θ (deg)",
             legend=dict(yanchor="bottom", y=0, xanchor="right", x=1),
         )
-        st.plotly_chart(fig_heatmap, width='stretch')
+        st.plotly_chart(fig_heatmap, use_container_width=True)
 
     with col2:
         st.subheader(f"Worst: θ={worst_theta:.1f}°, α={worst_alpha:.2f}")
@@ -435,7 +432,7 @@ def _run_fitting_workflow(*, material, freq_hz, amp_t, temp, waveform,
                                zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
         fig_worst.update_xaxes(title_text="H - Field Strength [A/m]",
                                zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig_worst, width='stretch')
+        st.plotly_chart(fig_worst, use_container_width=True)
 
     with col3:
         st.subheader(f"Best: θ={best_theta:.1f}°, α={best_alpha:.2f}")
@@ -459,7 +456,7 @@ def _run_fitting_workflow(*, material, freq_hz, amp_t, temp, waveform,
                               zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
         fig_best.update_xaxes(title_text="H - Field Strength [A/m]",
                               zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig_best, width='stretch')
+        st.plotly_chart(fig_best, use_container_width=True)
 
     st.write("**Phase 3/3 — Generalization Sweep** (testing best-fit across freq/amp grid)")
     freq_min = max(10e3, freq_hz - gen_freq_span_hz)
@@ -541,7 +538,7 @@ def _run_fitting_workflow(*, material, freq_hz, amp_t, temp, waveform,
             yaxis_title="B Amplitude (T)",
             legend=dict(yanchor="top", y=1, xanchor="right", x=1),
         )
-        st.plotly_chart(fig_gen, width='stretch')
+        st.plotly_chart(fig_gen, use_container_width=True)
 
     st.success("✅ LLG fitting complete!")
     st.markdown("---")

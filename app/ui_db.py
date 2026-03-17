@@ -229,6 +229,6 @@ def ui_core_loss_db(m):
                 c='Flux_Density_mT' if c_axis == 'Flux Density' else
                 'Frequency_kHz' if c_axis == 'Frequency' else
                 'Power_Loss_kW/m3'),
-                width='stretch',)
+                use_container_width=True)
 
     st.markdown("""---""")
