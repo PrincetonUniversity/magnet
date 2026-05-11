@@ -16,6 +16,7 @@ def get_plecs_server():
 
 
 def load_model(server, model_name):
+    close_model(server, model_name)
     model_path = os.path.normpath(os.path.join(MODELS_DIR, model_name))
     server.plecs.load(model_path)
 
