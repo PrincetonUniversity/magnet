@@ -254,25 +254,22 @@ def ui_physics(m):
 
     else:  # Optimizer
         with st.expander("Optimizer Settings", expanded=True):
-            oc1, oc2 = st.columns(2)
-            with oc1:
-                opt_max_evals = st.number_input("Max evaluations", min_value=50, max_value=2000,
-                                                value=250, step=50, key=f"physics_opteval_{m}")
-            with oc2:
-                st.markdown("**Search bounds** (Not recommended to modify)")
-                bc1, bc2, bc3 = st.columns(3)
-                with bc1:
-                    st.markdown("θ (°)")
-                    opt_theta_min = st.number_input("θ min", value=75.0, step=1.0, key=f"physics_otmin_{m}")
-                    opt_theta_max = st.number_input("θ max", value=88.0, step=1.0, key=f"physics_otmax_{m}")
-                with bc2:
-                    st.markdown("α")
-                    opt_alpha_min = st.number_input("α min", value=1.0, step=1.0, key=f"physics_oamin_{m}")
-                    opt_alpha_max = st.number_input("α max", value=30.0, step=1.0, key=f"physics_oamax_{m}")
-                with bc3:
-                    st.markdown("Ms (%)")
-                    opt_ms_pct_min = st.number_input("Ms min", value=90.0, step=1.0, key=f"physics_omsmin_{m}")
-                    opt_ms_pct_max = st.number_input("Ms max", value=110.0, step=1.0, key=f"physics_omsmax_{m}")
+            opt_max_evals = st.number_input("Max evaluations", min_value=50, max_value=2000,
+                                            value=250, step=50, key=f"physics_opteval_{m}")
+            st.markdown("**Search bounds** (Not recommended to modify)")
+            bc1, bc2, bc3 = st.columns(3)
+            with bc1:
+                st.markdown("θ (°)")
+                opt_theta_min = st.number_input("θ min", value=75.0, step=1.0, key=f"physics_otmin_{m}")
+                opt_theta_max = st.number_input("θ max", value=88.0, step=1.0, key=f"physics_otmax_{m}")
+            with bc2:
+                st.markdown("α")
+                opt_alpha_min = st.number_input("α min", value=1.0, step=1.0, key=f"physics_oamin_{m}")
+                opt_alpha_max = st.number_input("α max", value=30.0, step=1.0, key=f"physics_oamax_{m}")
+            with bc3:
+                st.markdown("Ms (%)")
+                opt_ms_pct_min = st.number_input("Ms min", value=90.0, step=1.0, key=f"physics_omsmin_{m}")
+                opt_ms_pct_max = st.number_input("Ms max", value=110.0, step=1.0, key=f"physics_omsmax_{m}")
 
     n_cycles = 15
     cycle_pick = 8
