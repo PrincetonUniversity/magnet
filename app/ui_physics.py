@@ -699,7 +699,6 @@ def _run_optimization_workflow(*, material, freq_hz, amp_t, temp, waveform,
                                 opt_max_evals,
                                 gen_freq_span_hz, gen_amp_min, gen_amp_max, gen_pts,
                                 n_model):
-    from scipy.optimize import direct
 
     st.markdown("---")
     st.subheader(f"Results [Optimizer]: {material}  |  {freq_hz/1e3:.0f} kHz  |  {amp_t:.2f} T  |  {waveform}")
@@ -771,11 +770,12 @@ def _run_optimization_workflow(*, material, freq_hz, amp_t, temp, waveform,
 
         bounds = [(theta_min, theta_max), (alpha_min, alpha_max), (ms_pct_min, ms_pct_max)]
 
-        result = direct(
-            objective, bounds,
-            maxfun=opt_max_evals,
-            locally_biased=False,
-        )
+        try:
+            from scipy.optimize import direct
+            result = direct(objective, bounds, maxfun=opt_max_evals, locally_biased=False)
+        except ImportError:
+            from scipy.optimize import dual_annealing
+            result = dual_annealing(objective, bounds, maxiter=opt_max_evals, seed=42)
     finally:
         close_model(server, PLECS_MODEL)
 
