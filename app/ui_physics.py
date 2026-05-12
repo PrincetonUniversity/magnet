@@ -224,7 +224,7 @@ def ui_physics(m):
    
     st.header("Sweep Parameters")
     mode = st.radio("Fitting mode", ["Grid Sweep", "Optimizer"],
-                    index=0, horizontal=True, key=f"physics_mode_{m}")
+                    index=0, key=f"physics_mode_{m}")
 
     if mode == "Grid Sweep":
         col1, col2, col3 = st.columns(3)
