@@ -775,7 +775,7 @@ def _run_optimization_workflow(*, material, freq_hz, amp_t, temp, waveform,
             result = direct(objective, bounds, maxfun=opt_max_evals, locally_biased=False)
         except ImportError:
             from scipy.optimize import dual_annealing
-            result = dual_annealing(objective, bounds, maxiter=opt_max_evals, seed=42)
+            result = dual_annealing(objective, bounds, maxfun=opt_max_evals, seed=42)
     finally:
         close_model(server, PLECS_MODEL)
 
