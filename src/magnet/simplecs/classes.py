@@ -196,7 +196,7 @@ class CircuitModel(object):
         fig.update_yaxes(title_text="Primary Winding Voltage [V]", nticks=5, secondary_y=False)
         fig.update_yaxes(title_text="Primary Winding Current [A]", nticks=5, secondary_y=True)
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
         
     def displayBH(self):
         fig = make_subplots(specs=[[{"secondary_y": False}]])
@@ -219,7 +219,7 @@ class CircuitModel(object):
 
         fig.update_yaxes(title_text="B - Flux Density [mT]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
         fig.update_xaxes(title_text="H - Field Strength [A/m]", zeroline=True, zerolinewidth=1.5, zerolinecolor='gray')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
 
 class MagModel(object):

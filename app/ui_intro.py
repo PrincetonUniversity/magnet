@@ -363,7 +363,7 @@ def ui_intro(m):
         st.subheader(f'Volumetric Loss: {np.round(loss / 1e3, 2)} kW/m^3')
         st.subheader('Ranking among included materials:')
     
-        loss_test_list = pd.DataFrame(columns=['Material','Core Loss [kW/m^3]','This one'])
+        rows = []
         for material_test in material_list:
             if model in mag_net_hub_models:
                 mdl = mh.loss.LossModel(material=material_test, team=model)
@@ -373,17 +373,18 @@ def ui_intro(m):
                 hdata_test = BH_Transformer(material_test, freq, temp, bias, bdata)
                 loss_test = loss_BH(bdata, hdata_test, freq)
             this_one = '   ✓' if (material_test==material) else ''
-            coreLossMaterial_i=pd.DataFrame.from_dict({
-                'Material':[material_test],
-                'Core Loss [kW/m^3]': [np.round(loss_test / 1e3, 2)],
-                'This one': [this_one]})
-            loss_test_list = pd.concat([loss_test_list,coreLossMaterial_i])         
+            rows.append({
+                'Material': material_test,
+                'Core Loss [kW/m^3]': np.round(loss_test / 1e3, 2),
+                'This one': this_one})
+        loss_test_list = pd.DataFrame(rows)
+        
         loss_test_list=loss_test_list.sort_values(by='Core Loss [kW/m^3]')
         
         # loss_test_list.index = [''] * len(loss_test_list) # hide index
         loss_test_list.index = range(1, len(loss_test_list) + 1) # re-index from 1 to 10
         
-        st.dataframe(data=loss_test_list, width=None, height=None)
+        st.dataframe(data=loss_test_list)
     
     
     st.markdown("""---""")
