@@ -22,7 +22,8 @@ dependencies = [
     "streamlit==1.1.0",
     "streamlit-analytics",
     "tables==3.6.1",
-    "torch==1.9.0"
+    "torch==1.9.0",
+    "git+https://github.com/ehavugi/mag-net-hub.git"
 ]
 dynamic = ["version"]
 
